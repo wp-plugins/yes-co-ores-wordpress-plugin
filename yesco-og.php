@@ -16,7 +16,7 @@ License: GPL2
 		define('YOG_PLUGIN_DIR', dirname(__FILE__));
 	
 	if (!defined('YOG_PLUGIN_URL'))
-		define('YOG_PLUGIN_URL', WP_PLUGIN_URL . '/yesco-og');
+		define('YOG_PLUGIN_URL', plugins_url(null, __FILE__));
 	
 	// variabelen
 	$GLOBALS['yesco_og']['imagepath'] = YOG_PLUGIN_URL .'/media/images/';
@@ -63,8 +63,8 @@ License: GPL2
 		include('yesco-og-sync.php');	
 	
 	// JavaScript yesco_og.js en jquery-1.4.1 toevoegen
-	wp_enqueue_script('jquery', WP_PLUGIN_URL .'/yesco-og/javascript/' .'jquery-1.4.1' .'.js');
-	wp_enqueue_script('yesco_og', WP_PLUGIN_URL .'/yesco-og/javascript/' .'yesco_og' .'.js');
+	wp_enqueue_script('jquery', YOG_PLUGIN_URL . '/javascript/' .'jquery-1.4.1' .'.js');
+	wp_enqueue_script('yesco_og', YOG_PLUGIN_URL .'/javascript/' .'yesco_og' .'.js');
 	if (!is_admin())
 	{
 		// Add js files needed for site (not admin)

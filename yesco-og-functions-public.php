@@ -416,7 +416,7 @@ function yog_retrieveLinks($postId = null)
               parseOnLoad: false,
               cacheBust: "1",
               baseUrl: "' . home_url() . '/",
-              modulePaths: { svzsolutions: "wp-content/plugins/yesco-og/inc/svzsolutions" }
+              modulePaths: { svzsolutions: "' . substr(YOG_PLUGIN_URL, strpos(YOG_PLUGIN_URL, 'wp-content')) . '/inc/svzsolutions" }
               };
             // ]]>
             </script>
