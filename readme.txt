@@ -1,5 +1,5 @@
 === Yes-co ORES ===
-Contributors: yesco, motivo
+Contributors: yesco
 Tags: yes-co, yesco, motivo, projecten, project, projects, huizen, huis, house, onroerend goed, real estate, makelaar, realtor, broker
 Requires at least: 3.0
 Tested up to: 3.1
