@@ -76,7 +76,9 @@ function yog_custom_filter($columns)
 function yog_zoeksupport($where){
 	
 	global $wpdb,$wp;
-	if (is_search()) {
+  
+  if (is_search() && (empty($_REQUEST['object_type']) || !in_array($_REQUEST['object_type'], array('huis'))))
+  {
 		if(!$wp->query_vars['s'] || $wp->query_vars['s'] == '%25' || $wp->query_vars['s'] == '%')
 			return $where;
 		$zoekterm = addslashes($wp->query_vars['s']);

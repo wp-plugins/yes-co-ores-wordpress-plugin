@@ -118,7 +118,7 @@ class YogSearchFormWonenWidget extends YogSearchFormWidgetAbstract
     echo $beforeTitle . $title . $afterTitle;
     echo '<form method="get" class="yog-search-form-widget" id="yog-search-form-widget" action="' . get_bloginfo('url') . '/">';
     echo '<div style="display:none;">';
-      echo '<input type="hidden" name="s" value="%" />';
+      echo '<input type="hidden" name="s" value=" " />';
       echo '<input type="hidden" name="object_type" value="' . YogObjectSearchManager::OBJECT_TYPE_WONEN . '" />';
     
     // Only use object specs of current category?
