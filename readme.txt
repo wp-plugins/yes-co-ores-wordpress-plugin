@@ -3,7 +3,7 @@ Contributors: yesco
 Tags: yes-co, yesco, motivo, projecten, project, projects, huizen, huis, house, onroerend goed, real estate, makelaar, realtor, broker
 Requires at least: 3.0
 Tested up to: 3.1
-Stable tag: 1.0
+Stable tag: 1.0.1
 
 Directly post real estate objects from your Yes-co system to your wordpress blog with the Yes-co Open Real Estate System (Yes-co ORES) Plugin.
 
@@ -14,17 +14,14 @@ WordPress, voted the world's most powerful website and blogging system, has now 
 This plugin is only available in dutch.
 
 = NL =
-**Woningen publiceren op je WordPress website**
-
+**Woningen publiceren op je WordPress website**<br/>
 Yes-co ontwikkelde de Yes-co ORES WordPress plugin waardoor woning- en BOG-aanbod direct naar je WordPress website gepubliceerd kan worden.
 Of je nu NVM-, VBO-, VastgoedPro- of onafhankelijk makelaar bent, je aanbod staat met 1 druk op de knop op je WordPress-blog
 
-**WordPress & makelaar 2.0**
-
+**WordPress & makelaar 2.0**<br/>
 Een WordPress website blog is zonder twijfel de slimst beschikbare technologie. Je combineert op deze manier een Website, Blog en Social media mogelijkheden. Kortom alle instrumenten die de moderne makelaar nodig heeft om zich te kunnen profileren, in 1 slim systeem.
 
-**De Yes-co ORES WordPress plugin is geschikt voor:**
-
+**De Yes-co ORES WordPress plugin is geschikt voor:**<br/>
 * Makelaarswebsite
 * Object website (een blog voor 1 woning, kan nu eenvoudig ..)
 
