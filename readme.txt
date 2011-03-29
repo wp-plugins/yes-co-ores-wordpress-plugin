@@ -14,14 +14,17 @@ WordPress, voted the world's most powerful website and blogging system, has now 
 This plugin is only available in dutch.
 
 = NL =
-**Woningen publiceren op je WordPress website**<br/>
+**Woningen publiceren op je WordPress website**
+
 Yes-co ontwikkelde de Yes-co ORES WordPress plugin waardoor woning- en BOG-aanbod direct naar je WordPress website gepubliceerd kan worden.
 Of je nu NVM-, VBO-, VastgoedPro- of onafhankelijk makelaar bent, je aanbod staat met 1 druk op de knop op je WordPress-blog
 
-**WordPress & makelaar 2.0**<br/>
+**WordPress & makelaar 2.0**
+
 Een WordPress website blog is zonder twijfel de slimst beschikbare technologie. Je combineert op deze manier een Website, Blog en Social media mogelijkheden. Kortom alle instrumenten die de moderne makelaar nodig heeft om zich te kunnen profileren, in 1 slim systeem.
 
-**De Yes-co ORES WordPress plugin is geschikt voor:**<br/>
+**De Yes-co ORES WordPress plugin is geschikt voor:**
+
 * Makelaarswebsite
 * Object website (een blog voor 1 woning, kan nu eenvoudig ..)
 
