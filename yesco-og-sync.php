@@ -598,19 +598,29 @@ function processImage($koppeling,$node,$postID,$order,$projectNode)
 	// Link naar afbeelding
 	$url = str_replace('https://','',trim($node->link['href']));
 	$url = 'https://' .get_option('yog_user') .':' .get_option('yog_password') .'@' .$url;
+  
+  // Determine upload directory
+  $wpUploadDir = wp_upload_dir();
+  if (empty($wpUploadDir['basedir']))
+    return;
+  
+  $uploadDir = $wpUploadDir['basedir'] . '/';
 	
 	// Kijk of we mogen schrijven op de server
-	$basedir = str_replace('/wp-admin','',getcwd()) .'/wp-content/uploads/';
-	if(!is_writeable($basedir))
+	if (!is_writeable($uploadDir))
 		return;
-	// Kijk of afbeeldingmap bestaat
-	if(!is_dir($basedir .'projecten'))
-		mkdir($basedir . 'projecten');
-	// Kijk of postID map bestaat
-	if(!is_dir($basedir .'projecten/' .$postID))
-		mkdir($basedir . 'projecten/' .$postID);	
+  
+	// Kijk of benodigde mappen bestaan
+	if (!is_dir($uploadDir .'projecten/' .$postID))
+  {
+	  if (!is_dir($uploadDir .'projecten'))
+		  mkdir($uploadDir . 'projecten');
+    
+		mkdir($uploadDir . 'projecten/' .$postID);	
+  }
+  
 	// Afbeelding kopieren
-	$afbeeldinglocatie = $basedir .'projecten/' .$postID .'/' .$uuid .'.jpg';
+	$afbeeldinglocatie = $uploadDir .'projecten/' .$postID .'/' .$uuid .'.jpg';
 	copy($url,$afbeeldinglocatie);
 
 	// Afbeelding opslaan als attachment

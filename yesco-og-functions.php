@@ -531,12 +531,12 @@ function yesco_OG_pluginOpties() {
 	echo '<h2>Yes-co Open Real Estate System instellingen</h2>';
 	wp_nonce_field('update-options');
 	if(!yog_install_singleTemplate())
-		echo '<div id="message" class="error below-h2" style=" padding: 5px 10px;"><b>Let op</b>: het ingestelde thema heeft op dit moment geen template om objecten te tonen. Op zich is dat geen probleem, maar er kan meer informatie over een object worden getoond. We hebben geprobeerd het standaard-template in te stellen, maar de rechten op de map verbieden ons dat.<br><br>Als u de webserver schrijfrechten geeft op de volgende map, dan plaatsen wij automatisch een template om objecten weer te geven.<br><i><b>' .get_template_directory() .'</b></i></div>';
+		echo '<div id="message" class="error below-h2" style=" padding: 5px 10px;"><b>Let op</b>: Het ingestelde thema heeft op dit moment geen template om objecten te tonen. Op zich is dat geen probleem, maar er kan meer informatie over een object worden getoond. Er is geprobeerd het standaard-template in te stellen, maar de rechten op de map laten dat niet toe.<br><br>Als u de webserver schrijfrechten geeft op de volgende map, dan wordt er automatisch een template om objecten weer te geven geplaatst.<br><i><b>' .get_template_directory() .'</b></i></div>';
 	
 	if (!yog_uploadFolderWritable())
   {
     $uploadDir = wp_upload_dir();
-		echo '<div id="message" class="error below-h2" style=" padding: 5px 10px;"><b>Let op</b>: de plug-in kon niet geactiveerd worden, de upload map van uw WordPress installatie is beveiligd tegen schrijven. Dat betekent dat we geen afbeelingen voor u kunnen opslaan. Stel onderstaande locatie zo in, dat deze beschreven kan worden door de webserver. <br><i><b>' . $uploadDir['basedir'] .'</b></i></div>';
+		echo '<div id="message" class="error below-h2" style=" padding: 5px 10px;"><b>Let op</b>: De upload map van uw WordPress installatie is beveiligd tegen schrijven. Dat betekent dat er geen afbeelingen van de objecten gesynchroniseerd kunnen worden. Stel onderstaande locatie zo in, dat deze beschreven kan worden door de webserver. <br><i><b>' . $uploadDir['basedir'] .'</b></i></div>';
 		echo '</div>';
 		return;
 	}
