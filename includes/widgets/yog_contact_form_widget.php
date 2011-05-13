@@ -11,6 +11,7 @@ class YogContactFormWidget extends WP_Widget
   const FORM_ACTION         = 'http://api.yes-co.com/1.0/response';
   const JS_LOCATION         = 'http://api.yes-co.com/1.0/embed/js/response-forms.js';
   const DEFAULT_THANKS_MSG  = 'Het formulier is verzonden, we nemen zo spoedig mogelijk contact met u op.';
+  const WIDGET_ID_PREFIX    = 'yogcontactformwidget-';
 
   /**
   * @desc Constructor
@@ -46,8 +47,9 @@ class YogContactFormWidget extends WP_Widget
     $showAddress    = empty($instance['show_address']) ? false : true;
     $showRemarks    = empty($instance['show_remarks']) ? false : true;
     $showNewsletter = empty($instance['show_newsletter']) ? false : true;
+    $widgetId       = empty($args['widget_id']) ? 0 : str_replace(self::WIDGET_ID_PREFIX, '', $args['widget_id']);
 
-    if (!empty($_GET['send']) && $_GET['send'] == 'true')
+    if (!empty($_GET['send']) && $_GET['send'] == $widgetId)
     {
       // Show thank you page
       echo $args['before_widget'];
@@ -64,7 +66,7 @@ class YogContactFormWidget extends WP_Widget
       if (!empty($_SERVER['HTTP_HOST']))
       {
         $thankYouPage  = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-        $thankYouPage .= ((strpos($thankYouPage, '?') === false) ? '?' : '&amp;') . 'send=true';
+        $thankYouPage .= ((strpos($thankYouPage, '?') === false) ? '?' : '&amp;') . 'send=' . $widgetId;
       }
 
       echo $args['before_widget'];

@@ -3,7 +3,7 @@
 Plugin Name: Yes-co ORES
 Plugin URI: http://yes-co.nl
 Description: Publiceert uw onroerend goed op uw Wordpress Blog
-Version: 1.0.2
+Version: 1.0.3
 Author: Karst Lok | Motivo
 Author URI: http://motivo.nl
 License: GPL2
