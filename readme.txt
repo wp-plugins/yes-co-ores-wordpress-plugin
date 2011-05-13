@@ -92,6 +92,8 @@ Publications from your Yes-co Open Real Estate System to your Wordpress blog are
 * Fixed: search widget in wordpress 3.1
 = 1.0.2 =
 * Fixed: synchronization of object images on a mu like installation
+= 1.0.3 =
+* Fixed: when using multiple "Yes-co Contact formulier" widgets on the same page, only the posted widget will display the send message
 
 = 1.0 =
 * Initial version
