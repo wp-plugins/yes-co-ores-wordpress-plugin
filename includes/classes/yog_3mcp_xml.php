@@ -1,0 +1,693 @@
+<?php
+  /**
+  * @desc Yog3McpXmlAbstract
+  * @author Kees Brandenburg - Yes-co Nederland
+  */
+  abstract class Yog3McpXmlAbstract
+  {
+    protected $xml;
+    
+    /**
+    * @desc Constructor
+    * 
+    * @param YogSimpleXMLElement $xml
+    * @return Yog3McpXmlAbstract
+    */
+    public function __construct(YogSimpleXMLElement $xml)
+    {
+      $this->xml = $xml;
+    }
+    
+    /**
+    * @desc Get the xml
+    * 
+    * @param void
+    * @return YogSimpleXMLElement
+    */
+    public function getXml()
+    {
+      return $this->xml; 
+    }
+    
+    /**
+    * Get array with nodes by xpath query
+    * 
+    * @param string $xpath
+    * @@return array
+    */
+    public function getNodesByXpath($xpath)
+    {
+      $nodes  = $this->xml->xpath($xpath);
+      if ($nodes === false)
+        $nodes = array();
+        
+      return $nodes;
+    }
+    
+    /**
+    * @desc Get string by xpath
+    * 
+    * @param string $xpath
+    * @return string
+    */
+    public function getStringByPath($xpath)
+    {
+      $nodes  = $this->xml->xpath($xpath);
+      $values = array();
+
+      if ($nodes !== false && count($nodes) > 0)
+      {
+        foreach ($nodes as $node)
+        {
+          $values[] = (string) $node;
+        }
+      }
+
+      if (empty($values))
+        return '';
+      else
+        return implode(', ', $values);
+    }
+    
+    /**
+    * @desc Get int by xpath
+    * 
+    * @param string $xpath
+    * @return mixed
+    */
+    public function getIntByPath($xpath)
+    {
+      $nodes  = $this->xml->xpath($xpath);
+      $value  = 0;
+
+      if ($nodes !== false && count($nodes) > 0)
+      {
+        foreach ($nodes as $node)
+        {
+          $value += (int) $node;
+        }
+      }
+
+      if (empty($value))
+        return '';
+      else
+        return $value;
+    }
+    
+    /**
+    * @desc Get bool by path
+    * 
+    * @param string $xpath
+    * @return bool
+    */
+    public function getBoolByPath($xpath)
+    {
+      $nodes  = $this->xml->xpath($xpath);
+
+      if ($nodes !== false && count($nodes) > 0)
+        return (bool) array_shift($nodes);
+
+      return false;
+    }
+  }
+  
+  /**
+  * @desc Yog3McpXmlProjectAbstract
+  * @author Kees Brandenburg - Yes-co Nederland
+  */
+  abstract class Yog3McpXmlProjectAbstract extends Yog3McpXmlAbstract
+  {
+    /**
+    * @desc Create Yog3McpXmlProjectAbstract
+    * 
+    * @param YogSimpleXMLElement $xml
+    * @return Yog3McpXmlProjectAbstract
+    */
+    static public function create(YogSimpleXMLElement $xml)
+    {
+      $xml->registerXPathNamespace('project', PROJECT_NAMESPACE);
+      
+      switch ((string) $xml->Scenario)
+      {
+        case 'BBvk':
+        case 'BBvh':
+        case 'NBvk':
+        case 'LIvk':
+          return new Yog3McpXmlProjectWonen($xml);
+          break;
+        case 'BOvk':
+        case 'BOvh':
+          return new Yog3McpXmlProjectBog($xml);
+          break;
+        default:
+          throw new YogException(__METHOD__ . '; Unsupported scenario', YogException::GLOBAL_ERROR);
+          break;
+      }
+    }
+    
+    /**
+    * @desc Get the type
+    * 
+    * @param void
+    * @return string
+    */
+    public function getType()
+    {
+      return (string) $this->xml->Type;
+    }
+    
+    /**
+    * @desc Get the subtype
+    * 
+    * @param void
+    * @return string
+    */
+    public function getSubType()
+    {
+      return (string) $this->xml->SubType;
+    }
+    
+    /**
+    * @desc Check if subtype is set
+    * 
+    * @param void
+    * @return bool
+    */
+    public function hasSubType()
+    {
+      return isset($this->xml->SubType);
+    }
+    
+    /**
+    * @desc Get the name
+    * 
+    * @param void
+    * @return string
+    */
+    public function getName()
+    {
+      return (string) $this->xml->Name; 
+    }
+    
+    /**
+    * @desc Get general node
+    * 
+    * @param void
+    * @return YogSimpleXMLElement
+    */
+    public function getGeneralNode()
+    {
+      $scenario = $this->getScenario();
+      return $this->xml->$scenario->General;
+    }
+    
+    /**
+    * @desc Get scenario
+    * 
+    * @param void
+    * @return string
+    */
+    public function getScenario()
+    {
+      return (string) $this->xml->Scenario;
+    }
+    
+    /**
+    * @desc Get the texts
+    * 
+    * @param void
+    * @return array
+    */
+    public function getTexts()
+    {
+      $texts    = array();
+      $scenario = $this->getScenario();
+      foreach ($this->xml->$scenario->Text as $text)
+      {
+        $texts[(string) $text->Type] = (string) $text->Content;
+      }
+      
+      return $texts;
+    }
+    
+    /**
+    * @desc Get relation references
+    * 
+    * @param void
+    * @return array
+    */
+    public function getRelationReferences()
+    {
+      $references = array();
+      foreach ($this->xml->Relation as $reference)
+      {
+        $references[] = new Yog3McpXmlRelationReference($reference);
+      }
+      
+      return $references;
+    }
+    
+    /**
+    * @desc Get the images
+    * 
+    * @param void
+    * @return array
+    */
+    public function getMediaImages()
+    {
+      $images = array();
+      $nodes  = $this->xml->xpath('//project:Media[project:Image]');
+      
+      foreach ($nodes as $node)
+      {
+        $node->registerXPathNamespace('project', PROJECT_NAMESPACE);
+        $images[] = new Yog3McpXmlMediaImage($node);
+      }
+      
+      return $images;
+    }
+    
+    /**
+    * @desc Get the videos
+    * 
+    * @param void
+    * @return array
+    */
+    public function getMediaVideos()
+    {
+      $videos = array();
+      $nodes  = $this->xml->xpath('//project:Media[project:Video]');
+      
+      foreach ($nodes as $node)
+      {
+        $node->registerXPathNamespace('project', PROJECT_NAMESPACE);
+        $videos[] = new Yog3McpXmlMediaVideo($node);
+      }
+      
+      return $videos;
+    }
+    
+    /**
+    * @desc Get the documents
+    * 
+    * @param void
+    * @return array
+    */
+    public function getMediaDocuments()
+    {
+      $documents  = array();
+      $nodes      = $this->xml->xpath('//project:Media[project:Document]');
+      
+      foreach ($nodes as $node)
+      {
+        $node->registerXPathNamespace('project', PROJECT_NAMESPACE);
+        $documents[] = new Yog3McpXmlMediaDocument($node);
+      }
+      
+      return $documents;
+    }
+    
+    /**
+    * @desc Get the links
+    * 
+    * @param void
+    * @return array
+    */
+    public function getLinks()
+    {
+      $links  = array();
+      $nodes  = $this->xml->xpath('//project:Link[project:Url]');
+      
+      foreach ($nodes as $node)
+      {
+        $node->registerXPathNamespace('project', PROJECT_NAMESPACE);
+        $links[] = new Yog3McpXmlLink($node);
+      }
+      
+      return $links;
+    }
+  }
+  
+  /**
+  * @desc Yog3McpProjectWonen
+  * @author Kees Brandenburg - Yes-co Nederland
+  */
+  class Yog3McpXmlProjectWonen extends Yog3McpXmlProjectAbstract
+  {
+    /**
+    * @desc Get the address
+    * 
+    * @param void
+    * @return Yog3McpXmlAddress
+    */
+    public function getAddress()
+    {
+      $nodes = $this->xml->xpath('//project:General/project:Address');
+      if ($nodes === false || count($nodes) == 0)
+        throw new YogException(__METHOD__ . '; No address found', YogException::GLOBAL_ERROR);
+        
+      $node = array_shift($nodes);
+      $node->registerXPathNamespace('project', PROJECT_NAMESPACE);
+        
+      return new Yog3McpXmlAddress($node);
+    }
+    
+    /**
+    * @desc Check if address is set
+    * 
+    * @param void
+    * @return bool
+    */
+    public function hasAddress()
+    {
+      $nodes = $this->xml->xpath('//project:General/project:Address');
+      return ($nodes !== false && count($nodes) > 0);
+    }
+  }
+  
+  /**
+  * @desc Yog3McpXmlProjectBog
+  * @author Kees Brandenburg - Yes-co Nederland
+  */
+  class Yog3McpXmlProjectBog extends Yog3McpXmlProjectAbstract
+  {
+    /**
+    * @desc Get the address
+    * 
+    * @param void
+    * @return Yog3McpXmlAddress
+    */
+    public function getAddress()
+    {
+      $nodes = $this->xml->xpath('//project:General/project:Address');
+      if ($nodes === false || count($nodes) == 0)
+        throw new YogException(__METHOD__ . '; No address found', YogException::GLOBAL_ERROR);
+        
+      $node = array_shift($nodes);
+      $node->registerXPathNamespace('project', PROJECT_NAMESPACE);
+        
+      return new Yog3McpXmlAddress($node);
+    }
+    
+    /**
+    * @desc Check if address is set
+    * 
+    * @param void
+    * @return bool
+    */
+    public function hasAddress()
+    {
+      $nodes = $this->xml->xpath('//project:General/project:Address');
+      return ($nodes !== false && count($nodes) > 0);
+    }
+  }
+  
+  /**
+  * @desc Yog3McpXmlAddress
+  * @author Kees Brandenburg - Yes-co Nederland
+  */
+  class Yog3McpXmlAddress extends Yog3McpXmlAbstract
+  {
+    /**
+    * @desc Get the street
+    * 
+    * @param void
+    * @return string
+    */
+    public function getStreet()
+    {
+      return (string) $this->xml->Street; 
+    }
+    
+    /**
+    * @desc Get the housenumner
+    * 
+    * @param void
+    * @return string
+    */
+    public function getHouseNumber()
+    {
+      return (int) $this->xml->Housenumber; 
+    }
+    
+    /**
+    * @desc Get the housenumber addition
+    * 
+    * @param void
+    * @return string
+    */
+    public function getHouseNumberAddition()
+    {
+      if ($this->hasHouseNumberAddition())
+        return (string) $this->xml->HousenumberAddition;
+    }
+    
+    /**
+    * @desc Check if housenumber addition is set
+    * 
+    * @param void
+    * @return bool
+    */
+    public function hasHouseNumberAddition()
+    {
+      return isset($this->xml->HousenumberAddition); 
+    }
+    
+    /**
+    * @desc Get the city
+    * 
+    * @param void
+    * @return string
+    */
+    public function getCity()
+    {
+      return (string) $this->xml->City;
+    }
+  }
+  
+  /**
+  * @desc Yog3McpXmlMediaAbstract
+  * @author Kees Brandenburg - Yes-co Nederland
+  */
+  abstract class Yog3McpXmlMediaAbstract extends Yog3McpXmlAbstract
+  {
+    /**
+    * @desc Get the uuid
+    * 
+    * @param void
+    * @return string
+    */
+    public function getUuid()
+    {
+      return (string) $this->xml['uuid'];
+    }
+  }
+  
+  /**
+  * @desc Yog3McpXmlMediaImage
+  * @author Kees Brandenburg - Yes-co Nederland
+  */
+  class Yog3McpXmlMediaImage extends Yog3McpXmlMediaAbstract
+  {
+    /**
+    * @desc Get the order
+    * 
+    * @param void
+    * @return int
+    */
+    public function getOrder()
+    {
+      return (int) $this->xml->Image['order'];
+    }
+    
+    /**
+    * @desc Get the title
+    * 
+    * @param void
+    * @return string
+    */
+    public function getTitle()
+    {
+       return (string) $this->xml->Image->Title;
+    }
+  }
+  
+  /**
+  * @desc Yog3McpXmlMediaVideo
+  * @author Kees Brandenburg - Yes-co Nederland
+  */
+  class Yog3McpXmlMediaVideo extends Yog3McpXmlMediaAbstract
+  {
+    
+  }
+  
+  /**
+  * @desc Yog3McpXmlMediaDocument
+  * @author Kees Brandenburg - Yes-co Nederland
+  */
+  class Yog3McpXmlMediaDocument extends Yog3McpXmlMediaAbstract
+  {
+    
+  }
+  
+  /**
+  * @desc Yog3McpXmlLink
+  * @author Kees Brandenburg - Yes-co Nederland
+  */
+  class Yog3McpXmlLink extends Yog3McpXmlAbstract
+  {
+    
+  }
+  
+  /**
+  * @desc Yog3McpXmlRelationReference
+  * @author Kees Brandenburg - Yes-co Nederland
+  */
+  class Yog3McpXmlRelationReference extends Yog3McpXmlAbstract
+  {
+    /**
+    * @desc Get the role
+    * 
+    * @param void
+    * @return string
+    */
+    public function getRole()
+    {
+      return (string) $this->xml->Role;
+    }
+    
+    /**
+    * @desc Get the uuid
+    * 
+    * @param void
+    * @return string
+    */
+    public function getUuid()
+    {
+       return (string) $this->xml['uuid'];
+    }
+  }
+  
+  /**
+  * @desc Yog3McpXmlRelationAbstract
+  * @author Kees Brandenburg - Yes-co Nederland
+  */
+  abstract class Yog3McpXmlRelationAbstract extends Yog3McpXmlAbstract
+  {
+    /**
+    * @desc Create Yog3McpXmlRelationAbstract
+    * 
+    * @param YogSimpleXMLElement $xml
+    * @return Yog3McpXmlRelationAbstract
+    */
+    static public function create(YogSimpleXMLElement $xml)
+    {
+      $xml->registerXPathNamespace('relation', RELATION_NAMESPACE);
+      
+      switch ((string) $xml->Type)
+      {
+        case 'company':
+        case 'office':
+          return new Yog3McpXmlRelationBusiness($xml);
+          break;
+        case 'contact':
+        case 'employee':
+        case 'individual':
+          return new Yog3McpXmlRelationPerson($xml);
+          break;
+        default:
+          throw new YogException(__METHOD__ . '; Unsupported relation type', YogException::GLOBAL_ERROR);
+          break;
+      }
+    }
+    
+    /**
+    * @desc Get the relation type
+    * 
+    * @param void
+    * @return string
+    */
+    public function getType()
+    {
+      return (string) $this->xml->Type;
+    }
+    
+    /**
+    * @desc Get the main address
+    * 
+    * @param void
+    * @return Yog3McpXmlAddress
+    */
+    public function getMainAddress()
+    {
+      $nodes = $this->xml->xpath('//relation:MainAddress');
+      if ($nodes === false || count($nodes) == 0)
+        throw new YogException(__METHOD__ . '; No main address found', YogException::GLOBAL_ERROR);
+        
+      $node = array_shift($nodes);
+      $node->registerXPathNamespace('relation', RELATION_NAMESPACE);
+        
+      return new Yog3McpXmlAddress($node);
+    }
+    
+    /**
+    * @desc Check if main address is set
+    * 
+    * @param void
+    * @return bool
+    */
+    public function hasMainAddress()
+    {
+      $nodes = $this->xml->xpath('//relation:MainAddress');
+      return ($nodes !== false && count($nodes) > 0);
+    }
+    
+    /**
+    * @desc Get the postal address
+    * 
+    * @param void
+    * @return Yog3McpXmlAddress
+    */
+    public function getPostalAddress()
+    {
+      $nodes = $this->xml->xpath('//relation:PostalAddress');
+      if ($nodes === false || count($nodes) == 0)
+        throw new YogException(__METHOD__ . '; No postal address found', YogException::GLOBAL_ERROR);
+        
+      $node = array_shift($nodes);
+      $node->registerXPathNamespace('relation', RELATION_NAMESPACE);
+        
+      return new Yog3McpXmlAddress($node);
+    }
+    
+    /**
+    * @desc Check if postal address is set
+    * 
+    * @param void
+    * @return bool
+    */
+    public function hasPostalAddress()
+    {
+      $nodes = $this->xml->xpath('//relation:PostalAddress');
+      return ($nodes !== false && count($nodes) > 0);
+    }
+  }
+  
+  /**
+  * @desc Yog3McpXmlRelationPerson
+  * @author Kees Brandenburg - Yes-co Nederland
+  */
+  class Yog3McpXmlRelationPerson extends Yog3McpXmlRelationAbstract
+  {
+    
+  }
+  
+  /**
+  * @desc Yog3McpXmlRelationBusiness
+  * @author Kees Brandenburg - Yes-co Nederland
+  */
+  class Yog3McpXmlRelationBusiness extends Yog3McpXmlRelationAbstract
+  {
+    
+  }
+?>
