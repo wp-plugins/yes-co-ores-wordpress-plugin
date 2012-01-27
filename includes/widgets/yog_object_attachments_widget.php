@@ -34,7 +34,7 @@ class YogObjectAttachmentsWidget extends WP_Widget
   {
     $title          = apply_filters('widget_title', $instance['title']);
 
-    if (is_single() && get_post_type() == 'huis' && have_posts())
+    if (is_single() && have_posts() && yog_isObject())
     {
       the_post();
 
@@ -47,6 +47,7 @@ class YogObjectAttachmentsWidget extends WP_Widget
 
     $links      = yog_retrieveLinks();
     $documents  = yog_retrieveDocuments();
+    $movies     = yog_retrieveExternalMovies();
 
     if (!empty($links) || !empty($documents))
     {
@@ -59,28 +60,49 @@ class YogObjectAttachmentsWidget extends WP_Widget
       echo '<ul>';
 
       // Links
-      foreach ($links as $link)
+      if (!empty($links) && is_array($links))
       {
-        switch ($link->type)
+        foreach ($links as $link)
         {
-          case 'previsite tour':
-            $url    = $link->url . ((strpos($link->url, '?') !== false) ? '&amp;' : '?') . 'KeepThis=true&amp;TB_iframe=true&amp;height=470&amp;width=700';
-            $class  = 'link-' . $link->type . ' thickbox';
-            break;
-          default:
-            $url = $link->url;
-            $class  = 'link-' . $link->type . '';
-            break;
-        }
+          if (!empty($link['url']) && !empty($link['title']))
+          {
+            switch ($link['type'])
+            {
+              case 'previsite tour':
+                $url    = $link['url'] . ((strpos($link['url'], '?') !== false) ? '&amp;' : '?') . 'KeepThis=true&amp;TB_iframe=true&amp;height=470&amp;width=700';
+                $class  = 'link-' . $link['type'] . ' thickbox';
+                break;
+              default:
+                $url    = $link['url'];
+                $class  = 'link-' . $link['type'];
+                break;
+            }
 
-        echo '<li><div class="link"><a href="' . $url . '" class="' . $class . '">' . $link->title . '</a></div></li>';
+            echo '<li><div class="link"><a href="' . $url . '" class="link-default ' . $class . '" target="_blank">' . $link['title'] . '</a></div></li>';
+          }
+        }
       }
 
       // Documents
-      foreach ($documents as $document)
+      if (!empty($documents) && is_array($documents))
       {
-        echo '<li><div class="link"><a href="' . $document->url . '" class="link-default link-' . $document->documentType . '" target="blank">' . $document->title . '</a></div></li>';
+        foreach ($documents as $document)
+        {
+          if (!empty($document['url']) && !empty($document['title']))
+            echo '<li><div class="link"><a href="' . $document['url'] . '" class="link-default link-' . $document['type'] . '" target="_blank">' . $document['title'] . '</a></div></li>';
+        }
       }
+      
+      // External movies
+      if (!empty($movies) && is_array($movies))
+      {
+        foreach ($movies as $movie)
+        {
+          if ((empty($movie['videostreamurl']) || empty($movie['videoereference_serviceuri'])) && !empty($movie['title']) && !empty($movie['websiteurl']))
+            echo '<li><div class="link"><a href="' . $movie['websiteurl'] . '" class="link-default link-' . $movie['type'] . '" target="_blank">' . $movie['title'] . '</a></div></li>';
+        }
+      }
+      
       echo '</ul>';
 
       echo $args['after_widget'];

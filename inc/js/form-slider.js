@@ -40,12 +40,19 @@ jQuery(document).ready(function()
     jQuery('#' + yogFormSliderId + ' .yog-form-slider-min-label').html(parseInt(minValue));
     jQuery('#' + yogFormSliderId + ' .yog-form-slider-max-label').html(parseInt(maxValue));
     
+    // Determine steps
+    if ((settings.max - settings.min) > 10000)
+      var steps = 1000;
+    else
+      var steps = 100;
+    
     jQuery('#' + yogFormSliderId + ' .yog-form-slider').slider(
-      { range: true,
-        min: parseInt(settings.min),
-        max: parseInt(settings.max),
-        values: [minValue, maxValue],
-        slide: function(e,ui)
+      { 'range': true,
+        'min': parseInt(settings.min),
+        'max': parseInt(settings.max),
+        'step': steps,
+        'values': [minValue, maxValue],
+        'slide': function(e,ui)
         {
           var values    = ui.values;
           var minValue  = Math.floor(values[0]);
@@ -64,7 +71,7 @@ jQuery(document).ready(function()
           jQuery('.yog-form-slider-min-label', this.parentNode).html(minValue);
           jQuery('.yog-form-slider-max-label', this.parentNode).html(maxValue);
         },
-        stop: function(e, ui)
+        'stop': function(e, ui)
         {
           var minElement      = jQuery('input.yog-form-slider-min', this.parentNode);
           var maxElement      = jQuery('input.yog-form-slider-max', this.parentNode);

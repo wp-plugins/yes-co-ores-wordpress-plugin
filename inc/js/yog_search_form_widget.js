@@ -17,11 +17,12 @@ jQuery(document).ready(function()
 yogSearchFormUpdateNum = function(formId)
 {
   // Detemine base url
-  var baseUrl = jQuery("head link[rel='index']").attr("href");
+  var baseUrl     = djConfig.baseUrl;
+  var formElem    = jQuery('#' + formId);
   
-  jQuery('#' + formId).addClass('loading');
+  formElem.addClass('loading');
   
-  jQuery.getJSON(baseUrl, jQuery("#" + formId).serialize() + '&yog_search_form_widget_ajax_search=true&form_id=' + formId,
+  jQuery.getJSON(baseUrl, formElem.serialize() + '&yog-search-form-widget-ajax-search=true&form_id=' + formId,
     function(data, status)
     {
       if (status == 'success')

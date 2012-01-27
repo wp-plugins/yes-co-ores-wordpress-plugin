@@ -5,13 +5,13 @@ require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_object_search_manager.php')
 require_once(YOG_PLUGIN_DIR . '/includes/widgets/yog_search_form_widget_abstract.php');
 
 /**
-* @desc YogSearchFormWonenWidget
+* @desc YogSearchFormBogWidget
 * @author Kees Brandenburg - Yes-co Nederland
 */
-class YogSearchFormWonenWidget extends YogSearchFormWidgetAbstract
+class YogSearchFormBogWidget extends YogSearchFormWidgetAbstract
 {
-  const NAME        = 'Yes-co Objecten zoeken';
-  const DESCRIPTION = 'Zoek formulier voor objecten';
+  const NAME        = 'Yes-co BOG Objecten zoeken';
+  const DESCRIPTION = 'Zoek formulier voor bedrijfs onroerend goed objecten';
   const CLASSNAME   = 'yog-object-search';
   
   /**
@@ -62,7 +62,7 @@ class YogSearchFormWonenWidget extends YogSearchFormWidgetAbstract
   */
   protected function getPostType()
   {
-    return POST_TYPE_WONEN;
+    return POST_TYPE_BOG;
   }
   
   /**
@@ -88,11 +88,7 @@ class YogSearchFormWonenWidget extends YogSearchFormWidgetAbstract
     $useCurrentCat    = empty($instance['use_cur_cat']) ? false : true;
     $showPrice        = empty($instance['show_price']) ? false : true;
     $showCity         = empty($instance['show_city']) ? false : true;
-    $showObjectKind   = empty($instance['show_object_kind']) ? false : true;
-    $showObjectType   = empty($instance['show_object_type']) ? false : true;
-    $showRooms        = empty($instance['show_rooms']) ? false : true;
-    $showLivingSpace  = empty($instance['show_living_space']) ? false : true;
-    $showVolume       = empty($instance['show_volume']) ? false : true;
+    $showType         = empty($instance['show_type']) ? false : true;
     $params           = array();
     
     // Use current category name in widget title?
@@ -104,10 +100,10 @@ class YogSearchFormWonenWidget extends YogSearchFormWidgetAbstract
     // Output widget
     echo $beforeWidget;
     echo $beforeTitle . $title . $afterTitle;
-    echo '<form method="get" class="yog-search-form-widget ' . self::CLASSNAME . '" id="yog-search-form-widget" action="' . get_bloginfo('url') . '/">';
+    echo '<form method="get" class="yog-search-form-widget ' . self::CLASSNAME . '" id="yog-bog-search-form-widget" action="' . get_bloginfo('url') . '/">';
     echo '<div style="display:none;">';
       echo '<input type="hidden" name="s" value=" " />';
-      echo '<input type="hidden" name="object_type" value="' . POST_TYPE_WONEN . '" />';
+      echo '<input type="hidden" name="object_type" value="' . POST_TYPE_BOG . '" />';
     
     // Only use object specs of current category?
     if (is_category() && $useCurrentCat)
@@ -120,37 +116,15 @@ class YogSearchFormWonenWidget extends YogSearchFormWidgetAbstract
     
     // Prijs
     if ($showPrice === true)
-      echo $this->renderElement('Prijs', $this->renderSlider('Prijs', $searchManager->retrieveMinMetaValue(array('huis_KoopPrijs', 'huis_HuurPrijs'), $params), $searchManager->retrieveMaxMetaValue(array('huis_KoopPrijs', 'huis_HuurPrijs'), $params)));
+      echo $this->renderElement('Prijs', $this->renderSlider('Prijs', $searchManager->retrieveMinMetaValue(array('bedrijf_KoopPrijs', 'bedrijf_HuurPrijs'), $params), $searchManager->retrieveMaxMetaValue(array('bedrijf_KoopPrijs', 'bedrijf_HuurPrijs'), $params)));
     
     // Plaats
     if ($showCity === true)
-      echo $this->renderElement('huis_Plaats', $this->renderMultiSelect('Plaats', $searchManager->retrievePlaatsList($params)));
-    
-    // Soort Woning
-    if ($showObjectKind === true)
-      echo $this->renderElement('huis_SoortWoning', $this->renderCheckBoxes('SoortWoning', $searchManager->retrieveSoortWoningList($params)));
+      echo $this->renderElement('bedrijf_Plaats', $this->renderMultiSelect('Plaats', $searchManager->retrieveMetaList('bedrijf_Plaats', $params)));
     
     // Type woning
-    if ($showObjectType === true)
-      echo $this->renderElement('huis_TypeWoning', $this->renderCheckBoxes('TypeWoning', $searchManager->retrieveTypeWoningList($params)));
-    
-    // Aantal kamers
-    if ($showRooms === true)
-    {
-      echo $this->renderElement('huis_Aantalkamers', $this->renderSlider('Aantalkamers', $searchManager->retrieveMinKamers($params), $searchManager->retrieveMaxKamers($params)));
-    }
-    
-    // Oppervlakte
-    if ($showLivingSpace === true)
-    {
-      echo $this->renderElement('huis_Oppervlakte', $this->renderSlider('Oppervlakte', $searchManager->retrieveMinOppervlakte($params), $searchManager->retrieveMaxOppervlakte($params)));
-    }
-    
-    // Inhoud
-    if ($showVolume === true)
-    {
-      echo $this->renderElement('huis_Inhoud', $this->renderSlider('Inhoud', $searchManager->retrieveMinInhoud($params), $searchManager->retrieveMaxInhoud($params)));
-    }
+    if ($showType === true)
+      echo $this->renderElement('bedrijf_Type', $this->renderCheckBoxes('Type', $searchManager->retrieveMetaList('bedrijf_Type', $params)));
 
     echo '<p class="' . self::CLASSNAME . '-result">Er zijn <span class="object-search-result-num"></span> objecten die voldoen aan deze criteria</p>';
     echo '<div><input type="submit" class="' . self::CLASSNAME . '-button" value=" Tonen " /></div>';
@@ -172,11 +146,7 @@ class YogSearchFormWonenWidget extends YogSearchFormWidgetAbstract
     $instance['use_cur_cat']        = empty($new_instance['use_cur_cat']) ? 0 : 1;
     $instance['show_price']         = empty($new_instance['show_price']) ? 0 : 1;
     $instance['show_city']          = empty($new_instance['show_city']) ? 0 : 1;
-    $instance['show_object_kind']   = empty($new_instance['show_object_kind']) ? 0 : 1;
-    $instance['show_object_type']   = empty($new_instance['show_object_type']) ? 0 : 1;
-    $instance['show_rooms']         = empty($new_instance['show_rooms']) ? 0 : 1;
-    $instance['show_living_space']  = empty($new_instance['show_living_space']) ? 0 : 1;
-    $instance['show_volume']        = empty($new_instance['show_volume']) ? 0 : 1;
+    $instance['show_type']          = empty($new_instance['show_type']) ? 0 : 1;
     
     return $instance;
   }
@@ -193,11 +163,7 @@ class YogSearchFormWonenWidget extends YogSearchFormWidgetAbstract
     $useCurrentCat    = empty($instance['use_cur_cat']) ? false : true;
     $showPrice        = empty($instance['show_price']) ? false : true;
     $showCity         = empty($instance['show_city']) ? false : true;
-    $showObjectKind   = empty($instance['show_object_kind']) ? false : true;
-    $showObjectType   = empty($instance['show_object_type']) ? false : true;
-    $showRooms        = empty($instance['show_rooms']) ? false : true;
-    $showLivingSpace  = empty($instance['show_living_space']) ? false : true;
-    $showVolume       = empty($instance['show_volume']) ? false : true;
+    $showType         = empty($instance['show_type']) ? false : true;
     
     // Title
     echo '<p>';
@@ -222,30 +188,10 @@ class YogSearchFormWonenWidget extends YogSearchFormWidgetAbstract
       echo '<td><label for="' . $this->get_field_id('show_city') . '">' . __('Plaats tonen') . '</label>: </td>';
       echo '<td><input id="' . $this->get_field_id('show_city') . '" name="' . $this->get_field_name('show_city') . '" type="checkbox" value="1" ' . ($showCity === true ? 'checked="checked" ' : '') . '/></td>';
     echo '</tr>';
-    // Show 'Soort woning'
+    // Show 'Type'
 		echo '<tr>';
-      echo '<td><label for="' . $this->get_field_id('show_object_kind') . '">' . __('Soort woning tonen') . '</label>: </td>';
-      echo '<td><input id="' . $this->get_field_id('show_object_kind') . '" name="' . $this->get_field_name('show_object_kind') . '" type="checkbox" value="1" ' . ($showObjectKind === true ? 'checked="checked" ' : '') . '/></td>';
-    echo '</tr>';
-    // Show 'Type woning'
-		echo '<tr>';
-      echo '<td><label for="' . $this->get_field_id('show_object_type') . '">' . __('Type woning tonen') . '</label>: </td>';
-      echo '<td><input id="' . $this->get_field_id('show_object_type') . '" name="' . $this->get_field_name('show_object_type') . '" type="checkbox" value="1" ' . ($showObjectType === true ? 'checked="checked" ' : '') . '/></td>';
-    echo '</tr>';
-    // Show number of rooms
-		echo '<tr>';
-      echo '<td><label for="' . $this->get_field_id('show_rooms') . '">' . __('Kamers tonen') . '</label>: </td>';
-      echo '<td><input id="' . $this->get_field_id('show_rooms') . '" name="' . $this->get_field_name('show_rooms') . '" type="checkbox" value="1" ' . ($showRooms === true ? 'checked="checked" ' : '') . '/></td>';
-    echo '</tr>';
-    // Show Livingspace
-		echo '<tr>';
-      echo '<td><label for="' . $this->get_field_id('show_living_space') . '">' . __('Woonopp. tonen') . '</label>: </td>';
-      echo '<td><input id="' . $this->get_field_id('show_living_space') . '" name="' . $this->get_field_name('show_living_space') . '" type="checkbox" value="1" ' . ($showLivingSpace === true ? 'checked="checked" ' : '') . '/></td>';
-    echo '</tr>';
-    // Show volume
-		echo '<tr>';
-      echo '<td><label for="' . $this->get_field_id('show_volume') . '">' . __('Inhoud tonen') . '</label>: </td>';
-      echo '<td><input id="' . $this->get_field_id('show_volume') . '" name="' . $this->get_field_name('show_volume') . '" type="checkbox" value="1" ' . ($showVolume === true ? 'checked="checked" ' : '') . '/></td>';
+      echo '<td><label for="' . $this->get_field_id('show_type') . '">' . __('Type tonen') . '</label>: </td>';
+      echo '<td><input id="' . $this->get_field_id('show_type') . '" name="' . $this->get_field_name('show_type') . '" type="checkbox" value="1" ' . ($showType === true ? 'checked="checked" ' : '') . '/></td>';
     echo '</tr>';
     echo '</table>';
   }

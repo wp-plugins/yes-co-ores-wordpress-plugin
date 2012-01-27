@@ -38,11 +38,12 @@ class YogRecentObjectsWidget extends WP_Widget
   */
   public function widget($args, $instance)
   {
-    $title    = apply_filters('widget_title', $instance['title']);
-    $limit    = empty($instance['limit']) ? self::DEFAULT_LIMIT : (int) $instance['limit'];
-    $imgSize  = empty($instance['img_size']) ? self::DEFAULT_IMG_SIZE : $instance['img_size'];
-
-    $posts = get_posts(array('numberposts' => $limit, 'post_type' => 'huis', 'orderby' => 'date'));
+    $title      = apply_filters('widget_title', $instance['title']);
+    $limit      = empty($instance['limit']) ? self::DEFAULT_LIMIT : (int) $instance['limit'];
+    $imgSize    = empty($instance['img_size']) ? self::DEFAULT_IMG_SIZE : $instance['img_size'];
+    $postTypes  = $this->determinePostTypes($instance);
+    
+    $posts      = get_posts(array('numberposts' => $limit, 'post_type' => $postTypes, 'orderby' => 'date'));
     
     echo $args['before_widget'];
     if (!empty($title))
@@ -53,7 +54,7 @@ class YogRecentObjectsWidget extends WP_Widget
     foreach ($posts as $post)
     {
       $images     = yog_retrieveImages($imgSize, 1, $post->ID);
-      $title      = get_the_title($post->ID);
+      $title      = yog_retrieveSpec('Naam', $post->ID);
       $link       = get_permalink($post->ID);
       $prices     = yog_retrievePrices('recent-price-label', 'recent-price-specification', $post->ID);
       $openHouse  = yog_getOpenHouse('Open huis', $post->ID);
@@ -104,12 +105,20 @@ class YogRecentObjectsWidget extends WP_Widget
   */
   public function update($new_instance, $old_instance)
   {
-    $instance             = $old_instance;
-    $instance['title']    = empty($new_instance['title']) ? '' : $new_instance['title'];
-    $instance['img_size'] = empty($new_instance['img_size']) ? self::DEFAULT_IMG_SIZE : $new_instance['img_size'];
-    if (!empty($new_instance['limit']) && ctype_digit($new_instance['limit']))
-      $instance['limit'] = (int) $new_instance['limit'];
+    // Determine post types
+    $postTypes              = array();
+    if (!empty($new_instance['post_type_' . POST_TYPE_WONEN]))
+      $postTypes[]          = POST_TYPE_WONEN;
+    if (!empty($new_instance['post_type_' . POST_TYPE_BOG]))
+      $postTypes[]          = POST_TYPE_BOG;
     
+    $instance               = $old_instance;
+    $instance['title']      = empty($new_instance['title']) ? '' : $new_instance['title'];
+    $instance['img_size']   = empty($new_instance['img_size']) ? self::DEFAULT_IMG_SIZE : $new_instance['img_size'];
+    $instance['post_types'] = implode(',', $postTypes);
+    if (!empty($new_instance['limit']) && ctype_digit($new_instance['limit']))
+      $instance['limit']    = (int) $new_instance['limit'];
+
     return $instance;
   }
   
@@ -121,13 +130,26 @@ class YogRecentObjectsWidget extends WP_Widget
   */
   public function form($instance)
   {
-    $title    = empty($instance['title']) ? '' : esc_attr($instance['title']);
-    $limit    = empty($instance['limit']) ? self::DEFAULT_LIMIT : (int) $instance['limit'];
-    $imgSize  = empty($instance['img_size']) ? self::DEFAULT_IMG_SIZE : $instance['img_size'];
+    $title              = empty($instance['title']) ? '' : esc_attr($instance['title']);
+    $limit              = empty($instance['limit']) ? self::DEFAULT_LIMIT : (int) $instance['limit'];
+    $imgSize            = empty($instance['img_size']) ? self::DEFAULT_IMG_SIZE : $instance['img_size'];
+    $postTypes          = $this->determinePostTypes($instance);
+    
+    $supportedPostTypes = array(POST_TYPE_WONEN => 'Wonen', POST_TYPE_BOG => 'BOG');
     
     echo '<p>';
       echo '<label for="' . $this->get_field_id('title') . '">' . __('Titel') . ': </label>';
       echo '<input class="widefat" id="' . $this->get_field_id('title') . '" name="' . $this->get_field_name('title') . '" type="text" value="' . $title . '" />';
+    echo '</p>';
+    
+    echo '<p>';
+      echo '<label>' . __('Ondersteunde objecten') . ': </label><br />';
+      foreach ($supportedPostTypes as $postType => $label)
+      {
+        $id   = $this->get_field_id('post_type_' . $postType);
+        $name = $this->get_field_name('post_type_' . $postType);
+        echo '<input type="checkbox" name="' . $name . '" value="' . $postType . '" id="' . $id . '"' . (in_array($postType, $postTypes) ? ' checked="checked"' : '') . ' /> <label for="' . $id . '">' . $label . '</label><br />';
+      }
     echo '</p>';
     
     echo '<p>';
@@ -144,6 +166,21 @@ class YogRecentObjectsWidget extends WP_Widget
       echo '<label for="' . $this->get_field_id('limit') . '">' . __('Aantal te tonen objecten') . ': </label>';
       echo '<input id="' . $this->get_field_id('limit') . '" name="' . $this->get_field_name('limit') . '" type="text" value="' . $limit . '" size="3" maxlength="1" />';
     echo '</p>';
+  }
+  
+  /**
+  * @desc Determine configured post types
+  * 
+  * @param array $instance
+  * @return array
+  */
+  private function determinePostTypes($instance)
+  {
+    $postTypes          = array(POST_TYPE_WONEN);
+    if (isset($instance['post_types']))
+      $postTypes        = empty($instance['post_types']) ? array() : explode(',', $instance['post_types']);
+      
+    return $postTypes;
   }
 }
 ?>

@@ -1,0 +1,106 @@
+.media-box {
+border: 1px solid #ccc;
+margin: 10px 5px;
+background: #eee;
+padding: 10px;
+border-radius: 5px;
+}
+  .media-box .row {
+  margin-top:7px;
+  }
+    .media-box .row:first-child {
+    margin-top:0px;
+    }
+  .media-box label {
+  width: 270px;
+  float: left;
+  font-weight:normal;
+  }
+  .media-box select, .media-box input[type='text'] {
+  width:237px;
+  }
+    .media-box input.input-small {
+    width:205px !important;
+    }
+  .media-box table.form-table {
+  width:100%;
+  margin:0px;
+  }
+    .media-box th {
+    font-weight:bold;
+    padding-top:0px;
+    }
+    .media-box table.form-table td {
+    padding:10px 0px 0px 0px;
+    }
+      .media-box table.form-table tr:first-child td {
+      padding-top:0px;
+      }
+  .media-box.loading, .media-box td.loading, span.loading {
+  background-image:url('../../img/loading.gif');
+  background-repeat:no-repeat;
+  background-position: right top;
+  }
+    .media-box td.loading {
+    background-position: right 13px;
+    }
+  .media-box .button-primary {
+  float:right;
+  }
+  .media-box a {
+  line-height:18px;
+  padding-left:25px;
+  display:inline-block;
+  background-repeat:no-repeat;
+  }
+    .media-box a.youtube {
+    background-image:url('../../img/icon_youtube.gif');
+    }
+    .media-box a.vimeo {
+    background-image:url('../../img/icon_vimeo.png');
+    }
+    .media-box a.flickr {
+    background-image:url('../../img/icon_flickr.png');
+    }
+    .media-box a.website {
+    background-image:url('../../img/icon_website.png');
+    }
+    .media-box a.brochure {
+    background-image:url('../../img/icon_document.png');
+    }
+.images-holder {
+overflow:hidden;
+}
+  .images-holder .image-holder {
+  width:50%;
+  float:left;
+  text-align:center;
+  height:82px;
+  overflow:hidden;
+  margin-bottom:8px;
+  }
+  .images-holder img {
+  max-width:95% !important;
+  }
+.system-link {
+border: 1px solid #BBB;
+border-radius: 6px;
+padding: 3px;
+margin-top: 15px;
+width: 440px;
+background-image:url('../../img/yes-co.png');
+background-repeat:no-repeat;
+background-position:5px 5px;
+}
+  .system-link div {
+  margin-left:55px;
+  }
+  .system-link a {
+  cursor:pointer;
+  }
+.hide {
+display:none;
+}
+.loading-padding {
+padding-right:20px;
+}

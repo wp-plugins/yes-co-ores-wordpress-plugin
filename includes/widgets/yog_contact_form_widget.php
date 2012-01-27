@@ -82,7 +82,7 @@ class YogContactFormWidget extends WP_Widget
         if (!empty($thankYouPage))
           echo '<input type="hidden" name="thank_you_page" value="' . $thankYouPage . '" />';
 
-        if (is_single() && get_post_type() == 'huis' && have_posts())
+        if (is_single() && have_posts() && yog_isObject())
         {
           the_post();
 
