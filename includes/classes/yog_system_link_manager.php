@@ -139,6 +139,8 @@
       if ($systemLink->getCollectionUuid() == YogSystemLink::EMPTY_UUID)
         throw new YogException(__METHOD__ . '; Collection uuid not set');
         
+      $systemLink->setState(YogSystemLink::STATE_ACTIVE);
+        
       $this->store($systemLink);
     }
     
@@ -172,8 +174,9 @@
   */
   class YogSystemLink
   {
-    const EMPTY_NAME  = 'Nog niet bekend, wacht op synchronisatie';
-    const EMPTY_UUID  = '-';
+    const STATE_ACTIVE  = 'Actief';
+    const EMPTY_NAME    = 'Nog niet bekend, wacht op synchronisatie';
+    const EMPTY_UUID    = '-';
     
     private $name;
     private $state;

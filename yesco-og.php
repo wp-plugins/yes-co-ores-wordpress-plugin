@@ -37,6 +37,8 @@
         echo json_encode(array( 'status'  => 'ok',
 	                              'message' => 'Plug-in activated')
                         );
+                        
+        exit;
         
         break;
       // Synchronize objects / relations
@@ -77,6 +79,7 @@
   }
   catch (YogException $e)
   {
+    mail('kb@yes-co.nl', 'exception', print_r($_REQUEST, true) . "\n\n" . print_r($e, true));
     echo $e->toJson();
     exit;
   }
