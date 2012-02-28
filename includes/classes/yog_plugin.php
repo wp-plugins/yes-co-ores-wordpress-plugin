@@ -447,7 +447,10 @@
       
       // Upload folder writable
       $uploadDir = wp_upload_dir();
-	    if (!is_writeable($uploadDir['basedir']))
+
+      if (!empty($uploadDir['error']))
+        $errors[] = $uploadDir['error'];
+	    else if (!is_writeable($uploadDir['basedir']))
         $errors[] = 'De upload map van uw WordPress installatie is beveiligd tegen schrijven. Dat betekent dat er geen afbeelingen van de objecten gesynchroniseerd kunnen worden. Stel onderstaande locatie zo in, dat deze beschreven kan worden door de webserver. <br /><i><b>' . $uploadDir['basedir'] .'</b></i>';
       
       // PHP version check
