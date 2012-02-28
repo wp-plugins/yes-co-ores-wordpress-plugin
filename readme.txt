@@ -30,7 +30,7 @@ Een WordPress website blog is zonder twijfel de slimst beschikbare technologie. 
 
 **Over het Yes-co Open Real Estate Systeem**
 
-Yes-co ORES is een snel en intuïtief CRM systeem voor makelaars en vastgoedprofessionals. Het werkt volledig in je webbrowser. Geen installatie nodig dus. Maak een account aan en je kunt direct aan de slag.
+Yes-co ORES is een snel en intuÃ¯tief CRM systeem voor makelaars en vastgoedprofessionals. Het werkt volledig in je webbrowser. Geen installatie nodig dus. Maak een account aan en je kunt direct aan de slag.
 Bij Yes-co ORES betaal je alleen voor extra, optionele, diensten. Maak [hier](http://yes-co.nl/direct-starten/ "Maak je eigen Yes-co ORES aan") je eigen Yes-co ORES systeem aan om automatisch je objecten te publiceren.
 
 = EN =
@@ -59,9 +59,9 @@ With Yes-co ORES you only pay for addional, optional, services. [Create your own
 * Ga na of je hosting php5 ondersteund
 * Installeer de Yes-co ORES plugin vanuit je wordpress admin
 * Activeer de Yes-co ORES plugin
-* Installeer het [Yes-co ORES voorbeeld thema](http://yes-co.nl/downloads/yes-co-ores-wordpress-plugin.zip "Download het Yes-co ORES voorbeeld thema") of creëer je eigen thema (neem de code van het [Yes-co ORES voorbeeld thema](http://yes-co.nl/downloads/yes-co-ores-wordpress-plugin.zip "Download het Yes-co ORES voorbeeld thema") als basis). 
+* Installeer het [Yes-co ORES voorbeeld thema](http://www.yes-co.nl/downloads/yesco_ores_theme_1.1.zip "Download het Yes-co ORES voorbeeld thema") of creÃ«er je eigen thema (neem de code van het [Yes-co ORES voorbeeld thema](http://www.yes-co.nl/downloads/yesco_ores_theme_1.1.zip "Download het Yes-co ORES voorbeeld thema") als basis). 
 * Activeer het "Wordpress Blog" marketing kanaal in de App Market van je Yes-co Open Real Estate Systeem. Na het activeren wordt je doorgestuurd naar de instellingen, vul hier de url van je wordpress blog in.
-* Kopieër de code in het instellingen scherm en plak deze in het "Activatiecode" veld in de Yes-co ORES instellingen pagina van je Wordpress blog. Klik op de "Koppeling toevoegen" knop om de activerings code toe te voegen.
+* KopieÃ«r de code in het instellingen scherm en plak deze in het "Activatiecode" veld in de Yes-co ORES instellingen pagina van je Wordpress blog. Klik op de "Koppeling toevoegen" knop om de activerings code toe te voegen.
 * Klik op de "Koppeling controleren" knop in het instellingen scherm van het "Wordpress Blog" marketing kanaal in de App Market van je Yes-co Open Real Estate Systeem.
 
 Publicaties van je Yes-co Open Real Estate Systeem naar je Wordpress blog zijn nu geactiveerd.
@@ -70,7 +70,7 @@ Publicaties van je Yes-co Open Real Estate Systeem naar je Wordpress blog zijn n
 * Make sure your hosting supports php5
 * Install the Yes-co ORES plugin from your wordpress admin
 * Activate the Yes-co ORES plugin
-* Install the [Yes-co ORES example theme](http://yes-co.nl/downloads/yes-co-ores-wordpress-plugin.zip "Download the Yes-co ORES example theme") or create your own theme (check out the code of the [Yes-co ORES example theme](http://yes-co.nl/downloads/yes-co-ores-wordpress-plugin.zip "Download the Yes-co ORES example theme") to help out)
+* Install the [Yes-co ORES example theme](http://www.yes-co.nl/downloads/yesco_ores_theme_1.1.zip "Download the Yes-co ORES example theme") or create your own theme (check out the code of the [Yes-co ORES example theme](http://www.yes-co.nl/downloads/yesco_ores_theme_1.1.zip "Download the Yes-co ORES example theme") to help out)
 * Activate the "Wordpress Blog" marketing channel in the App Market of your Yes-co Open Real Estate System. After the activation you will be redirected to the settings. Fill out the URL of your Wordpress blog.
 * Copy the code in the settings screen and paste it to the "Activatiecode" field on the Yes-co ORES settings page of your Wordpress blog. Click on the "Koppeling toevoegen" button to add the activation code.
 * Click on the "Koppeling controleren" button on the settings screen of the "Wordpress Blog" marketing channel in the App Market of your Yes-co Open Real Estate System.
