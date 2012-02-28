@@ -3,7 +3,7 @@ Contributors: yesco
 Tags: yes-co, yesco, projecten, project, projects, huizen, huis, house, onroerend goed, real estate, makelaar, realtor, broker
 Requires at least: 3.0
 Tested up to: 3.3.1
-Stable tag: 1.1
+Stable tag: 1.1.1
 
 Directly post real estate objects from your Yes-co system to your wordpress blog with the Yes-co Open Real Estate System (Yes-co ORES) Plugin.
 
@@ -88,17 +88,22 @@ Publications from your Yes-co Open Real Estate System to your Wordpress blog are
 
 == Changelog ==
 
+= 1.1.1 =
+* Fixed: activation of plugin in Yes-co App Market
+* Fixed: upload directory check
+* Added: option to show custom posts on archive pages
+* Added: on activation callback
 = 1.1 =
 * Rewrote entire plugin
 * Added BOG support
 * More user friendly WP-admin interface
 
-= 1.0 =
-* Initial version
-= 1.0.1 =
-* Fixed: search widget in wordpress 3.1
-= 1.0.2 =
-* Fixed: synchronization of object images on a mu like installation
 = 1.0.3 =
 * Fixed: when using multiple "Yes-co Contact formulier" widgets on the same page, only the posted widget will display the send message
+= 1.0.2 =
+* Fixed: synchronization of object images on a mu like installation
+= 1.0.1 =
+* Fixed: search widget in wordpress 3.1
+= 1.0 =
+* Initial version
 
