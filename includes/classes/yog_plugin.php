@@ -282,6 +282,7 @@
     /**
     * @desc Register the post types to use on several pages
     * 
+    * 
     * @param WP_Query $query
     * @return WP_Query
     */
@@ -289,16 +290,28 @@
     {
       $extendQuery = true;
       
-      if ($query->is_home && (!get_option('yog_huizenophome') || !(!isset($query->query_vars['suppress_filters']) || $query->query_vars['suppress_filters'] == false)))
+      if (!(!isset($query->query_vars['suppress_filters']) || $query->query_vars['suppress_filters'] == false))
+        $extendQuery = false;
+      else if (!($query->is_archive || $query->is_category || $query->is_feed || $query->is_home))
+        $extendQuery = false;
+      else if ($query->is_archive && !$query->is_category && !get_option('yog_objectsinarchief'))
+        $extendQuery = false;
+      else if ($query->is_home && !get_option('yog_huizenophome'))
         $extendQuery = false;
       
       if ($extendQuery === true)
       {
-        $currentPostType  = $query->get('post_type');
-        $postTypes        = array('post', 'page', POST_TYPE_WONEN, POST_TYPE_BOG, 'attachment');
+        $postTypes  = $query->get('post_type');
+        if (empty($postTypes))
+          $postTypes = array('post');
+        else if (!is_array($postTypes))
+          $postTypes = array($postTypes);
         
-        if (!empty($currentPostType) && !in_array($currentPostType, $postTypes))
-          $postTypes[] = $currentPostType;
+        if (!in_array(POST_TYPE_WONEN, $postTypes))
+          $postTypes[] = POST_TYPE_WONEN;
+          
+        if (!in_array(POST_TYPE_BOG, $postTypes))
+          $postTypes[] = POST_TYPE_BOG;
           
 		    $query->set('post_type', $postTypes);
       }
@@ -360,10 +373,10 @@
       
       add_action('admin_menu',              array($this, 'createAdminMenu'));
       add_action('wp_ajax_togglehome',      array($this, 'ajaxToggleHome'));
+      add_action('wp_ajax_togglearchive',   array($this, 'ajaxToggleArchive'));
       add_action('wp_ajax_addkoppeling',    array($this, 'addSystemLink'));
       add_action('wp_ajax_removekoppeling', array($this, 'ajaxRemoveSystemLink'));
       add_action('init',                    array($this, 'enqueueFiles'));
-
       
       if (!empty($_REQUEST['post_type']) || !empty($_REQUEST['post']))
       {
@@ -372,6 +385,22 @@
         if (!is_null($wpAdminUi))
           $wpAdminUi->initialize();
       }
+    }
+    
+    /**
+    * @desc Activate plugin
+    * 
+    * @param void
+    * @return void
+    */
+    static public function activate()
+    {
+      // Make sure the post types are registered
+      $plugin = self::getInstance();
+      $plugin->registerPostTypes();
+      
+      // Flush rewrite rules
+      flush_rewrite_rules();
     }
 
     /**
@@ -468,10 +497,15 @@
 		    
         if (empty($errors))
         {
-          echo '<span id="yog-objects-on-home">';
-	          echo 'Projecten plaatsen in blog (Projecten zullen tussen \'normale\' blogposts verschijnen): ';
-	          echo '<input type="checkbox" ' .(get_option('yog_huizenophome')?'checked':'') .' id="yog-toggle-home" /><span id="yog-objects-on-home-msg"></span>';
-          echo '</span>';
+          echo '<h3>Objecten plaatsen</h3>';
+          echo '<div id="yog-objects-on-home">';
+            echo '<input type="checkbox" ' .(get_option('yog_huizenophome')?'checked':'') .' id="yog-toggle-home" />';
+	          echo '<label for="yog-toggle-home">Objecten plaatsen in blog (Objecten zullen tussen \'normale\' blogposts verschijnen)</label><span id="yog-objects-on-home-msg"></span>';
+          echo '</div>';
+          echo '<div id="yog-objects-on-archive">';
+            echo '<input type="checkbox" ' .(get_option('yog_objectsinarchief')?'checked':'') .' id="yog-toggle-archive" /><span id="yog-objects-on-home-msg"></span>';
+	          echo '<label for="yog-toggle-archive">Objecten plaatsen in archief (Objecten zullen tussen \'normale\' blogposts verschijnen)</label><span id="yog-objects-on-archive-msg"></span>';
+          echo '</div>';
           
 	        echo '<h3>Gekoppelde yes-co open accounts</h3>';
           echo '<span id="yog-add-system-link-holder">';
@@ -505,7 +539,7 @@
     }
     
     /**
-    * @desc Ajax toggle home handler
+    * @desc Ajax toggle objects on home handler
     * 
     * @param void
     * @return void
@@ -516,6 +550,19 @@
 		  echo '&nbsp; instelling opgeslagen.';
 		  exit();
 	  }
+    
+    /**
+    * @desc Ajax toggle objects in archive handler
+    * 
+    * @param void
+    * @return void
+    */
+    public function ajaxToggleArchive()
+    {
+		  update_option('yog_objectsinarchief',!(get_option('yog_objectsinarchief')));
+		  echo '&nbsp; instelling opgeslagen.';
+		  exit();
+    }
     
     /**
     * @desc Add a system link

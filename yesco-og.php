@@ -68,6 +68,10 @@
         
         $yogPlugin = YogPlugin::getInstance();
         $yogPlugin->init();
+        
+        // Register activation hook
+        register_activation_hook( __FILE__,   array('YogPluginAdmin', 'activate'));
+        
         break;
     }
   }

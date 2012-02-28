@@ -21,6 +21,26 @@ jQuery(document).ready( function($)
   });
   
   /**
+  * Toggle archive checkbox
+  */
+  $('#yog-toggle-archive').click(function()
+  {
+    jQuery('#yog-objects-on-archive').addClass('loading');
+    jQuery('#yog-objects-on-archive').addClass('loading-padding');
+    jQuery('#yog-objects-on-archive-msg').addClass('hide');
+    
+	  jQuery.post(ajaxurl, {'action': 'togglearchive', 'cookie': encodeURIComponent(document.cookie)},
+		  function(msg)
+		  {
+        jQuery('#yog-objects-on-archive').removeClass('loading');
+        jQuery('#yog-objects-on-archive').removeClass('loading-padding');
+        
+        jQuery('#yog-objects-on-archive-msg').html(msg);
+        jQuery('#yog-objects-on-archive-msg').removeClass('hide');
+		  });
+  });
+  
+  /**
   * Add system link
   */
   $('#yog-add-system-link').click(function()
