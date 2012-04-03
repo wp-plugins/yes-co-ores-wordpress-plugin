@@ -15,7 +15,9 @@ jQuery(document).ready( function($)
 	  jQuery.post(ajaxurl, {'action': 'addvideo', 'post': postId, 'titel': videoTitle, 'type': videoType, 'url': videoUrl, 'cookie': encodeURIComponent(document.cookie)},
 		  function(videoUuid)
 		  {
-			  jQuery('#yog-video-tabel tbody').append('<tr id="video-' + videoUuid + '"><td><a href="http://' + videoUrl + '">' + videoTitle + '</a></td><td class="actions"><input type="button" class="button-primary" onclick="yogRemoveVideo(\'' + videoUuid + '\');" value="Verwijderen" /></td></tr>');
+        videoUrl = videoUrl.replace('http://', '');
+        
+			  jQuery('#yog-video-tabel tbody').append('<tr id="video-' + videoUuid + '"><td><a href="http://' + videoUrl + '" target="_blank">' + videoTitle + '</a></td><td class="actions"><input type="button" class="button-primary" onclick="yogRemoveVideo(\'' + videoUuid + '\');" value="Verwijderen" /></td></tr>');
 			  jQuery('#video_titel').val('');
 			  jQuery('#video_url').val('');
         

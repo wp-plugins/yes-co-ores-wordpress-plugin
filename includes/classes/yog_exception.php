@@ -41,7 +41,8 @@
     {
 	    $response = array('status' => 'error',
 	                      'errorcode' => $this->code,
-                        'error'     => $this->determineError()
+                        'error'     => $this->determineError(),
+                        'details'   => $this->getMessage()
                         );
       
 	    return json_encode($response);

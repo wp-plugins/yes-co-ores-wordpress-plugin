@@ -3,7 +3,7 @@ Contributors: yesco
 Tags: yes-co, yesco, projecten, project, projects, huizen, huis, house, onroerend goed, real estate, makelaar, realtor, broker
 Requires at least: 3.0
 Tested up to: 3.3.1
-Stable tag: 1.1.1
+Stable tag: 1.1.2
 
 Directly post real estate objects from your Yes-co system to your wordpress blog with the Yes-co Open Real Estate System (Yes-co ORES) Plugin.
 
@@ -87,7 +87,12 @@ Publications from your Yes-co Open Real Estate System to your Wordpress blog are
 7. Project details on the Wordpress Admin
 
 == Changelog ==
-
+= 1.1.2 =
+* Added: options what to show with the "Yes-co Object Koppelingen" widget
+* Added: functions to show only images with type 'Plattegrond'
+* Added: Price replacement to 'Wonen' objects
+* Changed: 'verkoop' and/or 'verhuur' category is now also based on the scenario (if no price is set)
+* Fixed: Price replacement is shown instead of the price (when set)
 = 1.1.1 =
 * Fixed: activation of plugin in Yes-co App Market
 * Fixed: upload directory check

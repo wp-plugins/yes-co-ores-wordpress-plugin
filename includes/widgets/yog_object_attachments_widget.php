@@ -32,24 +32,33 @@ class YogObjectAttachmentsWidget extends WP_Widget
   */
   public function widget($args, $instance)
   {
-    $title          = apply_filters('widget_title', $instance['title']);
-
-    if (is_single() && have_posts() && yog_isObject())
-    {
-      the_post();
-
-      rewind_posts();
-    }
-    else
-    {
+    $title              = apply_filters('widget_title', $instance['title']);
+    $showLinks          = !isset($instance['show_links']) ? true : ($instance['show_links'] == 1 ? true : false);
+    $showDocuments      = !isset($instance['show_documents']) ? true : ($instance['show_documents'] == 1 ? true : false);
+    $showEmbededMovies  = !isset($instance['show_embeded_movies']) ? false : ($instance['show_embeded_movies'] == 1 ? true : false);
+    $showMovieLinks     = !isset($instance['show_movie_links']) ? true : ($instance['show_movie_links'] == 1 ? true : false);
+    
+    $links              = array();
+    $documents          = array();
+    $movies             = array();
+    
+    if (!(is_single() && yog_isObject()))
       return;
-    }
 
-    $links      = yog_retrieveLinks();
-    $documents  = yog_retrieveDocuments();
-    $movies     = yog_retrieveExternalMovies();
+    if ($showLinks === true)
+      $links      = yog_retrieveLinks();
+    
+    if ($showDocuments === true)
+      $documents  = yog_retrieveDocuments();
+      
+    if ($showEmbededMovies === true && $showMovieLinks === true)
+      $movies     = yog_retrieveMovies();
+    else if ($showEmbededMovies === true)
+      $movies     = yog_retrieveEmbedMovies();
+    else if ($showMovieLinks === true)
+      $movies     = yog_retrieveExternalMovies();
 
-    if (!empty($links) || !empty($documents))
+    if (!empty($links) || !empty($documents) || !empty($movies))
     {
       //echo $args['before_widget'];
       echo '<div class="borderbox widget widget_yogobjectattachments colored">';
@@ -98,7 +107,7 @@ class YogObjectAttachmentsWidget extends WP_Widget
       {
         foreach ($movies as $movie)
         {
-          if ((empty($movie['videostreamurl']) || empty($movie['videoereference_serviceuri'])) && !empty($movie['title']) && !empty($movie['websiteurl']))
+          if (!empty($movie['title']) && !empty($movie['websiteurl']))
             echo '<li><div class="link"><a href="' . $movie['websiteurl'] . '" class="link-default link-' . $movie['type'] . '" target="_blank">' . $movie['title'] . '</a></div></li>';
         }
       }
@@ -120,8 +129,12 @@ class YogObjectAttachmentsWidget extends WP_Widget
   */
   public function update($new_instance, $old_instance)
   {
-    $instance                     = $old_instance;
-    $instance['title']            = empty($new_instance['title']) ? '' : $new_instance['title'];
+    $instance                         = $old_instance;
+    $instance['title']                = empty($new_instance['title']) ? '' : $new_instance['title'];
+    $instance['show_links']           = empty($new_instance['show_links']) ? 0 : 1;
+    $instance['show_documents']       = empty($new_instance['show_documents']) ? 0 : 1;
+    $instance['show_embeded_movies']  = empty($new_instance['show_embeded_movies']) ? 0 : 1;
+    $instance['show_movie_links']     = empty($new_instance['show_movie_links']) ? 0 : 1;
 
     return $instance;
   }
@@ -134,11 +147,39 @@ class YogObjectAttachmentsWidget extends WP_Widget
   */
   public function form($instance)
   {
-    $title          = empty($instance['title']) ? '' : esc_attr($instance['title']);
+    $title              = empty($instance['title']) ? '' : esc_attr($instance['title']);
+    $showLinks          = !isset($instance['show_links']) ? true : ($instance['show_links'] == 1 ? true : false);
+    $showDocuments      = !isset($instance['show_documents']) ? true : ($instance['show_documents'] == 1 ? true : false);
+    $showEmbededMovies  = !isset($instance['show_embeded_movies']) ? false : ($instance['show_embeded_movies'] == 1 ? true : false);
+    $showMovieLinks     = !isset($instance['show_movie_links']) ? true : ($instance['show_movie_links'] == 1 ? true : false);
 
     echo '<p>';
       echo '<label for="' . $this->get_field_id('title') . '">' . __('Titel') . ': </label>';
       echo '<input class="widefat" id="' . $this->get_field_id('title') . '" name="' . $this->get_field_name('title') . '" type="text" value="' . $title . '" />';
+    echo '</p>';
+    
+    $id = $this->get_field_id('show_links');
+		echo '<p>';
+      echo '<input type="checkbox" name="' . $this->get_field_name('show_links') . '" value="1" id="' . $id . '"' . ($showLinks == true ? ' checked="checked"' : '') . ' />';
+      echo '<label for="' . $id . '">' . __('Toon links') . ': </label>';
+    echo '</p>';
+    
+    $id = $this->get_field_id('show_documents');
+		echo '<p>';
+      echo '<input type="checkbox" name="' . $this->get_field_name('show_documents') . '" value="1" id="' . $id . '"' . ($showDocuments == true ? ' checked="checked"' : '') . ' />';
+      echo '<label for="' . $id . '">' . __('Toon documenten') . ': </label>';
+    echo '</p>';
+    
+    $id = $this->get_field_id('show_embeded_movies');
+		echo '<p>';
+      echo '<input type="checkbox" name="' . $this->get_field_name('show_embeded_movies') . '" value="1" id="' . $id . '"' . ($showEmbededMovies == true ? ' checked="checked"' : '') . ' />';
+      echo '<label for="' . $id . '">' . __('Toon youtube / vimeo videos') . ': </label>';
+    echo '</p>';
+    
+    $id = $this->get_field_id('show_movie_links');
+		echo '<p>';
+      echo '<input type="checkbox" name="' . $this->get_field_name('show_movie_links') . '" value="1" id="' . $id . '"' . ($showMovieLinks == true ? ' checked="checked"' : '') . ' />';
+      echo '<label for="' . $id . '">' . __('Toon overige videos') . ': </label>';
     echo '</p>';
   }
 }

@@ -261,6 +261,13 @@
 	            $attachmentId   = @wp_insert_attachment($translationImage->getPostData(), $destination, $parentPostId);
 	            $attachmentMeta = wp_generate_attachment_metadata($attachmentId, $destination);
 	            wp_update_attachment_metadata($attachmentId, $attachmentMeta);
+              
+              $metaData       = $translationImage->getMetaData();
+              foreach ($metaData as $key => $value)
+              {
+                if (!empty($value))
+                  update_post_meta($attachmentId, 'attachment_' . $key, $value);
+              }
             }
           }
           catch (Exception $e)

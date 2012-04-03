@@ -168,6 +168,7 @@
         'KoopPrijsSoort'        => ucfirst($this->mcp3Project->getStringByPath('//project:Details/project:Koop/project:PrijsSoort')),
         'KoopPrijs'             => $this->mcp3Project->getStringByPath('//project:Details/project:Koop/project:Prijs'),
         'KoopPrijsConditie'     => $this->translatePriceCondition($this->mcp3Project->getStringByPath('//project:Details/project:Koop/project:PrijsConditie')),
+        'KoopPrijsVervanging'   => $this->mcp3Project->getStringByPath('//project:Details/project:Koop/project:PrijsVervanging'),
         'Veilingdatum'          => $this->mcp3Project->getStringByPath('//project:Details/project:Koop/project:Veiling/project:Datum'),
         'HuurPrijs'             => $this->mcp3Project->getIntByPath('//project:Details/project:Huur/project:Prijs'),
         'HuurPrijsConditie'     => $this->translatePriceCondition($this->mcp3Project->getStringByPath('//project:Details/project:Huur/project:PrijsConditie')),

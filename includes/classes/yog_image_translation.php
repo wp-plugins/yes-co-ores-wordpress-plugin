@@ -88,7 +88,9 @@
     */
     public function getMetaData()
     {
-      return array();
+      return array(
+        'type'                  => $this->mcp3Image->getType()
+      );
     }
   }
 ?>

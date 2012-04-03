@@ -510,6 +510,20 @@
     {
        return (string) $this->xml->Image->Title;
     }
+    
+    /**
+    * @desc Get the type
+    * 
+    * @param void
+    * @return string
+    */
+    public function getType()
+    {
+      if (isset($this->xml->Image->Type))
+        return (string) $this->xml->Image->Type;
+      
+      return '';
+    }
   }
   
   /**

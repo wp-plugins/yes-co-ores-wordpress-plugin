@@ -110,6 +110,20 @@
       $koopPrijs = $this->mcp3Project->getStringByPath('//project:Details/project:Huur/project:Prijs');
       if (!empty($koopPrijs))
         $categories[] = 'bog-verhuur';
+      
+      // Determine verkoop / verhuur category based on scenario (fallback)
+      if (!in_array('bog-verkoop', $categories) && !in_array('bog-verhuur', $categories))
+      {
+        switch ($this->mcp3Project->getScenario())
+        {
+          case 'BOvk':
+            $categories[] = 'bog-verkoop';
+            break;
+          case 'BOvh':
+            $categories[] = 'bog-verhuur';
+            break;
+        }
+      }
 
 		  // State
       if (in_array($this->determineState(), array('verkocht', 'verhuurd')))

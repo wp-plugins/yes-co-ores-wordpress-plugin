@@ -130,35 +130,47 @@
   */
   function yog_retrievePrices($priceTypeClass = 'priceType', $priceConditionClass = 'priceCondition', $postId = null)
   {
-    $priceFields  = array('KoopPrijs', 'HuurPrijs');
-    $values       = array();
-    $postType     = get_post_type(is_null($postId) ? false : $postId);
+    $priceFields    = array('KoopPrijs', 'HuurPrijs');
+    $values         = array();
+    $postType       = get_post_type(is_null($postId) ? false : $postId);
+    $replace        = yog_retrieveSpec('KoopPrijsVervanging', $postId);
     
-    foreach ($priceFields as $field)
+    if (!empty($replace))
     {
-      $price          = yog_retrieveSpec($field, $postId);
-      
-      if (!empty($price))
+      $priceType  = yog_retrieveSpec('KoopPrijsSoort', $postId);
+      if (empty($priceType))
+        $priceType = 'Vraagprijs';
+            
+      $values[] = '<span class="' . $priceTypeClass . '">' . $priceType . ': </span> ' . $replace;
+    }
+    else
+    {
+      foreach ($priceFields as $field)
       {
-        if ($field == 'HuurPrijs')
-          $priceType  = 'Huurprijs';
-        else
-          $priceType  = yog_retrieveSpec($field . 'Soort', $postId);
-          
-        if (empty($priceType))
-          $priceType = 'Vraagprijs';
-                  
-        $priceCondition = yog_retrieveSpec($field . 'Conditie');
-        $value = '<span class="' . $priceTypeClass . '">' . $priceType . ': </span> ' . $price . (empty($priceCondition) ? '' : ' <span class="' . $priceConditionClass . '">' . $priceCondition . '</span>');
+        $price          = yog_retrieveSpec($field, $postId);
         
-        if ($postType == POST_TYPE_BOG)
+        if (!empty($price))
         {
-          $btw = yog_retrieveSpec($field . 'BtwPercentage', $postId);
-          if (!empty($btw))
-            $value .= ' <span class="priceBtw">(' . $btw . '% BTW)</span>';
+          if ($field == 'HuurPrijs')
+            $priceType  = 'Huurprijs';
+          else
+            $priceType  = yog_retrieveSpec($field . 'Soort', $postId);
+            
+          if (empty($priceType))
+            $priceType = 'Vraagprijs';
+                    
+          $priceCondition = yog_retrieveSpec($field . 'Conditie');
+          $value = '<span class="' . $priceTypeClass . '">' . $priceType . ': </span> ' . $price . (empty($priceCondition) ? '' : ' <span class="' . $priceConditionClass . '">' . $priceCondition . '</span>');
+          
+          if ($postType == POST_TYPE_BOG)
+          {
+            $btw = yog_retrieveSpec($field . 'BtwPercentage', $postId);
+            if (!empty($btw))
+              $value .= ' <span class="priceBtw">(' . $btw . '% BTW)</span>';
+          }
+          
+          $values[] = $value;
         }
-        
-        $values[] = $value;
       }
     }
     
@@ -251,7 +263,20 @@
           {
             case 'http://www.youtube.com/':
             case 'http://www.youtube.com':
-              $videos[$uuid]['type'] = 'youtube';
+            
+              $videos[$uuid]['type']                        = 'youtube';
+              $videos[$uuid]['videoereference_serviceuri']  = 'http://www.youtube.com';
+              
+              if (empty($videos[$uuid]['videoereference_id']) && !empty($videos[$uuid]['websiteurl']))
+              {
+                $chunks = parse_url($videos[$uuid]['websiteurl'], PHP_URL_QUERY);
+                if (!empty($chunks))
+                {
+                  parse_str($chunks, $params);
+                  if (!empty($params['v']))
+                    $videos[$uuid]['videoereference_id'] = $params['v'];
+                }
+              }
               
               if (!empty($videos[$uuid]['videoereference_id']))
               {
@@ -262,7 +287,9 @@
               break;
             case 'http://vimeo.com/':
             case 'http://vimeo.com':
-              $videos[$uuid]['type'] = 'vimeo';
+            
+              $videos[$uuid]['type']                        = 'vimeo';
+              $videos[$uuid]['videoereference_serviceuri']  = 'http://vimeo.com';
               
               if (!empty($videos[$uuid]['videoereference_id']))
               {
@@ -273,7 +300,9 @@
               break;
             case 'http://www.flickr.com/':
             case 'http://www.flickr.com':
-              $videos[$uuid]['type'] = 'flickr';
+            
+              $videos[$uuid]['type']                        = 'flickr';
+              $videos[$uuid]['videoereference_serviceuri']  = 'http://www.flickr.com';
               break;
           }
         }
@@ -317,6 +346,7 @@
   function yog_retrieveExternalMovies($postId = null)
   {
 	  $movies         = yog_retrieveMovies($postId);
+    
     $externalMovies = array();
     
     if (!empty($movies))
@@ -359,6 +389,9 @@
           break;
         case 'http://vimeo.com':
           $code = '<iframe src="' . $movie['videostreamurl'] . '" width="' . $width . '" height="' . $height . '" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>';
+          break;
+        default:
+          $code = '<pre>' . print_r($movie, true) . '</pre>';
           break;
       }
     }
@@ -446,6 +479,130 @@
   }
   
   /**
+  * @desc Check if there are images without type 'Plattegrond'
+  * 
+  * @param void
+  * @return bool
+  */
+  function yog_hasNormalImages()
+  {
+    $found      = false;
+    $arguments  = array('post_type'        => 'attachment',
+                        'post_parent'     => $postId,
+                        'post_mime_type'  => 'image');
+                        
+    $images     = get_posts($arguments);
+                        
+    while ($found === false && $image = array_pop($images))
+    {
+      $type = get_post_meta($images->ID, 'attachment_type', true);
+      if ($type != 'Plattegrond')
+        $found = true;
+    }
+    
+    return $found;
+  }
+  
+  /**
+  * @desc Retrieve all images without type 'Plattegrond'
+  * 
+  * @param string $size (thumbnail, medium, large)
+  * @param int $limit
+  * @return array
+  */
+  function yog_retrieveNormalImages($size, $limit = null, $postId = null)
+  {
+    if (is_null($postId))
+      $postId = get_the_ID();
+    
+    $arguments = array('post_type'        => 'attachment',
+                        'post_parent'     => $postId,
+                        'post_mime_type'  => 'image',
+                        'orderby'         => 'menu_order',
+                        'order'           => 'ASC');
+    
+    $posts  = get_posts($arguments);
+    $images = array();
+    
+    foreach ($posts as $post)
+    {
+      $type     = get_post_meta($post->ID, 'attachment_type', true);
+      if ($type != 'Plattegrond' && (is_null($limit) || count($images) < $limit))
+      {
+        $image    = wp_get_attachment_image_src($post->ID, $size);
+        if (empty($image[1]))
+          $image[1] = get_option($size . '_size_w', 0);
+        if (empty($image[2]))
+          $image[2] = get_option($size . '_size_h', 0);
+        
+        $images[] = $image;
+      }
+    }
+    
+    return $images;
+  }
+  
+  /**
+  * @desc Check if there are images with type 'Plattegrond'
+  * 
+  * @param void
+  * @return bool
+  */
+  function yog_hasImagePlans()
+  {
+    if (is_null($postId))
+      $postId = get_the_ID();
+    
+    $arguments = array('post_type'        => 'attachment',
+                        'post_parent'     => $postId,
+                        'post_mime_type'  => 'image',
+                        'meta_key'        => 'attachment_type',
+                        'meta_value'      => 'Plattegrond',
+                        'numberposts'     => 1);
+
+    $posts  = get_posts($arguments);
+    return (is_array($posts) && count($posts) > 0);
+  }
+  
+  /**
+  * @desc Retrieve all images with type 'Plattegrond'
+  * 
+  * @param string $size (thumbnail, medium, large)
+  * @param int $limit
+  * @return array
+  */
+  function yog_retrieveImagePlans($size, $limit = null, $postId = null)
+  {
+    if (is_null($postId))
+      $postId = get_the_ID();
+    
+    $arguments = array('post_type'        => 'attachment',
+                        'post_parent'     => $postId,
+                        'post_mime_type'  => 'image',
+                        'meta_key'        => 'attachment_type',
+                        'meta_value'      => 'Plattegrond',
+                        'numberposts'     => (is_null($limit) ? -1 : $limit),
+                        'orderby'         => 'menu_order',
+                        'order'           => 'ASC');
+
+    $posts  = get_posts($arguments);
+    $images = array();
+    
+    foreach ($posts as $post)
+    {
+      $image    = wp_get_attachment_image_src($post->ID, $size);
+      if (empty($image[1]))
+        $image[1] = get_option($size . '_size_w', 0);
+      if (empty($image[2]))
+        $image[2] = get_option($size . '_size_h', 0);
+      
+      $images[] = $image;
+    }
+    
+    return $images;
+  }
+  
+  /**
   * @desc Check if geo location is set
   * 
   * @param void
@@ -474,6 +631,10 @@
 
     $latitude   = isset($specs['Latitude']) ? $specs['Latitude'] : false;
     $longitude  = isset($specs['Longitude']) ? $specs['Longitude'] : false;
+    
+    // Make sure the width is not above 640px
+    if ($width > 640)
+      $width = 640;
 
     $html       = '';
 
@@ -610,25 +771,41 @@
    * @param string $largeImageSize (thumbnail, medium, large. default: large)
    * @param string $thumbnailSize (thumbnail, medium, large. default: thumbnail)
    * @param bool $scrollable (default false)
+   * @param string $type (Plattegrond or null)
    * @return void
    */
-  function yog_retrievePhotoSlider($largeImageSize = 'large', $thumbnailSize = 'thumbnail', $scrollable = false)
+  function yog_retrievePhotoSlider($largeImageSize = 'large', $thumbnailSize = 'thumbnail', $scrollable = false, $type = null)
   {
-    $largeImages        = yog_retrieveImages($largeImageSize);
+    if ($type == 'Plattegrond')
+      $largeImages      = yog_retrieveImagePlans($largeImageSize);
+    else if ($type == 'Normaal')
+      $largeImages      = yog_retrieveNormalImages($largeImageSize);
+    else
+      $largeImages      = yog_retrieveImages($largeImageSize);
+      
+    if ($type == 'Plattegrond')
+      $thumbnails       = yog_retrieveImagePlans($thumbnailSize);
+    else if ($type == 'Normaal')
+      $thumbnails       = yog_retrieveNormalImages($thumbnailSize);
+    else
+      $thumbnails       = yog_retrieveImages($thumbnailSize);
+    
     $largeImageHeight   = get_option($largeImageSize . '_size_h');
     $largeImageWidth    = get_option($largeImageSize . '_size_w');
-    $thumbnails         = yog_retrieveImages($thumbnailSize);
+    
+
     $thumbs             = array();
     $html               = '';
     $scrollable         = true;
     
     if (!empty($largeImages) && count($largeImages) > 0 && !empty($largeImages[0][0]))
     {
-      $html = '<div id="imageactionsholder" class="clearfix">
-                 <div class="mainimage" style="height:' . $largeImageHeight .'px;">
-                   <img id="bigImage" alt="" src="' . $largeImages[0][0] . '" style="max-height:' . $largeImageHeight . 'px;max-width:' . $largeImageWidth . 'px;" />
-                 </div>
-               </div>';
+      $html = '<div class="yog-images-holder">
+                <div id="imageactionsholder" class="clearfix yog-main-">
+                   <div class="mainimage" style="height:' . $largeImageHeight .'px;">
+                     <img class="yog-big-image" id="bigImage" alt="" src="' . $largeImages[0][0] . '" style="max-height:' . $largeImageHeight . 'px;max-width:' . $largeImageWidth . 'px;" />
+                   </div>
+                 </div>';
                
       if (!empty($thumbnails) && count($thumbnails) > 1 && count($thumbnails) == count($largeImages))
       {
@@ -636,23 +813,23 @@
         foreach ($thumbnails as $key => $thumbnail)
         {
           $largeImage      = $largeImages[$key];
-          $thumbnailsHtml .= '<a href="' . $largeImage[0] . '" class="yog-thumb"><img id="image' . $key . '" alt="" src="' . $thumbnail[0] . '" /></a>';
+          $thumbnailsHtml .= '<a href="' . $largeImage[0] . '" class="yog-thumb"><img class="yog-image-' . $key . '" alt="" src="' . $thumbnail[0] . '" /></a>';
         }
         
-        $html .= '<div id="imgsliderholder"' .($scrollable === true ? ' class="yog-scrolling-enabled"' : '') . '>';
+        $html .= '<div id="imgsliderholder" class="yog-image-slider-holder' .($scrollable === true ? ' yog-scrolling-enabled' : '') . '">';
         if ($scrollable === true)
           $html .= '<div class="left yog-scroll"><a title="Vorige foto" onclick="return false;" href="#">&nbsp;</a></div>';
         if ($scrollable === true)
-          $html .= '<div class="right yog-scroll"><a title="Volgende foto" onclick="return false;" onmouseover="ScrollRight(\'imgslider\');" href="#">&nbsp;</a></div>';
+          $html .= '<div class="right yog-scroll"><a title="Volgende foto" onclick="return false;" href="#">&nbsp;</a></div>';
         
-        $html .= '<div id="imgslider">
+        $html .= '<div id="imgslider" class="yog-image-slider">
                     <div id="slider-container">' . $thumbnailsHtml . '</div>
                   </div>';
-                  
 
-        
         $html .= '</div>';
       }
+      
+      $html .= '</div>';
     }
 
     return $html;

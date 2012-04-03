@@ -133,7 +133,7 @@ class YogContactFormWidget extends WP_Widget
             echo '<input type="text" name="person[street]" id="person[street]" value="" />';
           echo '</p>';
           echo '<p>';
-            echo '<label for="personHousenumber">Huisnummer</label> / <label for="personZipcode">Postcode:</label><br />';
+            echo '<label for="personHousenumber" class="label-housenumber">Huisnummer</label><label for="personZipcode" class="label-zipcode"> / Postcode:</label><br />';
             echo '<input type="text" name="person[housenumber]" id="personHousenumber" value="" /><input type="text" name="person[zipcode]" id="personZipcode" value="" />';
           echo '</p>';
           echo '<p>';

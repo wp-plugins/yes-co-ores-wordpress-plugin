@@ -1,4 +1,5 @@
-var ScrollTimer;
+var YogScrollTimer;
+var YogImageSlider;
 
 jQuery(document).ready(function()
 {
@@ -9,57 +10,74 @@ jQuery(document).ready(function()
   {
     event.preventDefault();
     
-    var enableScrolling = (jQuery('#imgsliderholder').attr("class") == 'yog-scrolling-enabled');
-    var elem            = event.currentTarget;
-
+    var elem              = jQuery(event.currentTarget);
+    var imagesHolder      = elem.closest('.yog-images-holder');
+    var imageSliderHolder = jQuery('.yog-image-slider-holder', imagesHolder);
+    var enableScrolling   = imageSliderHolder.hasClass('yog-scrolling-enabled');
+    
     if (enableScrolling)
     {
-      var child   = jQuery(elem).children();
-      var imageId = child.attr('id');
-      var number  = imageId.replace('image', '');
+      var child       = elem.children();
+      var imageClass  = child.attr('class');
+      var imageSlider = jQuery('.yog-image-slider', imageSliderHolder);
       
-      if ((firstImage = document.getElementById('image0')) && (image = document.getElementById(imageId)) && (holder = document.getElementById('imgslider')))
+      var firstImage  = jQuery('.yog-image-0', imageSliderHolder);
+      var image       = jQuery('.' + imageClass, imageSliderHolder);
+      
+      if (firstImage.length > 0 && image.length > 0)
       {
-        var pos = (image.offsetLeft - firstImage.offsetLeft) - (holder.offsetWidth  / 2) + (image.offsetWidth / 2);
+        var pos = (image.offset().left - firstImage.offset().left) - (imageSlider.width()  / 2) + (image.width() / 2);
         if (pos < 0)
           pos = 0;
         
-        jQuery('#imgslider').animate({scrollLeft: pos}, 'slow');
+        imageSlider.animate({scrollLeft: pos}, 'slow');
       }
     }
 
-    jQuery('#bigImage').attr('src', elem.href);
+    jQuery('.yog-big-image', imagesHolder).attr('src', elem.attr('href'));
   });
   
   /**
   * Stop scrolling on mouse out
   */
-  jQuery('#imgsliderholder.yog-scrolling-enabled .yog-scroll').mouseout(function()
+  jQuery('.yog-image-slider-holder.yog-scrolling-enabled .yog-scroll').mouseout(function()
   {
-    clearInterval(ScrollTimer);
+    clearInterval(YogScrollTimer);
   });
   
   /**
   * Scroll left
   */
-  jQuery('#imgsliderholder.yog-scrolling-enabled .yog-scroll.left').mouseover(function()
+  jQuery('.yog-image-slider-holder.yog-scrolling-enabled .yog-scroll.left').mouseover(function(event)
   {
-    ScrollTimer = setInterval("document.getElementById('imgslider').scrollLeft -= 2", 15);
+    var elem          = jQuery(event.currentTarget);
+    var imagesHolder  = elem.closest('.yog-images-holder');
+    YogImageSlider    = jQuery('.yog-image-slider', imagesHolder);
+    
+    YogScrollTimer    = setInterval(function() {
+                        YogImageSlider.scrollLeft(YogImageSlider.scrollLeft() - 2);
+                      }, 15);
   });
   
   /**
   * Scroll right
   */
-  jQuery('#imgsliderholder.yog-scrolling-enabled .yog-scroll.right').mouseover(function()
+  jQuery('.yog-image-slider-holder.yog-scrolling-enabled .yog-scroll.right').mouseover(function()
   {
-    ScrollTimer = setInterval("document.getElementById('imgslider').scrollLeft += 2", 15);
+    var elem          = jQuery(event.currentTarget);
+    var imagesHolder  = elem.closest('.yog-images-holder');
+    YogImageSlider    = jQuery('.yog-image-slider', imagesHolder);
+    
+    YogScrollTimer    = setInterval(function() {
+                        YogImageSlider.scrollLeft(YogImageSlider.scrollLeft() + 2);
+                      }, 15);
   });
   
   // Adjust .left / .right height
-  var yogSliderHeight = jQuery('#imgsliderholder.yog-scrolling-enabled').height();
+  var yogSliderHeight = jQuery('.yog-image-slider-holder.yog-scrolling-enabled').height();
   if (yogSliderHeight)
   {
-    jQuery('#imgsliderholder .left').height(yogSliderHeight);
-    jQuery('#imgsliderholder .right').height(yogSliderHeight);
+    jQuery('.yog-image-slider-holder .left').height(yogSliderHeight);
+    jQuery('.yog-image-slider-holder .right').height(yogSliderHeight);
   }
 });

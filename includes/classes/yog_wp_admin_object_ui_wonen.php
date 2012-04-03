@@ -123,7 +123,7 @@
 	    echo '<tr>';
 	    echo '<th colspan="2"><b>Koop</b></th>';
 	    echo '</tr>';
-	    echo $this->retrieveInputs($post->ID, array('KoopPrijsSoort', 'KoopPrijs', 'KoopPrijsConditie'));
+	    echo $this->retrieveInputs($post->ID, array('KoopPrijsSoort', 'KoopPrijs', 'KoopPrijsConditie', 'KoopPrijsVervanging'));
 
 	    // Huur
 	    echo '<tr>';

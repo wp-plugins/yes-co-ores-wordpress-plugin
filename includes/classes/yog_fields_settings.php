@@ -125,6 +125,7 @@
                                             'search'  => 'range'),
         'huis_KoopPrijsConditie'  => array( 'title' => 'Prijs conditie',
                                             'width' => 100),
+        'huis_KoopPrijsVervanging'=> array( 'title'   => 'Prijs vervanging'),
         'huis_HuurPrijs'          => array( 'type'    => 'price',
                                             'title'   => 'Prijs',
                                             'width'   => 100,
