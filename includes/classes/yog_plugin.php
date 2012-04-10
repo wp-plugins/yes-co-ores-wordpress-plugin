@@ -202,8 +202,8 @@
     {
       parent::enqueueFiles();
       
-      wp_enqueue_script('yog-image-slider', YOG_PLUGIN_URL .'/inc/js/image_slider.js');
-      wp_enqueue_style('yog-photo-slider',  YOG_PLUGIN_URL . '/inc/css/photo_slider.css');
+      wp_enqueue_script('yog-image-slider', YOG_PLUGIN_URL .'/inc/js/image_slider.js', array(), YOG_PLUGIN_VERSION);
+      wp_enqueue_style('yog-photo-slider',  YOG_PLUGIN_URL . '/inc/css/photo_slider.css', array(), YOG_PLUGIN_VERSION);
     }
     
     /**
@@ -413,8 +413,8 @@
     {
       parent::enqueueFiles();
       
-      wp_enqueue_script('yog-admin-js',   YOG_PLUGIN_URL .'/inc/js/admin.js', array('jquery'));
-      wp_enqueue_style('yog-admin-css',   YOG_PLUGIN_URL . '/inc/css/admin.css');
+      wp_enqueue_script('yog-admin-js',   YOG_PLUGIN_URL .'/inc/js/admin.js', array('jquery'), YOG_PLUGIN_VERSION);
+      wp_enqueue_style('yog-admin-css',   YOG_PLUGIN_URL . '/inc/css/admin.css', array(), YOG_PLUGIN_VERSION);
     }
     
     /**

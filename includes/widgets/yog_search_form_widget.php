@@ -34,9 +34,9 @@ class YogSearchFormWonenWidget extends YogSearchFormWidgetAbstract
       wp_enqueue_script('jquery-ui-mouse', YOG_PLUGIN_URL .'/inc/js/jquery.ui.mouse.js', array('jquery', 'jquery-ui-core'));
       wp_enqueue_script('jquery-ui-slider', YOG_PLUGIN_URL .'/inc/js/jquery.ui.slider.js', array('jquery', 'jquery-ui-core', 'jquery-ui-widget', 'jquery-ui-mouse'));
     
-      wp_enqueue_script('yog-form-slider', YOG_PLUGIN_URL .'/inc/js/form-slider.js', array('jquery-ui-slider'));
-      wp_enqueue_script('yog-search-form-widget', YOG_PLUGIN_URL .'/inc/js/yog_search_form_widget.js', array('jquery'));
-      wp_enqueue_style('yog-form-slider', YOG_PLUGIN_URL . '/inc/css/search_form.css');
+      wp_enqueue_script('yog-form-slider', YOG_PLUGIN_URL .'/inc/js/form-slider.js', array('jquery-ui-slider'), YOG_PLUGIN_VERSION);
+      wp_enqueue_script('yog-search-form-widget', YOG_PLUGIN_URL .'/inc/js/yog_search_form_widget.js', array('jquery'), YOG_PLUGIN_VERSION);
+      wp_enqueue_style('yog-form-slider', YOG_PLUGIN_URL . '/inc/css/search_form.css', array(), YOG_PLUGIN_VERSION);
       
       // Do ajax search when needed
       add_action('get_header', array($this, 'retrieveNumberOfPosts'));

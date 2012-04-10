@@ -518,6 +518,7 @@
     $arguments = array('post_type'        => 'attachment',
                         'post_parent'     => $postId,
                         'post_mime_type'  => 'image',
+                        'numberposts'     => (is_null($limit) ? -1 : $limit),
                         'orderby'         => 'menu_order',
                         'order'           => 'ASC');
     
@@ -792,6 +793,8 @@
     
     $largeImageHeight   = get_option($largeImageSize . '_size_h');
     $largeImageWidth    = get_option($largeImageSize . '_size_w');
+    
+    $thumbnails       = yog_retrieveImages($thumbnailSize);
     
 
     $thumbs             = array();
