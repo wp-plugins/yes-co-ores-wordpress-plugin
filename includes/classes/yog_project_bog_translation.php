@@ -457,8 +457,8 @@
       return array(
         $field                    => $this->mcp3Project->getIntByPath($xpath),
         $field . 'Valuta'         => $this->mcp3Project->getStringByPath($xpath . '/@valuta'),
-        $field . 'BtwPercentage'  => $this->mcp3Project->getIntByPath($xpath . '/@btwPercentage'),
-        $field . 'BtwBelast'      => $this->mcp3Project->getBoolByPath($xpath . '/@btwBelast')
+        $field . 'BtwPercentage'  => ($this->mcp3Project->getBoolByPath($xpath . '/@btwBelast') ? $this->mcp3Project->getIntByPath($xpath . '/@btwPercentage') : ''),
+        $field . 'BtwBelast'      => $this->translateBool($this->mcp3Project->getBoolByPath($xpath . '/@btwBelast'))
       );
     }
   }

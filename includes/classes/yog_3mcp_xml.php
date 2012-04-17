@@ -105,7 +105,10 @@
       $nodes  = $this->xml->xpath($xpath);
 
       if ($nodes !== false && count($nodes) > 0)
-        return (bool) array_shift($nodes);
+      {
+        $value  = (string) array_shift($nodes);
+        return ($value == 'true');
+      }
 
       return false;
     }

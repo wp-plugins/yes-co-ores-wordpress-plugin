@@ -12,5 +12,5 @@
   define('POST_TYPE_BOG',           'bedrijf');
   define('POST_TYPE_RELATION',      'relatie');
   
-  define('YOG_PLUGIN_VERSION',      '1.1.3');
+  define('YOG_PLUGIN_VERSION',      '1.1.4');
 ?>

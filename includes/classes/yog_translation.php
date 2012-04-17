@@ -21,6 +21,17 @@
       return $date;
     }
     
+    /**
+    * @desc Translate bool to ja/nee
+    * 
+    * @param bool $bool
+    * @return string
+    */
+    protected function translateBool($bool)
+    {
+      return ($bool == true) ? 'ja' : 'nee';
+    }
+    
     abstract public function getPostType();
     abstract public function getPostData();
     abstract public function getMetaData();
