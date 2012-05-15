@@ -111,6 +111,10 @@ class YogRecentObjectsWidget extends WP_Widget
       $postTypes[]          = POST_TYPE_WONEN;
     if (!empty($new_instance['post_type_' . POST_TYPE_BOG]))
       $postTypes[]          = POST_TYPE_BOG;
+    if (!empty($new_instance['post_type_' . POST_TYPE_NBPR]))
+      $postTypes[]          = POST_TYPE_NBPR;
+    if (!empty($new_instance['post_type_' . POST_TYPE_NBTY]))
+      $postTypes[]          = POST_TYPE_NBTY;
     
     $instance               = $old_instance;
     $instance['title']      = empty($new_instance['title']) ? '' : $new_instance['title'];
@@ -135,7 +139,7 @@ class YogRecentObjectsWidget extends WP_Widget
     $imgSize            = empty($instance['img_size']) ? self::DEFAULT_IMG_SIZE : $instance['img_size'];
     $postTypes          = $this->determinePostTypes($instance);
     
-    $supportedPostTypes = array(POST_TYPE_WONEN => 'Wonen', POST_TYPE_BOG => 'BOG');
+    $supportedPostTypes = array(POST_TYPE_WONEN => 'Wonen', POST_TYPE_BOG => 'BOG', POST_TYPE_NBPR => 'Nieuwbouw projecten', POST_TYPE_NBTY => 'Nieuwbouw types');
     
     echo '<p>';
       echo '<label for="' . $this->get_field_id('title') . '">' . __('Titel') . ': </label>';

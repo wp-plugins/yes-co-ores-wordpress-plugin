@@ -44,6 +44,24 @@
         
         return new YogProjectBogTranslation($mcp3Project, $mcp3Link);
       }
+      else if ($mcp3Project instanceOf Yog3McpXmlProjectNBpr)
+      {
+        require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_project_nbpr_translation.php');
+        
+        return new YogProjectNBprTranslation($mcp3Project, $mcp3Link);
+      }
+      else if ($mcp3Project instanceOf Yog3McpXmlProjectNBty)
+      {
+        require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_project_nbty_translation.php');
+        
+        return new YogProjectNBtyTranslation($mcp3Project, $mcp3Link);
+      }
+      else if ($mcp3Project instanceOf Yog3McpXmlProjectNBbn)
+      {
+        require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_project_nbbn_translation.php');
+        
+        return new YogProjectNBbnTranslation($mcp3Project, $mcp3Link);
+      }
       else
       {
         throw new YogException(__METHOD__ . '; Unsupported 3mcp project', YogException::GLOBAL_ERROR);
@@ -70,6 +88,31 @@
 	    $data['post_type']          = $this->getPostType();
       
       return $data;
+    }
+    
+    /**
+    * @desc Check if a parent project uuid is set
+    * Can be overwritten by the extending translation class
+    * 
+    * @param void
+    * @return bool
+    */
+    public function hasParentUuid()
+    {
+      return false;
+    }
+    
+    /**
+    * @desc Get the parent uuid
+    * Can be overwritten by the extending translation class
+    * 
+    * @param void
+    * @return string
+    * @throws Exception
+    */
+    public function getParentUuid()
+    {
+      throw new YogException(__METHOD__ . '; No parent uuid', YogException::GLOBAL_ERROR); 
     }
     
     /**

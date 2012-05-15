@@ -1,3 +1,23 @@
+/* Post type icons */
+.icon32.icon32-posts-huis,
+.icon32.icon32-posts-bedrijf,
+.icon32.icon32-posts-yog-nbpr,
+.icon32.icon32-posts-yog-nbty,
+.icon32.icon32-posts-yog-nbbn,
+.icon32.icon32-posts-relatie,
+.icon32.icon32-config-yog {
+background: url('../../img/icon_yes-co_32.png') no-repeat transparent !important;
+}
+/* Disable show message link in saved message of NBbn */
+.yog-NBbn #message.updated a {
+display:none;
+}
+/* Remove NBty / NBbn links from admin menu */
+#toplevel_page_yog_posts_menu li:nth-child(4),
+#toplevel_page_yog_posts_menu li:nth-child(5) {
+display:none;
+}
+/* Media box */
 .media-box {
 border: 1px solid #ccc;
 margin: 10px 5px;
@@ -104,3 +124,22 @@ display:none;
 .loading-padding {
 padding-right:20px;
 }
+.no-image {
+display:inline-block;
+height:85px;
+min-width:100px;
+background-image:url('../../img/no_image.png');
+background-position:center center;
+background-repeat:no-repeat;
+}
+/* Custom styling of Child projects meta box */
+#yog-childprojects-meta {
+border:none;
+}
+  #yog-childprojects-meta .handlediv, #yog-childprojects-meta h3 {
+  display:none;
+  }
+  #yog-childprojects-meta .inside {
+  margin:0px;
+  padding:0px;
+  }

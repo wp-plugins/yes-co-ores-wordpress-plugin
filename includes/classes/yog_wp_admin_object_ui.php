@@ -1,7 +1,4 @@
 <?php
-  require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_wp_admin_object_ui_wonen.php');
-  require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_wp_admin_object_ui_bog.php');
-  require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_wp_admin_ui_relation.php');
   require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_fields_settings.php');
   
   /**
@@ -21,12 +18,27 @@
       switch ($postType)
       {
         case POST_TYPE_WONEN:
+          require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_wp_admin_object_ui_wonen.php');
           return new YogWpAdminObjectUiWonen();
           break;
         case POST_TYPE_BOG:
+          require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_wp_admin_object_ui_bog.php');
           return new YogWpAdminObjectUiBog();
           break;
+        case POST_TYPE_NBPR:
+          require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_wp_admin_object_ui_nbpr.php');
+          return new YogWpAdminObjectUiNbpr();
+          break;
+        case POST_TYPE_NBTY:
+          require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_wp_admin_object_ui_nbty.php');
+          return new YogWpAdminObjectUiNbty();
+          break;
+        case POST_TYPE_NBBN:
+          require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_wp_admin_object_ui_nbbn.php');
+          return new YogWpAdminObjectUiNbbn();
+          break;
         case POST_TYPE_RELATION:
+          require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_wp_admin_ui_relation.php');
           return new YogWpAdminUiRelation();
           break;
       }
@@ -46,7 +58,6 @@
 	    add_filter('manage_edit-' . $this->getPostType() . '_columns',  array($this, 'determineColumns'));
       add_action('init',                                              array($this, 'enqueueFiles'));
       
-      
       $this->addAjaxActions();
     }
     
@@ -59,6 +70,54 @@
     public function enqueueFiles()
     {
       wp_enqueue_script('yog-admin-object-js',     YOG_PLUGIN_URL .'/inc/js/admin_object.js', array('jquery'));
+    }
+    
+    /**
+    * @desc Determine content of a single column in overview
+    * 
+    * @param string $columnId
+    * @return void
+    */
+    public function generateColumnContent($columnId)
+    {
+      switch ($columnId)
+      {
+        case 'thumbnail':
+          $thumbnail = get_the_post_thumbnail(null, 'thumbnail');
+          if (!empty($thumbnail))
+            echo $thumbnail;
+          else
+            echo '<div class="no-image" style="width:' . get_option('thumbnail_size_w', 0) . 'px;"></div>';
+          
+          break;
+        case 'title':
+          echo yog_retrieveSpec('Naam');
+          break;
+        case 'description':
+          $content = get_the_excerpt();
+          if (strlen($content) > 150)
+            $content = substr($content, 0, 150) . '...';
+            
+          echo $content;
+          break;
+        case 'address':
+          $specs   = yog_retrieveSpecs(array('Straat', 'Huisnummer', 'Plaats', 'Postcode'));
+
+          echo $specs['Straat'] . ' ' . $specs['Huisnummer'] . '<br />';
+          echo $specs['Postcode'] . '&nbsp;&nbsp;' . $specs['Plaats'];
+          break;
+        case 'location':
+          $specs = yog_retrieveSpecs(array('Postcode', 'Plaats', 'Land'));
+          
+          echo implode('<br />', $specs);
+          break;
+        case 'dlm':
+          echo get_the_modified_date() . ' ' . get_the_modified_time();
+          break;
+        case 'scenario':
+          echo yog_retrieveSpec('scenario');
+          break;
+      }
     }
     
     /**
@@ -125,12 +184,12 @@
         
         if ($readOnly === true)
         {
-          $html .= '<input type="hidden" name="' . $field . '" value="' . $value . '" />';
+          $html .= '<input type="hidden" name="' . $field . '" id="' . str_replace($postType, 'yog', $field) . '" value="' . $value . '" />';
           $html .= '<b>' . $value . '</b>';
         }
         else if (!empty($settings['type']) && $settings['type'] == 'bool')
         {
-          $html .= '<input type="checkbox" name="' . $field . '" value="ja"' . ($value == 'ja' ? ' checked="checked"' : '') . ' />';
+          $html .= '<input type="checkbox" name="' . $field . '" value="ja"' . (($value == 'ja' || $value == 1) ? ' checked="checked"' : '') . ' />';
         }
         else if (!empty($settings['type']) && $settings['type'] == 'priceBtw')
         {
@@ -164,7 +223,6 @@
     
     abstract public function getPostType();
     abstract public function determineColumns($columns);
-    abstract public function generateColumnContent($column);
     abstract public function addMetaBoxes();
     abstract public function extendSave($postId, $post);
     
@@ -427,12 +485,153 @@
     }
     
     /**
-    * @desc Render linked relations meta box
+    * @desc Render parent meta box
     * 
-    * @param void
+    * @param StdClass $post
     * @return void
     */
-    public function renderRelationsMetaBox()
+    public function renderParentMetaBox($post)
+    {
+      $parentId = yog_getParentObjectId($post->ID);
+      if ($parentId !== false)
+      {
+        $parent   = get_post($parentId);
+        
+        $thumbnail = get_the_post_thumbnail($parent->ID, array(258,258));
+        if (empty($thumbnail))
+          $thumbnail = '<div class="no-image" style="width:100%;"></div>';
+        
+        echo $thumbnail;
+        echo '<strong><a href="' . get_edit_post_link($parent->ID) . '">' . $parent->post_title . '</a></strong>';
+      }
+    }
+    
+    /**
+    * @desc Render child projects meta box
+    * 
+    * @param StdClass $post
+    * @return void
+    */
+    public function renderChildProjectsMetaBox($post)
+    {
+      $childs = get_posts(array( 'numberposts'     => 0,
+                                'offset'          => 0,
+                                'orderby'         => 'title',
+                                'order'           => 'ASC',
+                                'post_parent'     => $post->ID,
+                                'post_type'       => array(POST_TYPE_NBTY, POST_TYPE_NBBN, POST_TYPE_WONEN),
+                                'post_status'     => array('publish', 'pending', 'trash', 'draft', 'auto-draft', 'future', 'private')));
+      
+      $thumbnailWidth   = get_option('thumbnail_size_w', 0);
+      $noImageHtml      = '<div class="no-image" style="width:' . $thumbnailWidth . 'px;"></div>';
+
+      echo '<table class="wp-list-table widefat fixed posts">';
+        echo '<thead>';
+          echo '<tr>';
+            echo '<th scope="col" style="width: ' . ($thumbnailWidth + 10) . 'px;"></th>';
+            echo '<th scope="col" class="manage-column column-title">Titel</th>';
+            echo '<th scope="col" class="manage-column column-title" style="width:65px;">Scenario</th>';
+            echo '<th scope="col" class="manage-column column-state" style="width:85px;">Status</th>';
+            echo '<th scope="col" class="manage-column column-dlm" style="width:150px;">Laatste wijziging</th>';
+          echo '</tr>';
+        echo '</thead>';
+        echo '<tbody>';
+        if (is_array($childs) && count($childs) > 0)
+        {
+          foreach ($childs as $child)
+          {
+            // Determine thumbnail
+            $thumbnail = get_the_post_thumbnail($child->ID, 'thumbnail');
+            if (empty($thumbnail))
+              $thumbnail = $noImageHtml;
+              
+            // Determine scenario
+            $scenario = yog_retrieveSpec('scenario', $child->ID);
+            
+            // Determine state
+            switch ($child->post_status)
+            {
+              case 'publish':
+                $state = __('Published');
+                break;
+              default:
+                $state = __(ucfirst($child->post_status));
+                break; 
+            }
+            
+            // Determine admin links
+            $links = array();
+            
+            if ($child->post_status != 'trash')
+            {
+              $links[] = '<a href="' . get_edit_post_link($child->ID) . '">' . __('Edit') . '</a>';
+            }
+            else
+            {
+              $links[] = '<a href="' . $this->getUntrashUrl($child) . '">' . __('Restore') . '</a>';
+              $links[] = '<a href="' . get_delete_post_link($child->ID, '', true) . '">' . __('Delete Permanently') . '</a>';
+            }
+            
+            if ($scenario != 'NBbn' && $child->post_status != 'trash')
+              $links[] = '<a href="' . get_permalink($child->ID) . '">' . __('View') . '</a>';
+              
+            // Determine title
+            $title = $child->post_title;
+            if ($child->post_status != 'trash')
+              $title = '<a href="' . get_edit_post_link($child->ID) . '">' . $title . '</a>';
+          
+            echo '<tr>';
+              echo '<td>' . $thumbnail . '</td>';
+              echo '<td>';
+                echo '<strong>' . $title . '</strong>';
+                echo '<div class="row-actions"><span>' . implode(' | </span><span>', $links) . '</span></div>';
+              echo '</td>';
+              echo '<td>' . $scenario . '</td>';
+              echo '<td>' . $state . '</td>';
+              echo '<td>' . get_the_modified_date() . ' ' . get_the_modified_time() . '</td>';
+            echo '</tr>';
+          }
+        }
+        else
+        {
+          echo ' <tr><td colspan="3">Geen gelinkte objecten gevonden</td></tr>'; 
+        }
+        echo '</tbody>';
+      echo '</table>';
+    }
+    
+    /**
+    * @desc Get the untrash url of a post
+    * 
+    * @param StdClass $post
+    * @return string
+    */
+    private function getUntrashUrl($post)
+    {
+      $post_type_object = get_post_type_object($post->post_type);
+      return wp_nonce_url(admin_url(sprintf($post_type_object->_edit_link . '&amp;action=untrash', $post->ID)), 'untrash-' . $post->post_type . '_' . $post->ID);
+    }
+    
+    /**
+    * @desc Render address meta box
+    * 
+    * @param StdClass $post
+    * @return void
+    */
+    public function renderAddressMetaBox($post)
+    {
+	    echo '<table class="form-table">';
+	    echo $this->retrieveInputs($post->ID, array('Straat', 'Huisnummer', 'Postcode', 'Wijk', 'Buurt', 'Plaats', 'Gemeente', 'Provincie', 'Land'));
+	    echo '</table>';
+    }
+    
+    /**
+    * @desc Render linked relations meta box
+    * 
+    * @param StdClass $post
+    * @return void
+    */
+    public function renderRelationsMetaBox($post)
     {
       $relations = yog_retrieveRelations();
       
@@ -451,6 +650,26 @@
       $html .= '</table>';
       
       echo $html;
+    }
+    
+    /**
+    * @desc Redirect to parent post
+    * 
+    * @param int $postId
+    * @return void
+    */
+    public function redirectToParent($postId)
+    {
+      $post         = get_post($postId);
+      $ancestorIds  = get_post_ancestors($post);
+      if (!empty($ancestorIds))
+      {
+        $parentId = array_shift($ancestorIds);
+        $link     = 'post.php?post=' . $parentId . '&action=edit';
+
+        wp_redirect($link);
+        exit;
+      }
     }
     
     /**

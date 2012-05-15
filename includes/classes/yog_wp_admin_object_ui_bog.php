@@ -37,47 +37,12 @@
     {
 	    return array(
 	      'cb'            => '<input type="checkbox" />',
+        'thumbnail'     => '',
 	      'title'         => 'Object',
 	      'description'   => 'Omschrijving',
 	      'address'       => 'Adres',
-        'dlm'           => 'Laatste wijziging',
-        'scenario'      => 'Scenario'
+        'dlm'           => 'Laatste wijziging'
 	    );
-    }
-    
-    /**
-    * @desc Determine content of a single column in overview
-    * 
-    * @param string $columnId
-    * @return void
-    */
-    public function generateColumnContent($columnId)
-    {
-      switch ($columnId)
-      {
-        case 'title':
-          echo yog_retrieveSpec('Naam');
-          break;
-        case 'description':
-          $content = get_the_excerpt();
-          if (strlen($content) > 100)
-            $content = substr($content, 0, 100) . '...';
-            
-          echo $content;
-          break;
-        case 'address':
-          $specs   = yog_retrieveSpecs(array('Straat', 'Huisnummer', 'Plaats', 'Postcode'));
-
-          echo $specs['Straat'] . ' ' . $specs['Huisnummer'] . '<br />';
-          echo $specs['Postcode'] . '&nbsp;&nbsp;' . $specs['Plaats'];
-          break;
-        case 'dlm':
-          echo get_the_modified_date() . ' ' . get_the_modified_time();
-          break;
-        case 'scenario':
-          echo yog_retrieveSpec('scenario');
-          break;
-      }
     }
     
     /**

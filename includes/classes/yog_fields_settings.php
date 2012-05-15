@@ -25,6 +25,15 @@
         case POST_TYPE_BOG:
           return new YogBogFieldsSettings();
           break;
+        case POST_TYPE_NBPR:
+          return new YogNBprFieldsSettings();
+          break;
+        case POST_TYPE_NBTY:
+          return new YogNBtyFieldsSettings();
+          break;
+        case POST_TYPE_NBBN:
+          return new YogNBbnFieldsSettings();
+          break;
         case POST_TYPE_RELATION:
           return new YogRelationFieldsSettings();
           break;
@@ -408,6 +417,220 @@
         'bedrijf_HorecaPrijsInventarisGoodwill'             => array( 'title'     => 'Prijs inventaris & goodwill',
                                                                       'type'      => 'priceBtw',
                                                                       'object'    => array('Horeca'))
+      );
+    }
+  }
+  
+  /**
+  * @desc YogNBprFieldsSettings
+  * @author Kees Brandenburg - Yes-co Nederland
+  */
+  class YogNBprFieldsSettings extends YogFieldsSettingsAbstract
+  {
+    public function __construct()
+    {
+      $this->fieldsSettings = array(
+        'yog-nbpr_Updated'                  => array( 'title' => 'Laatste update via sync'),
+        'yog-nbpr_uuid'                     => array( 'title' => 'UUID'),
+        'yog-nbpr_scenario'                 => array( 'title' => 'Scenario'),
+        'yog-nbpr_Naam'                     => array( 'title' => 'Titel van object',
+                                                      'width' => 450),
+        'yog-nbpr_Straat'                   => array(),
+        'yog-nbpr_Huisnummer'               => array( 'width' => 100),
+        'yog-nbpr_Postcode'                 => array( 'width' => 100),
+        'yog-nbpr_Wijk'                     => array(),
+        'yog-nbpr_Buurt'                    => array(),
+        'yog-nbpr_Plaats'                   => array( 'search' => 'exact'),
+        'yog-nbpr_Gemeente'                 => array(),
+        'yog-nbpr_Provincie'                => array(),
+        'yog-nbpr_Land'                     => array(),
+        'yog-nbpr_Longitude'                => array(),
+        'yog-nbpr_Latitude'                 => array(),
+        'yog-nbpr_KoopAanneemSomMin'        => array( 'title' => 'Min.',
+                                                      'type'  => 'price'),
+        'yog-nbpr_KoopAanneemSomMax'        => array( 'title' => 'Max.',
+                                                      'type'  => 'price'),
+        'yog-nbpr_HuurPrijsMin'             => array( 'title' => 'Min.',
+                                                      'type'  => 'price'),
+        'yog-nbpr_HuurPrijsMax'             => array( 'title' => 'Max.',
+                                                      'type'  => 'price'),
+        'yog-nbpr_HuurPrijsConditie'        => array( 'title' => 'Prijs conditie'),
+        'yog-nbpr_PerceelOppervlakteMinMax' => array( 'title' => 'Perceel oppervlakte',
+                                                      'type'  => 'oppervlakte'),
+        'yog-nbpr_PerceelOppervlakteMin'    => array( 'title' => 'Min.',
+                                                      'type'  => 'oppervlakte',
+                                                      'width' => 100),
+        'yog-nbpr_PerceelOppervlakteMax'    => array( 'title' => 'Max.',
+                                                      'type'  => 'oppervlakte',
+                                                      'width' => 100),
+        'yog-nbpr_WoonOppervlakteMinMax'    => array( 'title' => 'Woon oppervlakte',
+                                                      'type'  => 'oppervlakte'),
+        'yog-nbpr_WoonOppervlakteMin'       => array( 'title' => 'Min.',
+                                                      'type'  => 'oppervlakte',
+                                                      'width' => 100,
+                                                      'search'=> 'minmax-range'),
+        'yog-nbpr_WoonOppervlakteMax'       => array( 'title' => 'Max.',
+                                                      'type'  => 'oppervlakte',
+                                                      'width' => 100),
+        'yog-nbpr_InhoudMinMax'             => array( 'title' => 'Inhoud',
+                                                      'type'  => 'inhoud'),
+        'yog-nbpr_InhoudMin'                => array( 'title' => 'Min.',
+                                                      'type'  => 'inhoud',
+                                                      'width' => 100,
+                                                      'search'=> 'minmax-range'),
+        'yog-nbpr_InhoudMax'                => array( 'title' => 'Max.',
+                                                      'type'  => 'inhoud',
+                                                      'width' => 100),
+        'yog-nbpr_Fase'                     => array(),
+        'yog-nbpr_Status'                   => array(),
+        'yog-nbpr_ProjectSoort'             => array( 'title' => 'Project soort'),
+        'yog-nbpr_AantalEenheden'           => array( 'title' => 'Aantal eenheden'),
+        'yog-nbpr_StartBouw'                => array( 'title' => 'Start bouw'),
+        'yog-nbpr_DatumStartBouw'           => array( 'title' => 'Datum start bouw'),
+        'yog-nbpr_Oplevering'               => array(),
+        'yog-nbpr_DatumOplevering'          => array( 'title' => 'Datum oplevering')
+      );
+    }
+  }
+  
+  /**
+  * @desc YogNBtyFieldsSettings
+  * @author Kees Brandenburg - Yes-co Nederland
+  */
+  class YogNBtyFieldsSettings extends YogFieldsSettingsAbstract
+  {
+    public function __construct()
+    {
+      $this->fieldsSettings = array(
+        'yog-nbty_Updated'                => array( 'title' => 'Laatste update via sync'),
+        'yog-nbty_uuid'                   => array( 'title' => 'UUID'),
+        'yog-nbty_scenario'               => array( 'title' => 'Scenario'),
+        'yog-nbty_Naam'                   => array( 'title' => 'Titel van object',
+                                                    'width' => 450),
+        'yog-nbty_KoopPrijsMin'           => array( 'title' => 'Min.',
+                                                    'type'  => 'price'),
+        'yog-nbty_KoopPrijsMax'           => array( 'title' => 'Max.',
+                                                    'type'  => 'price'),
+        'yog-nbty_HuurPrijsMin'           => array( 'title' => 'Min.',
+                                                    'type'  => 'price'),
+        'yog-nbty_HuurPrijsMax'           => array( 'title' => 'Max.',
+                                                    'type'  => 'price'),
+        'yog-nbty_HuurPrijsConditie'        => array( 'title' => 'Prijs conditie'),
+        'yog-nbty_PerceelOppervlakteMinMax' => array( 'title' => 'Perceel oppervlakte',
+                                                      'type'  => 'oppervlakte'),
+        'yog-nbty_PerceelOppervlakteMin'    => array( 'title' => 'Min.',
+                                                      'type'  => 'oppervlakte',
+                                                      'width' => 100),
+        'yog-nbty_PerceelOppervlakteMax'    => array( 'title' => 'Max.',
+                                                      'type'  => 'oppervlakte',
+                                                      'width' => 100),
+        'yog-nbty_WoonOppervlakteMinMax'    => array( 'title' => 'Woon oppervlakte',
+                                                      'type'  => 'oppervlakte'),
+        'yog-nbty_WoonOppervlakteMin'       => array( 'title' => 'Min.',
+                                                      'type'  => 'oppervlakte',
+                                                      'width' => 100,
+                                                      'search'=> 'minmax-range'),
+        'yog-nbty_WoonOppervlakteMax'       => array( 'title' => 'Max.',
+                                                      'type'  => 'oppervlakte',
+                                                      'width' => 100),
+        'yog-nbty_InhoudMinMax'             => array( 'title' => 'Inhoud',
+                                                      'type'  => 'inhoud'),
+        'yog-nbty_InhoudMin'                => array( 'title' => 'Min.',
+                                                      'type'  => 'inhoud',
+                                                      'width' => 100,
+                                                      'search'=> 'minmax-range'),
+        'yog-nbty_InhoudMax'                => array( 'title' => 'Max.',
+                                                      'type'  => 'inhoud',
+                                                      'width' => 100),
+        'yog-nbty_Type'                     => array(),
+        'yog-nbty_SoortWoning'              => array( 'title' => 'Soort woning',
+                                                      'search'=> 'exact'),
+        'yog-nbty_TypeWoning'             => array( 'title' => 'Type woning',
+                                                    'search'=> 'exact'),
+        'yog-nbty_KenmerkWoning'          => array( 'title' => 'Kenmerk woning'),
+        'yog-nbty_PermanenteBewoning'     => array( 'title' => 'Permanente bewoning',
+                                                    'type'  => 'bool'),
+        'yog-nbty_Recreatiewoning'        => array( 'type'  => 'bool'),
+        'yog-nbty_Aantalkamers'           => array( 'title' => 'Aantal kamers'),
+        'yog-nbty_Verwarming'             => array(),
+        'yog-nbty_WarmWater'              => array( 'title' => 'Warm water'),
+        'yog-nbty_Dak'                    => array(),
+        'yog-nbty_DakMaterialen'          => array( 'title' => 'Dak materialen'),
+        'yog-nbty_Status'                 => array(),
+        'yog-nbty_AantalEenheden'         => array( 'title' => 'Aantal eenheden'),
+        'yog-nbty_AantalVrijeEenheden'    => array( 'title' => 'Aantal vrije eenheden'),
+        'yog-nbty_StartBouw'              => array( 'title' => 'Start bouw'),
+        'yog-nbty_DatumStartBouw'         => array( 'title' => 'Datum start bouw'),
+        'yog-nbty_Oplevering'             => array(),
+        'yog-nbty_DatumOplevering'        => array( 'title' => 'Datum oplevering'),
+        'yog-nbty_GarageType'             => array( 'title' => 'Garage'),
+        'yog-nbty_GarageCapaciteit'       => array( 'title' => 'Capaciteit garage'),
+        'yog-nbty_GarageVoorzieningen'    => array( 'title' => 'Voorzieningen garage'),
+        'yog-nbty_GarageIsolatievormen'   => array( 'title' => 'Isolatievormen garage'),
+        'yog-nbty_TuinType'               => array( 'title' => 'Tuin'),
+        'yog-nbty_TuinTotaleOppervlakte'  => array( 'title' => 'Totale oppervlakte tuin(en)'),
+        'yog-nbty_HoofdTuinType'          => array( 'title' => 'Hoofd tuin'),
+        'yog-nbty_HoofdTuinAchterom'      => array( 'title' => 'Achterom',
+                                                    'type'  => 'bool'),
+        'yog-nbty_HoofdTuinDiepte'        => array( 'title' => 'Diepte hoofd tuin',
+                                                    'type'  => 'cm'),
+        'yog-nbty_HoofdTuinBreedte'       => array( 'title' => 'Breedte hoofd tuin',
+                                                    'type'  => 'cm'),
+        'yog-nbty_HoofdTuinTotaleOppervlakte' => array('title' => 'Totale oppervlakte hoofd tuin',
+                                                    'type'  => 'oppervlakte'),
+        'yog-nbty_TuinLigging'            => array( 'title' => 'Ligging hoofd tuin'),
+        'yog-nbty_BergingType'            => array( 'title' => 'Type berging'),
+        'yog-nbty_BergingVoorzieningen'   => array( 'title' => 'Voorzieningen berging'),
+        'yog-nbty_BergingIsolatievormen'  => array( 'title' => 'Isolatievormen berging'),
+        'yog-nbty_CvKetel'                => array( 'title' => 'Type C.V.'),
+        'yog-nbty_CvKetelBouwjaar'        => array( 'title' => 'Bouwjaar C.V.'),
+        'yog-nbty_CvKetelBrandstof'       => array( 'title' => 'Brandstof C.V.'),
+        'yog-nbty_CvKetelEigendom'        => array( 'title' => 'Eigendom C.V.'),
+        'yog-nbty_CvCombiketel'           => array( 'title' => 'Combiketel',
+                                                    'type'  => 'bool'),
+        'yog-nbty_Plaats'                 => array( 'search'    => 'parent-exact',
+                                                    'parentKey' => 'yog-nbpr_Plaats')
+        
+      );
+    }
+  }
+  
+  /**
+  * @desc YogNBbnFieldsSettings
+  * @author Kees Brandenburg - Yes-co Nederland
+  */
+  class YogNBbnFieldsSettings extends YogFieldsSettingsAbstract
+  {
+    public function __construct()
+    {
+      $this->fieldsSettings = array(
+        'yog-nbbn_Updated'                => array( 'title' => 'Laatste update via sync'),
+        'yog-nbbn_uuid'                   => array( 'title' => 'UUID'),
+        'yog-nbbn_scenario'               => array( 'title' => 'Scenario'),
+        'yog-nbbn_Naam'                   => array( 'title' => 'Titel van object',
+                                                    'width' => 450),
+        'yog-nbbn_Straat'                 => array(),
+        'yog-nbbn_Huisnummer'             => array( 'width' => 100),
+        'yog-nbbn_Postcode'               => array( 'width' => 100),
+        'yog-nbbn_Wijk'                   => array(),
+        'yog-nbbn_Buurt'                  => array(),
+        'yog-nbbn_Plaats'                 => array( 'search' => 'exact'),
+        'yog-nbbn_Gemeente'               => array(),
+        'yog-nbbn_Provincie'              => array(),
+        'yog-nbbn_Land'                   => array(),
+        'yog-nbbn_AantalKamers'           => array( 'title' => 'Aantal kamers',
+                                                    'width' => 100),
+        'yog-nbbn_GrondPrijs'             => array( 'title' => 'Grond prijs',
+                                                    'type'  => 'price'),
+        'yog-nbbn_AanneemSom'             => array( 'title' => 'Aanneemsom',
+                                                    'type'  => 'price'),
+        'yog-nbbn_KoopAanneemSom'         => array( 'title' => 'Koop aanneemsom',
+                                                    'type'  => 'price'),
+        'yog-nbbn_WoonOppervlakte'        => array( 'title' => 'Woon oppervlakte',
+                                                    'type'  => 'oppervlakte'),
+        'yog-nbbn_Inhoud'                 => array( 'type'  => 'inhoud'),
+        'yog-nbbn_PerceelOppervlakte'     => array( 'title' => 'Perceel oppervlakte',
+                                                    'type'  => 'oppervlakte')
       );
     }
   }

@@ -36,7 +36,7 @@ class YogSearchFormBogWidget extends YogSearchFormWidgetAbstract
     
       wp_enqueue_script('yog-form-slider', YOG_PLUGIN_URL .'/inc/js/form-slider.js', array('jquery-ui-slider'), YOG_PLUGIN_VERSION);
       wp_enqueue_script('yog-search-form-widget', YOG_PLUGIN_URL .'/inc/js/yog_search_form_widget.js', array('jquery'), YOG_PLUGIN_VERSION);
-      wp_enqueue_style('yog-form-slider', YOG_PLUGIN_URL . '/inc/css/search_form.css', array(), YOG_PLUGIN_VERSION);
+      wp_enqueue_style('yog-widgets-css', YOG_PLUGIN_URL . '/inc/css/widgets.css', array(), YOG_PLUGIN_VERSION);
       
       // Do ajax search when needed
       add_action('get_header', array($this, 'retrieveNumberOfPosts'));
@@ -103,7 +103,7 @@ class YogSearchFormBogWidget extends YogSearchFormWidgetAbstract
     echo '<form method="get" class="yog-search-form-widget ' . self::CLASSNAME . '" id="yog-bog-search-form-widget" action="' . get_bloginfo('url') . '/">';
     echo '<div style="display:none;">';
       echo '<input type="hidden" name="s" value=" " />';
-      echo '<input type="hidden" name="object_type" value="' . POST_TYPE_BOG . '" />';
+      echo '<input type="hidden" name="object_type" value="' . $this->getPostType() . '" />';
     
     // Only use object specs of current category?
     if (is_category() && $useCurrentCat)

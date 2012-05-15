@@ -37,41 +37,12 @@
     {
 	    return array(
 	      'cb'            => '<input type="checkbox" />',
+        'thumbnail'     => '',
 	      'title'         => 'Object',
 	      'description'   => 'Omschrijving',
 	      'address'       => 'Adres',
-        'dlm'           => 'Laatste wijziging',
-	      'scenario'      => 'Scenario'
+        'dlm'           => 'Laatste wijziging'
 	    );
-    }
-    
-    /**
-    * @desc Determine content of a single column in overview
-    * 
-    * @param string $columnId
-    * @return void
-    */
-    public function generateColumnContent($columnId)
-    {
-      switch ($columnId)
-      {
-        case 'description':
-          $content = get_the_excerpt();
-          if (strlen($content) > 100)
-            $content = htmlentities(substr($content, 0, 100)) . '...';
-            
-          echo $content;
-          break;
-        case 'address':
-          echo yog_getAddress();
-          break;
-        case 'dlm':
-          echo get_the_modified_date() . ' ' . get_the_modified_time();
-          break;
-        case 'scenario':
-          echo yog_retrieveSpec('scenario');
-          break;
-      }
     }
     
     /**
@@ -89,6 +60,10 @@
 	    add_meta_box('yog-movies',        'Video',                array($this, 'renderMoviesMetaBox'),        POST_TYPE_WONEN, 'normal', 'low');
 	    add_meta_box('yog-documents',     'Documenten',           array($this, 'renderDocumentsMetaBox'),     POST_TYPE_WONEN, 'normal', 'low');
 	    add_meta_box('yog-links',         'Externe koppelingen',  array($this, 'renderLinksMetaBox'),         POST_TYPE_WONEN, 'normal', 'low');
+      
+      // Only show parent object container when there is a parent object
+      if (!empty($_REQUEST['post']) && yog_hasParentObject((int) $_REQUEST['post']))
+        add_meta_box('yog-parent-meta',   'Nieuwbouw type',       array($this, 'renderParentMetaBox') ,       $this->getPostType(), 'side', 'high');
       
       add_meta_box('yog-meta-sync',     'Synchronisatie',       array($this, 'renderSyncMetaBox') ,         POST_TYPE_WONEN, 'side', 'low'); 
       add_meta_box('yog-location',      'Locatie',              array($this, 'renderMapsMetaBox'),          POST_TYPE_WONEN, 'side', 'low');

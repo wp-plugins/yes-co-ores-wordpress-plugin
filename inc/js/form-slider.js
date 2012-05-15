@@ -41,10 +41,18 @@ jQuery(document).ready(function()
     jQuery('#' + yogFormSliderId + ' .yog-form-slider-max-label').html(parseInt(maxValue));
     
     // Determine steps
-    if ((settings.max - settings.min) > 10000)
-      var steps = 1000;
-    else
+    var difference = (settings.max - settings.min);
+    
+    if (difference <= 20)
+      var steps = 1;
+    else if (difference <= 50)
+      var steps = 5;
+    else if (difference <= 100)
+      var steps = 10;
+    else if (difference <= 10000)
       var steps = 100;
+    else
+      var steps = 1000;
     
     jQuery('#' + yogFormSliderId + ' .yog-form-slider').slider(
       { 'range': true,

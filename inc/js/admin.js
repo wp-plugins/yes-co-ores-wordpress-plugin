@@ -62,6 +62,15 @@ jQuery(document).ready( function($)
 		  });
   });
   
+  /**
+  * Make sure NBty / NBbn links are hidden for older browsers
+  */
+  var mainMenuItem  = jQuery('#toplevel_page_yog_posts_menu');
+  if (mainMenuItem.length > 0)
+  {
+    jQuery('li:nth-child(4)', mainMenuItem).hide();
+    jQuery('li:nth-child(5)', mainMenuItem).hide();
+  }
 });
 
 /**
@@ -79,4 +88,32 @@ function yogRemoveSystemLink(secret)
       jQuery('#yog-system-link-' + secret).fadeOut();
       jQuery('#yog-system-link-' + secret).remove();
 		});
+}
+
+/**
+* Activate NB admin menu
+*/
+var yogActivateNbAdminMenu = function ()
+{
+  var mainMenuItem  = jQuery('#toplevel_page_yog_posts_menu');
+  var wpBodyContent = jQuery('#wpbody-content');
+  
+  if (mainMenuItem.length > 0)
+  {
+    var nbMenuItem    = jQuery('li:nth-child(3)', mainMenuItem);
+    var nbMenuLink    = jQuery('li:nth-child(3) a', mainMenuItem);
+    
+    if (nbMenuItem.length > 0 && nbMenuLink.length > 0)
+    {
+      nbMenuItem.addClass('current');
+      nbMenuLink.addClass('current');
+    }
+  }
+  
+  if (wpBodyContent.length > 0)
+  {
+    var scenario = jQuery('#yog_scenario');
+    if (scenario.length > 0)
+      wpBodyContent.addClass('yog-' + scenario.attr('value'));
+  }
 }

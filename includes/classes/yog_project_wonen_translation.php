@@ -30,6 +30,32 @@
     }
     
     /**
+    * @desc Check if a parent uuid is set
+    * 
+    * @param void
+    * @return bool
+    */
+    public function hasParentUuid()
+    {
+      return ($this->mcp3Project->getScenario() == 'NBvk' && $this->mcp3Project->hasNBtyUuid());
+    }
+    
+    /**
+    * @desc Get the parent uuid
+    * 
+    * @param void
+    * @return string
+    * @throws Exception
+    */
+    public function getParentUuid()
+    {
+      if (!$this->hasParentUuid())
+        throw new Exception(__METHOD__ . '; Object does not have a parent object');
+      
+      return $this->mcp3Project->getNBtyUuid();
+    }
+    
+    /**
     * @desc Get the title
     * 
     * @param void

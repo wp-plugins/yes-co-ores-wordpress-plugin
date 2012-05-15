@@ -14,7 +14,7 @@
       
     $postType = get_post_type($postId);
     
-    return in_array($postType, array(POST_TYPE_WONEN, POST_TYPE_BOG));
+    return in_array($postType, array(POST_TYPE_WONEN, POST_TYPE_BOG, POST_TYPE_NBPR, POST_TYPE_NBTY, POST_TYPE_NBBN));
   }
   
   /**
@@ -48,54 +48,103 @@
     $postType       = get_post_type($postId);
     $values         = array();
     
-    if (!empty($postType) && in_array($postType, array(POST_TYPE_WONEN, POST_TYPE_BOG, POST_TYPE_RELATION)))
+    if (!empty($postType) && in_array($postType, array(POST_TYPE_WONEN, POST_TYPE_BOG, POST_TYPE_NBPR, POST_TYPE_NBTY, POST_TYPE_NBBN, POST_TYPE_RELATION)))
     {
       $fieldsSettings = YogFieldsSettingsAbstract::create($postType);
 
       foreach ($specs as $spec)
       {
         $postMetaName = $postType . '_' . $spec;
-
-        $value = get_post_meta($postId, $postMetaName, true);
-
-        if (!empty($value) && strlen(trim($value)) > 0)
+        
+        if (strpos($postMetaName, 'MinMax') !== false)
         {
-          // Transmorf value
-          if ($fieldsSettings->containsField($postMetaName))
-          {
-            $settings = $fieldsSettings->getField($postMetaName);
+          $minValue     = get_post_meta($postId, str_replace('Max', '', $postMetaName), true);
+          $maxValue     = get_post_meta($postId, str_replace('Min', '', $postMetaName), true);
+          $value        = '';
+
+          if (!empty($minValue))
+            $value .= number_format($minValue, 0, ',', '.');
+          if (!empty($maxValue))
+            $value .= ' t/m ' . number_format($maxValue, 0, ',', '.');
             
-            if (!empty($settings['type']))
+          if (!empty($value))
+          {
+            if ($fieldsSettings->containsField($postMetaName))
             {
-              switch ($settings['type'])
+              $settings = $fieldsSettings->getField($postMetaName);
+              
+              if (!empty($settings['type']))
               {
-                case 'oppervlakte':
-                  $value = number_format($value, 0, ',', '.') . ' m&sup2;';
-                  break;
-                case 'inhoud':
-                  $value = number_format($value, 0, ',', '.') . ' m&sup3;';
-                  break;
-                case 'cm':
-                  $value = number_format($value, 0, ',', '.') . ' cm';
-                  break;
-                case 'meter':
-                  $value = number_format($value, 0, ',', '.') . ' m';
-                  break;
-                case 'price':
-                case 'priceBtw':
-                  $value = '&euro; ' . number_format($value, 0, ',', '.') . ',-';
-                  break;
+                switch ($settings['type'])
+                {
+                  case 'oppervlakte':
+                    $value .= ' m&sup2;';
+                    break;
+                  case 'inhoud':
+                    $value .= ' m&sup3;';
+                    break;
+                  case 'cm':
+                    $value .= ' cm';
+                    break;
+                  case 'meter':
+                    $value  .- ' m';
+                    break;
+                }
               }
+              
+              if (!empty($settings['title']))
+                $spec = $settings['title'];
+            }
+                
+            $values[$spec] = $value;
+          }
+        }
+        else
+        {
+          $value = get_post_meta($postId, $postMetaName, true);
+
+          if (!empty($value) && strlen(trim($value)) > 0)
+          {
+            // Transform value
+            if ($fieldsSettings->containsField($postMetaName))
+            {
+              $settings = $fieldsSettings->getField($postMetaName);
+              
+              if (!empty($settings['type']))
+              {
+                switch ($settings['type'])
+                {
+                  case 'oppervlakte':
+                    $value = number_format($value, 0, ',', '.') . ' m&sup2;';
+                    break;
+                  case 'inhoud':
+                    $value = number_format($value, 0, ',', '.') . ' m&sup3;';
+                    break;
+                  case 'cm':
+                    $value = number_format($value, 0, ',', '.') . ' cm';
+                    break;
+                  case 'meter':
+                    $value = number_format($value, 0, ',', '.') . ' m';
+                    break;
+                  case 'price':
+                  case 'priceBtw':
+                    $value = '&euro; ' . number_format($value, 0, ',', '.') . ',-';
+                    break;
+                }
+              }
+              
+              if (!empty($settings['addition']))
+                $value .= $settings['addition'];
+
+              if (!empty($settings['title']))
+                $spec = $settings['title'];
             }
             
-            if (!empty($settings['addition']))
-              $value .= $settings['addition'];
+            if (!empty($maxAddition))
+              $value .= ' - ' . $maxAddition;
 
-            if (!empty($settings['title']))
-              $spec = $settings['title'];
+            $values[$spec] = $value;
           }
-
-          $values[$spec] = $value;
         }
       }
     }
@@ -130,10 +179,23 @@
   */
   function yog_retrievePrices($priceTypeClass = 'priceType', $priceConditionClass = 'priceCondition', $postId = null)
   {
-    $priceFields    = array('KoopPrijs', 'HuurPrijs');
     $values         = array();
     $postType       = get_post_type(is_null($postId) ? false : $postId);
-    $replace        = yog_retrieveSpec('KoopPrijsVervanging', $postId);
+    
+    switch ($postType)
+    {
+      case POST_TYPE_NBPR:
+        $priceMinMaxTypes = array('KoopAanneemSom' => 'Aanneemsom', 'HuurPrijs' => 'Huurprijs');
+        break;
+      case POST_TYPE_NBTY:
+        $priceMinMaxTypes = array('KoopPrijs' => 'Koopprijs', 'HuurPrijs' => 'Huurprijs');
+        break;
+      default:
+        $priceFields      = array('KoopPrijs', 'HuurPrijs');
+        $replace          = yog_retrieveSpec('KoopPrijsVervanging', $postId);
+        
+        break;
+    }
     
     if (!empty($replace))
     {
@@ -143,7 +205,34 @@
             
       $values[] = '<span class="' . $priceTypeClass . '">' . $priceType . ': </span> ' . $replace;
     }
-    else
+    else if (!empty($priceMinMaxTypes))
+    {
+      foreach ($priceMinMaxTypes as $priceType => $label)
+      {
+        $minField = $priceType . 'Min';
+        $maxField = $priceType . 'Max';
+        $min      = yog_retrieveSpec($minField, $postId);
+        $max      = yog_retrieveSpec($minField, $postId);
+        $value    = '';
+        
+        if (!empty($min) && !empty($max))
+          $value = $min . ' t/m ' . $max;
+        else if (!empty($min) && empty($max))
+          $value = 'vanaf ' . $min;
+        else if (!empty($max))
+          $value = 't/m ' . $max;
+          
+        if (!empty($value))
+        {
+          $priceCondition = yog_retrieveSpec($priceType . 'Conditie', $postId);
+          if (!empty($priceCondition))
+            $value .= ' <span class="' . $priceConditionClass . '">' . $priceCondition . '</span>';
+          
+          $values[] = '<span class="' . $priceTypeClass . '">' . $label . ': </span> ' . $value;
+        }
+      }
+    }
+    else if (!empty($priceFields))
     {
       foreach ($priceFields as $field)
       {
@@ -159,7 +248,7 @@
           if (empty($priceType))
             $priceType = 'Vraagprijs';
                     
-          $priceCondition = yog_retrieveSpec($field . 'Conditie');
+          $priceCondition = yog_retrieveSpec($field . 'Conditie', $postId);
           $value = '<span class="' . $priceTypeClass . '">' . $priceType . ': </span> ' . $price . (empty($priceCondition) ? '' : ' <span class="' . $priceConditionClass . '">' . $priceCondition . '</span>');
           
           if ($postType == POST_TYPE_BOG)
@@ -178,20 +267,165 @@
   }
   
   /**
-  * @desc Retrieve links for a post
+  * @desc Check if object has a parent object
   * 
   * @param $postId (optional, default: ID of current post)
   * @return array
   */
-  function yog_retrieveLinks($postId = null)
+  function yog_hasParentObject($postId = null)
+  {
+    $ancestorIds = get_post_ancestors($postId);
+    return (is_array($ancestorIds) && count($ancestorIds) > 0);
+  }
+  
+  /**
+  * @desc Get the parent object id
+  * 
+  * @param $postId (optional, default: ID of current post)
+  * @return mixed (integer parent object id or false)
+  */
+  function yog_getParentObjectId($postId = null)
+  {
+    $ancestorIds = get_post_ancestors($postId);
+
+    if (is_array($ancestorIds) && count($ancestorIds) > 0)
+    {
+      $parentId = array_shift($ancestorIds);
+      return (int) $parentId;
+    }
+    
+    return false;
+  }
+  
+  /**
+  * @desc Retrieve the parent object
+  * 
+  * @param $postId (optional, default: ID of current post)
+  * @return mixed (integer parent object or false)
+  */
+  function yog_retrieveParentObject($postId = null)
+  {
+    $parentId = yog_getParentObjectId($postId);
+    if ($parentId !== false)
+      return get_post($parentId);
+    
+    return false;
+  }
+  
+  /**
+  * @desc Check if object has children
+  * 
+  * @param $postId (optional, default: ID of current post)
+  * @return bool
+  */
+  function yog_hasChildObjects($postId = null)
   {
 	  if (is_null($postId))
 		  $postId = get_the_ID();
-      
-    $postType = get_post_type($postId);
     
-	  $links    = get_post_meta($postId, $postType . '_Links',true);
-	  return $links;
+    $childs = get_posts(array('numberposts'     => 1,
+                              'offset'          => 0,
+                              'post_parent'     => $postId,
+                              'post_type'       => array(POST_TYPE_NBTY, POST_TYPE_NBBN, POST_TYPE_WONEN),
+                              'post_status'     => array('publish')));
+    
+    return (is_array($childs) && count($childs) > 0);
+  }
+  
+  /**
+  * @desc Get the child objects
+  * 
+  * @param $postId (optional, default: ID of current post)
+  * @return array
+  */
+  function yog_retrieveChildObjects($postId = null)
+  {
+	  if (is_null($postId))
+		  $postId = get_the_ID();
+    
+    return get_posts(array( 'numberposts'     => 0,
+                            'offset'          => 0,
+                            'orderby'         => 'title',
+                            'order'           => 'ASC',
+                            'post_parent'     => $postId,
+                            'post_type'       => array(POST_TYPE_NBTY, POST_TYPE_NBBN, POST_TYPE_WONEN),
+                            'post_status'     => array('publish')));
+  }
+  
+  /**
+  * @desc Get the child NBbn objects
+  * 
+  * @param $postId (optional, default: ID of current post)
+  * @return array
+  */
+  function yog_retrieveChildNBbnObjects($postId = null)
+  {
+	  if (is_null($postId))
+		  $postId = get_the_ID();
+    
+    return get_posts(array( 'numberposts'     => 0,
+                            'offset'          => 0,
+                            'orderby'         => 'title',
+                            'order'           => 'ASC',
+                            'post_parent'     => $postId,
+                            'post_type'       => array(POST_TYPE_NBBN),
+                            'post_status'     => array('publish')));
+  }
+  
+  /**
+  * @desc Get HTML for a table with all NBbn objects
+  * 
+  * @param $postId (optional, default: ID of current post)
+  * @return string
+  */
+  function yog_retrieveNbbnTable($postId = null)
+  {
+    $childs = yog_retrieveChildNBbnObjects();
+    $html   = ''; 
+
+    if (is_array($childs) && count($childs) > 0)
+    {
+      $html .= '<table class="yog-nbbn-table sorttable">';
+        $html .= '<thead>';
+          $html .= '<tr>';
+            $html .= '<th class="yog-nbbn-bouwnr">Bouwnummer</th>';
+            $html .= '<th class="yog-nbbn-woonopp">Woon opp.</th>';
+            $html .= '<th class="yog-nbbn-perceelopp">Perceel opp.</th>';
+            $html .= '<th class="yog-nbbn-grondprijs">Grond prijs</th>';
+            $html .= '<th class="yog-nbbn-aanneemsom">Aanneemsom</th>';
+            $html .= '<th class="yog-nbbn-koopaanneemsom">Koop aanneemsom</th>';
+            $html .= '<th class="yog-nbbn-status">Status</th>';
+          $html .= '</tr>';
+        $html .= '<thead>';
+        $html .= '<tbody>';
+        
+        foreach ($childs as $child)
+        {
+          $specs  = yog_retrieveSpecs(array('Naam', 'WoonOppervlakte', 'PerceelOppervlakte', 'GrondPrijs', 'AanneemSom', 'KoopAanneemSom', 'Status'), $child->ID);
+          
+          $name   = '';
+          if (!empty($specs['Titel van object']) && strpos($specs['Titel van object'], '/') !== false)
+          {
+            $nameParts  = explode('/', $specs['Titel van object']);
+            $name       = array_pop($nameParts);
+          }
+          
+          $html .= '<tr>';
+            $html .= '<td class="yog-nbbn-bouwnr">' . $name . '</td>';
+            $html .= '<td class="yog-nbbn-woonopp">' . (empty($specs['Woon oppervlakte']) ? '' : $specs['Woon oppervlakte']) . '</td>';
+            $html .= '<td class="yog-nbbn-perceelopp">' . (empty($specs['Perceel oppervlakte']) ? '' : $specs['Perceel oppervlakte']) . '</td>';
+            $html .= '<td class="yog-nbbn-grondprijs">' . (empty($specs['Grond prijs']) ? '' : $specs['Grond prijs']) . '</td>';
+            $html .= '<td class="yog-nbbn-aanneemsom">' . (empty($specs['Aanneemsom']) ? '' : $specs['Aanneemsom']) . '</td>';
+            $html .= '<td class="yog-nbbn-koopaanneemsom">' . (empty($specs['Koop aanneemsom']) ? '' : $specs['Koop aanneemsom']) . '</td>';
+            $html .= '<td class="yog-nbbn-status">' . (empty($specs['Status']) ? '' : $specs['Status']) . '</td>';
+          $html .= '</tr>';
+        }
+        
+        $html .= '</tbody>';
+      $html .= '</table>';
+    }
+    
+    return $html;
   }
   
   /**
@@ -219,6 +453,23 @@
     }
     
     return $relationPosts;
+  }
+  
+  /**
+  * @desc Retrieve links for a post
+  * 
+  * @param $postId (optional, default: ID of current post)
+  * @return array
+  */
+  function yog_retrieveLinks($postId = null)
+  {
+	  if (is_null($postId))
+		  $postId = get_the_ID();
+      
+    $postType = get_post_type($postId);
+    
+	  $links    = get_post_meta($postId, $postType . '_Links',true);
+	  return $links;
   }
   
   /**
@@ -440,6 +691,34 @@
     }
     
     return $openHouse;
+  }
+  
+  /**
+  * @desc Retrieve HTML for the main image
+  * 
+  * @param string $size (thumbnail, medium, large)
+  * @param int $postId (optional)
+  * @return array
+  */
+  function yog_retrieveMainImage($size, $postId = null)
+  {
+    if (is_null($postId))
+      $postId = get_the_ID();
+    
+    $html = get_the_post_thumbnail($postId, $size);
+    
+    // Fallback when no post thumbnail is set
+    if (empty($html))
+    {
+      $images = yog_retrieveImages($size, 1);
+      if (!empty($images) && is_array($images) && count($images) > 0)
+      {
+        $image = $images[0];
+        $html = '<img width="' . $image[1] . '" height="' . $image[2] . '" src="' . $image[0] . '" class="attachment-thumbnail wp-post-image" alt=""  />';
+      }
+    }
+    
+    return $html;
   }
   
   /**
@@ -793,9 +1072,6 @@
     
     $largeImageHeight   = get_option($largeImageSize . '_size_h');
     $largeImageWidth    = get_option($largeImageSize . '_size_w');
-    
-    $thumbnails       = yog_retrieveImages($thumbnailSize);
-    
 
     $thumbs             = array();
     $html               = '';

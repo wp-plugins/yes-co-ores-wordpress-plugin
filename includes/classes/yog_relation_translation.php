@@ -85,15 +85,15 @@
     protected function getAddressMetaData(Yog3McpXmlAddress $address, $prefix)
     {
       return array(
-        $prefix . 'land'        => $address->getStringByPath('//relation:Country'),
-        $prefix . 'provincie'   => $address->getStringByPath('//relation:State'),
-        $prefix . 'gemeente'    => $address->getStringByPath('//relation:Municipality'),
-        $prefix . 'stad'        => $address->getStringByPath('//relation:City'),
-        $prefix . 'wijk'        => $address->getStringByPath('//relation:Area'),
-        $prefix . 'buurt'       => $address->getStringByPath('//relation:Neighbourhood'),
-        $prefix . 'straat'      => $address->getStringByPath('//relation:Street'),
-        $prefix . 'postcode'    => $address->getStringByPath('//relation:Zipcode'),
-        $prefix . 'huisnummer'  => $address->getStringByPath('//relation:Housenumber') . $address->getStringByPath('//relation:HousenumberAddition'),
+        $prefix . 'land'        => $address->getCountry(),
+        $prefix . 'provincie'   => $address->getState(),
+        $prefix . 'gemeente'    => $address->getMunicipality(),
+        $prefix . 'stad'        => $address->getCity(),
+        $prefix . 'wijk'        => $address->getArea(),
+        $prefix . 'buurt'       => $address->getNeighbourhood(),
+        $prefix . 'straat'      => $address->getStreet(),
+        $prefix . 'postcode'    => $address->getZipcode(),
+        $prefix . 'huisnummer'  => $address->getHouseNumber() . $address->getHouseNumberAddition()
       );
     }
   }

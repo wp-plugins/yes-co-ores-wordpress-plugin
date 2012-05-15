@@ -163,14 +163,14 @@
         'Aanmelding'                  => $this->mcp3Project->getStringByPath('//project:Details/project:Aanmelding'),
         'KoopPrijsConditie'           => $this->translatePriceCondition($this->mcp3Project->getStringByPath('//project:Details/project:Koop/project:PrijsConditie')),
         'KoopPrijsVervanging'         => $this->mcp3Project->getStringByPath('//project:Details/project:Koop/project:PrijsVervanging'),
-        'Bouwrente'                   => $this->mcp3Project->getBoolByPath('//project:Details/project:Koop/project:Bouwrente') ? 'ja' : 'nee',
+        'Bouwrente'                   => $this->translateBool($this->mcp3Project->getBoolByPath('//project:Details/project:Koop/project:Bouwrente')),
         'Veilingdatum'                => $this->mcp3Project->getStringByPath('//project:Details/project:Koop/project:Veiling/project:Datum'),
         'HuurPrijsConditie'           => $this->translatePriceCondition($this->mcp3Project->getStringByPath('//project:Details/project:Huur/project:PrijsConditie')),
         'HuurPrijsVervanging'         => $this->mcp3Project->getStringByPath('//project:Details/project:Huur/project:PrijsVervanging'),
         'Servicekosten'               => $this->mcp3Project->getIntByPath('//project:Details/project:Huur/project:Servicekosten'),
         'ServicekostenValuta'         => $this->mcp3Project->getStringByPath('//project:Details/project:Huur/project:Servicekosten/@valuta'),
         'ServicekostenBtwPercentage'  => $this->mcp3Project->getIntByPath('//project:Details/project:Huur/project:Servicekosten/@btwPercentage'),
-        'ServicekostenBtwBelast'      => $this->mcp3Project->getBoolByPath('//project:Details/project:Huur/project:Servicekosten/@btwBelast'),
+        'ServicekostenBtwBelast'      => $this->translateBool($this->mcp3Project->getBoolByPath('//project:Details/project:Huur/project:Servicekosten/@btwBelast')),
         'ServicekostenConditie'       => $this->translatePriceCondition($this->mcp3Project->getStringByPath('//project:Details/project:Huur/project:ServicekostenConditie')),
         'Erfpacht'                    => $this->mcp3Project->getIntByPath('//project:KadastraleInformatie/project:Eigendom/project:ErfpachtPerJaar'),
         'PerceelOppervlakte'          => $this->mcp3Project->getIntByPath('//project:KadastraleInformatie/project:PerceelOppervlakte'),
@@ -289,7 +289,7 @@
         'KantooruimteAantalVerdiepingen'  => $this->mcp3Project->getIntByPath('//project:Gebouw/project:Kantoorruimte/project:Verdiepingen/project:Aantal'),
         'KantooruimteVoorzieningen'       => $this->mcp3Project->getStringByPath('//project:Gebouw/project:Kantoorruimte/project:Voorzieningen/project:Voorziening/@naam'),
         'KantooruimteInUnitsVanaf'        => $this->mcp3Project->getIntByPath('//project:Gebouw/project:Kantoorruimte/project:InUnitsVanaf'),
-        'KantooruimteTurnKey'             => $this->mcp3Project->getBoolByPath('//project:Gebouw/project:Kantoorruimte/project:Turnkey') ? 'ja' : 'nee'
+        'KantooruimteTurnKey'             => $this->translateBool($this->mcp3Project->getBoolByPath('//project:Gebouw/project:Kantoorruimte/project:Turnkey'))
       );
       
       // Gebouw meta data
@@ -313,10 +313,10 @@
         'WinkelruimteFrontBreedte'                  => $this->mcp3Project->getIntByPath('//project:Gebouw/project:Winkelruimte/project:Frontbreedte'),
         'WinkelruimteAantalVerdiepingen'            => $this->mcp3Project->getIntByPath('//project:Gebouw/project:Winkelruimte/project:Verdiepingen/project:Aantal'),
         'WinkelruimteWelstandsklasse'               => $this->mcp3Project->getStringByPath('//project:Gebouw/project:Winkelruimte/project:Welstandsklasse'),
-        'WinkelruimteBrancheBeperking'              => $this->mcp3Project->getBoolByPath('//project:Gebouw/project:Winkelruimte/project:Branchebeperking') ? 'ja' : 'nee',
-        'WinkelruimteHorecaToegestaan'              => $this->mcp3Project->getBoolByPath('//project:Gebouw/project:Winkelruimte/project:HorecaToegestaan') ? 'ja' : 'nee',
-        'WinkelruimteBijdrageWinkeliersvereniging'  => $this->mcp3Project->getBoolByPath('//project:Gebouw/project:Winkelruimte/project:BijdrageWinkeliersvereniging') ? 'ja' : 'nee',
-        'WinkelruimtePersoneelTerOvername'          => $this->mcp3Project->getBoolByPath('//project:Gebouw/project:Winkelruimte/project:TerOvername/project:Personeel') ? 'ja' : 'nee'
+        'WinkelruimteBrancheBeperking'              => $this->translateBool($this->mcp3Project->getBoolByPath('//project:Gebouw/project:Winkelruimte/project:Branchebeperking')),
+        'WinkelruimteHorecaToegestaan'              => $this->translateBool($this->mcp3Project->getBoolByPath('//project:Gebouw/project:Winkelruimte/project:HorecaToegestaan')),
+        'WinkelruimteBijdrageWinkeliersvereniging'  => $this->translateBool($this->mcp3Project->getBoolByPath('//project:Gebouw/project:Winkelruimte/project:BijdrageWinkeliersvereniging')),
+        'WinkelruimtePersoneelTerOvername'          => $this->translateBool($this->mcp3Project->getBoolByPath('//project:Gebouw/project:Winkelruimte/project:TerOvername/project:Personeel'))
       );
       
       // Prices
@@ -341,9 +341,9 @@
         'HorecaOppervlakte'             => $this->mcp3Project->getIntByPath('//project:Gebouw/project:Horeca/project:Oppervlakte'),
         'HorecaVerkoopVloerOppervlakte' => $this->mcp3Project->getIntByPath('//project:Gebouw/project:Horeca/project:VerkoopVloerOppervlakte'),
         'HorecaWelstandsklasse'         => $this->mcp3Project->getStringByPath('//project:Gebouw/project:Horeca/project:Welstandsklasse'),
-        'HorecaConcentratieGebied'      => $this->mcp3Project->getBoolByPath('//project:Gebouw/project:Horeca/project:ConcentratieGebied') ? 'ja' : 'nee',
+        'HorecaConcentratieGebied'      => $this->translateBool($this->mcp3Project->getBoolByPath('//project:Gebouw/project:Horeca/project:ConcentratieGebied')),
         'HorecaRegio'                   => $this->mcp3Project->getStringByPath('//project:Gebouw/project:Horeca/project:Regio'),
-        'HorecaPersoneelTerOvername'    => $this->mcp3Project->getBoolByPath('//project:Gebouw/project:Horeca/project:TerOvername/project:Personeel') ? 'ja' : 'nee'
+        'HorecaPersoneelTerOvername'    => $this->translateBool($this->mcp3Project->getBoolByPath('//project:Gebouw/project:Horeca/project:TerOvername/project:Personeel'))
       );
       
       // Prices
@@ -368,7 +368,7 @@
     private function getGebouwMetaData()
     {
       $data = array(
-        'InAanbouw'                         => $this->mcp3Project->getBoolByPath('//project:Gebouw/project:Bouwjaar/project:InAanbouw') ? 'Y' : 'N',
+        'InAanbouw'                         => $this->translateBool($this->mcp3Project->getBoolByPath('//project:Gebouw/project:Bouwjaar/project:InAanbouw')),
         'OnderhoudBinnen'                   => $this->mcp3Project->getStringByPath('//project:Gebouw/project:Onderhoud/project:Binnen/project:Waardering'),
         'OnderhoudBinnenOmschrijving'       => $this->mcp3Project->getStringByPath('//project:Gebouw/project:Onderhoud/project:Binnen/project:Omschrijving'),
         'OnderhoudBuiten'                   => $this->mcp3Project->getStringByPath('//project:Gebouw/project:Onderhoud/project:Buiten/project:Waardering'),

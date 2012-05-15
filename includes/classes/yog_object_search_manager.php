@@ -64,7 +64,7 @@ class YogObjectSearchManager
   {
     if (is_search())
     {
-      if (!empty($_REQUEST['object_type']) && in_array($_REQUEST['object_type'], array(POST_TYPE_WONEN, POST_TYPE_BOG)))
+      if (!empty($_REQUEST['object_type']) && in_array($_REQUEST['object_type'], array(POST_TYPE_WONEN, POST_TYPE_BOG, POST_TYPE_NBPR, POST_TYPE_NBTY)))
         $where = $this->extendSearchWhereSearchWidget($where);
       else
         $where = $this->extendSearchWhereDefault($where);
@@ -94,7 +94,8 @@ class YogObjectSearchManager
       $searchTerm         = addslashes($wp->query_vars['s']);
       
 		$supportedMetaFields  = array('huis_Wijk','huis_Buurt','huis_Land','huis_Provincie','huis_Gemeente','huis_Plaats','huis_Straat','huis_Huisnummer','huis_Postcode','huis_SoortWoning','huis_TypeWoning','huis_KenmerkWoning',
-                                  'bedrijf_Wijk', 'bedrijf_Buurt', 'bedrijf_Land', 'bedrijf_Provincie', 'bedrijf_Gemeente', 'bedrijf_Plaats', 'bedrijf_Straat', 'bedrijf_Huisnummer', 'bedrijf_Postcode', 'bedrijf_Type');
+                                  'bedrijf_Wijk', 'bedrijf_Buurt', 'bedrijf_Land', 'bedrijf_Provincie', 'bedrijf_Gemeente', 'bedrijf_Plaats', 'bedrijf_Straat', 'bedrijf_Huisnummer', 'bedrijf_Postcode', 'bedrijf_Type',
+                                  'yog-nbpr_Wijk', 'yog-nbpr_Buurt', 'yog-nbpr_Land', 'yog-nbpr_Provincie', 'yog-nbpr_Gemeente', 'yog-nbpr_Plaats', 'yog-nbpr_Straat', 'yog-nbpr_Huisnummer', 'yog-nbpr_Postcode', 'yog-nbpr_ProjectSoort');
     
     $metaTbl              = $this->db->postmeta;
     $postTbl              = $this->db->posts;
@@ -114,7 +115,7 @@ class YogObjectSearchManager
     {
 			$where  = " AND (" . $postTbl . ".ID IN (" . implode(',', $postIds)  . ")";
 			$where .= " OR " . $postTbl . ".post_title LIKE '%" .$searchTerm ."%' OR " . $postTbl . ".post_content LIKE '%" .$searchTerm ."%'";
-			$where .= ") AND " . $postTbl . ".post_type IN ('post', 'page', 'attachment', '" . POST_TYPE_WONEN . "', '" . POST_TYPE_BOG . "', '" . POST_TYPE_RELATION . "') AND " . $postTbl . ".post_status = 'publish'";
+			$where .= ") AND " . $postTbl . ".post_type IN ('post', 'page', 'attachment', '" . POST_TYPE_WONEN . "', '" . POST_TYPE_BOG . "', '" . POST_TYPE_NBPR . "', '" . POST_TYPE_NBTY . "') AND " . $postTbl . ".post_status = 'publish'";
 		}
     
 		return $where;
@@ -156,6 +157,20 @@ class YogObjectSearchManager
               $query[] = "(" . $selectSql . ") IN ('" . implode("', '", $_REQUEST[$requestKey]) . "')";
             }
             break;
+          // Exact search on parent
+          case 'parent-exact':
+            if (!empty($options['parentKey']))
+            {
+              $metaKey    = $options['parentKey'];
+              $selectSql  = "SELECT " . $tbl . ".meta_value FROM " . $tbl . " WHERE " . $tbl . ".meta_key = '" . $metaKey . "' AND " . $tbl . ".post_id = " . $this->db->posts . ".post_parent";
+              
+              $sql  = $this->db->posts . '.post_parent IS NOT NULL AND ';
+              $sql .= $this->db->posts . '.post_parent > 0 AND ';
+              $sql .= "(" . $selectSql . ") IN ('" . implode("', '", $_REQUEST[$requestKey]) . "')";
+              
+              $query[] = '(' . $sql . ')';
+            }
+            break;
           // Range search
           case 'range':
             $min = empty($_REQUEST[$requestKey . '_min']) ? 0 : (int) $_REQUEST[$requestKey . '_min'];
@@ -168,6 +183,25 @@ class YogObjectSearchManager
             else if ($min == 0 && $max > 0)
               $query[] = "((" . $selectSql . ") <= " . $max . ")";
             break;
+          // Range search on Min / Max fields
+          case 'minmax-range':
+            $requestKey = str_replace(array('Min', 'Max'), '', $requestKey);
+            $min        = empty($_REQUEST[$requestKey . '_min']) ? 0 : (int) $_REQUEST[$requestKey . '_min'];
+            $max        = empty($_REQUEST[$requestKey . '_max']) ? 0 : (int) $_REQUEST[$requestKey . '_max'];
+            
+            $metaKey  = str_replace(array('Min', 'Max'), '', $metaKey);
+            $minField = $metaKey . 'Min';
+            $maxField = $metaKey . 'Max';
+            
+            $sqlMin   = "SELECT " . $tbl . ".meta_value FROM " . $tbl . " WHERE " . $tbl . ".meta_key = '" . $minField . "' AND " . $tbl . ".post_id = " . $this->db->posts . ".ID";
+            $sqlMax   = "SELECT " . $tbl . ".meta_value FROM " . $tbl . " WHERE " . $tbl . ".meta_key = '" . $maxField . "' AND " . $tbl . ".post_id = " . $this->db->posts . ".ID";
+            
+            if ($min > 0)
+              $query[] = "(" . $min . " BETWEEN (" . $sqlMin . ") AND (" . $sqlMax . "))";
+            if ($max > 0)
+              $query[] = "(" . $max . " BETWEEN (" . $sqlMin . ") AND (" . $sqlMax . "))";
+
+            break;
         }
       }
     }
@@ -177,143 +211,66 @@ class YogObjectSearchManager
     {
       $min      = empty($_REQUEST['Prijs_min']) ? 0 : (int) $_REQUEST['Prijs_min'];
       $max      = empty($_REQUEST['Prijs_max']) ? 0 : (int) $_REQUEST['Prijs_max'];
-      $koopSql  = "SELECT " . $tbl . ".meta_value FROM " . $tbl . " WHERE " . $tbl . ".meta_key = '" . $objectType . "_KoopPrijs' AND " . $tbl . ".post_id = " . $this->db->posts . ".ID";
-      $huurSql  = "SELECT " . $tbl . ".meta_value FROM " . $tbl . " WHERE " . $tbl . ".meta_key = '" . $objectType . "_HuurPrijs' AND " . $tbl . ".post_id = " . $this->db->posts . ".ID";
-      
-      if ($min > 0 && $max > 0)
-        $query[] = "(((" . $koopSql . ") BETWEEN " . $min . " AND " . $max . ") OR ((" . $huurSql . ") BETWEEN " . $min . " AND " . $max . "))";
-      else if ($min > 0 && $max == 0)
-        $query[] = "((" . $koopSql . ") >= " . $min . " OR (" . $huurSql . ") >= " . $min . ")";
-      else if ($min == 0 && $max > 0)
-        $query[] = "((" . $koopSql . ") <= " . $max . " OR (" . $huurSql . ") <= " . $max . ")";
+        
+      if (in_array($objectType, array(POST_TYPE_NBPR, POST_TYPE_NBTY)))
+      {
+        $koopMinField = ($objectType == POST_TYPE_NBTY) ? 'KoopPrijsMin' : 'KoopAanneemSomMin';
+        $koopMaxField = ($objectType == POST_TYPE_NBTY) ? 'KoopPrijsMax' : 'KoopAanneemSomMax';
+        $huurMinField = 'HuurPrijsMin';
+        $huurMaxField = 'HuurPrijsMax';
+        
+        $koopSqlMin   = "SELECT " . $tbl . ".meta_value FROM " . $tbl . " WHERE " . $tbl . ".meta_key = '" . $objectType . "_" . $koopMinField . "' AND " . $tbl . ".post_id = " . $this->db->posts . ".ID";
+        $koopSqlMax   = "SELECT " . $tbl . ".meta_value FROM " . $tbl . " WHERE " . $tbl . ".meta_key = '" . $objectType . "_" . $koopMaxField . "' AND " . $tbl . ".post_id = " . $this->db->posts . ".ID";
+        $huurSqlMin   = "SELECT " . $tbl . ".meta_value FROM " . $tbl . " WHERE " . $tbl . ".meta_key = '" . $objectType . "_" . $huurMinField . "' AND " . $tbl . ".post_id = " . $this->db->posts . ".ID";
+        $huurSqlMax   = "SELECT " . $tbl . ".meta_value FROM " . $tbl . " WHERE " . $tbl . ".meta_key = '" . $objectType . "_" . $huurMaxField . "' AND " . $tbl . ".post_id = " . $this->db->posts . ".ID";
+        
+        if ($min > 0 && $max > 0)
+        {
+          $sql  = '(';
+          $sql .= '((' . $koopSqlMin . ') BETWEEN ' . $min . ' AND ' . $max . ') OR ';
+          $sql .= '((' . $koopSqlMin . ') <= ' . $min . ' AND (' . $koopSqlMax . ') >= ' . $max . ')';
+          $sql .= ')';
+          $sql .= ' OR ';
+          $sql = '(';
+          $sql .= '((' . $huurSqlMin . ') BETWEEN ' . $min . ' AND ' . $max . ') OR ';
+          $sql .= '((' . $huurSqlMin . ') <= ' . $min . ' AND (' . $huurSqlMax . ') >= ' . $max . ')';
+          $sql .= ')';
+        }
+        else if ($min > 0)
+        {
+          $sql  = '(' . $min . ' BETWEEN (' . $koopSqlMin . ') AND (' . $koopSqlMax . '))';
+          $sql .= ' OR ';
+          $sql .= '(' . $min . ' BETWEEN (' . $huurSqlMin . ') AND (' . $huurSqlMax . '))';
+        }
+        else if ($max > 0)
+        {
+          $sql  = '(' . $max . ' BETWEEN (' . $koopSqlMin . ') AND (' . $koopSqlMax . '))';
+          $sql .= ' OR ';
+          $sql .= '(' . $max . ' BETWEEN (' . $huurSqlMin . ') AND (' . $huurSqlMax . '))';
+        }
+        
+        if (!empty($sql))
+          $query[] = '(' . $sql . ')';
+      }
+      else
+      {
+        $koopSql  = "SELECT " . $tbl . ".meta_value FROM " . $tbl . " WHERE " . $tbl . ".meta_key = '" . $objectType . "_KoopPrijs' AND " . $tbl . ".post_id = " . $this->db->posts . ".ID";
+        $huurSql  = "SELECT " . $tbl . ".meta_value FROM " . $tbl . " WHERE " . $tbl . ".meta_key = '" . $objectType . "_HuurPrijs' AND " . $tbl . ".post_id = " . $this->db->posts . ".ID";
+        
+        if ($min > 0 && $max > 0)
+          $query[] = "(((" . $koopSql . ") BETWEEN " . $min . " AND " . $max . ") OR ((" . $huurSql . ") BETWEEN " . $min . " AND " . $max . "))";
+        else if ($min > 0 && $max == 0)
+          $query[] = "((" . $koopSql . ") >= " . $min . " OR (" . $huurSql . ") >= " . $min . ")";
+        else if ($min == 0 && $max > 0)
+          $query[] = "((" . $koopSql . ") <= " . $max . " OR (" . $huurSql . ") <= " . $max . ")";
+      }
     }
-    
+
     // Update where query
     if (!empty($query))
       $where .= ' AND ' . implode(' AND ', $query);
     
     return $where;
-  }
-  
-  /**
-  * @desc Retrieve the lowest price
-  * 
-  * @param $params (optional, default array)
-  * @return int
-  */
-  public function retrieveMinPrijs($params = array(), $field = array())
-  {
-    return $this->retrieveMinMetaValue($field, $params);
-  }
-  
-  /**
-  * @desc Retrieve the Highest price
-  * 
-  * @param $params (optional, default array)
-  * @return int
-  */
-  public function retrieveMaxPrijs($params = array(), $fields = array())
-  {
-    return $this->retrieveMaxMetaValue($fields, $params);
-  }
-  
-  /**
-  * @desc Retrieve the lowest number of rooms
-  * 
-  * @param $params (optional, default array)
-  * @return int
-  */
-  public function retrieveMinKamers($params = array())
-  {
-    return $this->retrieveMinMetaValue('huis_Aantalkamers', $params);
-  }
-  
-  /**
-  * @desc Retrieve the highest number of rooms
-  * 
-  * @param $params (optional, default array)
-  * @return int
-  */
-  public function retrieveMaxKamers($params = array())
-  {
-    return $this->retrieveMaxMetaValue('huis_Aantalkamers', $params);
-  }
-  
-  /**
-  * @desc Retrieve the lowest 'Oppervlakte'
-  * 
-  * @param $params (optional, default array)
-  * @return int
-  */
-  public function retrieveMinOppervlakte($params = array())
-  {
-    return $this->retrieveMinMetaValue('huis_Oppervlakte', $params);
-  }
-  
-  /**
-  * @desc Retrieve the highest 'Oppervlakte'
-  * 
-  * @param $params (optional, default array)
-  * @return int
-  */
-  public function retrieveMaxOppervlakte($params = array())
-  {
-    return $this->retrieveMaxMetaValue('huis_Oppervlakte', $params);
-  }
-  
-  /**
-  * @desc Retrieve the lowest 'Inhoud'
-  * 
-  * @param $params (optional, default array)
-  * @return int
-  */
-  public function retrieveMinInhoud($params = array())
-  {
-    return $this->retrieveMinMetaValue('huis_Inhoud', $params);
-  }
-  
-  /**
-  * @desc Retrieve the highest 'Inhoud'
-  * 
-  * @param $params (optional, default array)
-  * @return int
-  */
-  public function retrieveMaxInhoud($params = array())
-  {
-    return $this->retrieveMaxMetaValue('huis_Inhoud', $params);
-  }
-  
-  /**
-  * @desc Retrieve all available 'Soort woning'
-  * 
-  * @param $params (optional, default array)
-  * @return array
-  */
-  public function retrieveSoortWoningList($params = array())
-  {
-    return $this->retrieveMetaList('huis_SoortWoning', $params);
-  }
-  
-  /**
-  * @desc Retrieve all available 'Type woning'
-  * 
-  * @param $params (optional, default array)
-  * @return array
-  */
-  public function retrieveTypeWoningList($params = array())
-  {
-    return $this->retrieveMetaList('huis_TypeWoning', $params);
-  }
-  
-  /**
-  * @desc Retrieve all available 'Plaats'
-  * 
-  * @param $params (optional, default array)
-  * @return array
-  */
-  public function retrievePlaatsList($params = array())
-  {
-    return $this->retrieveMetaList('huis_Plaats', $params);
   }
   
   /**

@@ -41,16 +41,32 @@ abstract class YogSearchFormWidgetAbstract extends WP_Widget
       else if (!empty($wp_query->post_count))
         $foundPosts = $wp_query->post_count;
         
+      switch ($_REQUEST['object_type'])
+      {
+        case POST_TYPE_NBPR:
+          $objectsText  = 'nieuwbouw projecten';
+          $objectText   = 'nieuwbouw project';
+          break;
+        case POST_TYPE_NBTY:
+          $objectsText  = 'nieuwbouw types';
+          $objectText   = 'nieuwbouw type';
+          break;
+        default:
+          $objectsText  = 'objecten die';
+          $objectText   = 'object die';
+          break; 
+      }
+        
       switch ($foundPosts)
       {
         case 0:
-          $msg = 'Er zijn geen objecten die voldoen aan deze criteria';
+          $msg = 'Er zijn geen ' . $objectsText . ' die voldoen aan deze criteria';
           break;
         case 1:
-          $msg = 'Er is ' . $foundPosts . ' object die voldoet aan deze criteria';
+          $msg = 'Er is ' . $foundPosts . ' ' . $objectText . ' wat voldoet aan deze criteria';
           break;
         default:
-          $msg = 'Er zijn ' . $foundPosts . ' objecten die voldoen aan deze criteria';
+          $msg = 'Er zijn ' . $foundPosts . ' ' . $objectsText . ' die voldoen aan deze criteria';
           break; 
       }
         
@@ -182,7 +198,7 @@ abstract class YogSearchFormWidgetAbstract extends WP_Widget
   protected function renderMultiSelect($fieldName, $values)
   {
     $html = '';
-    if (count($values) > 1)
+    if (count($values) > 0)
     {
       $selected = array();
       if (!empty($_REQUEST[$fieldName]))

@@ -62,7 +62,10 @@
     public function getProjectEntityLinks()
     {
       $nodes        = $this->xml->xpath("//atom:entry[atom:category/@term = 'project']");
-      $entityLinks  = array();
+      $entityLinks  = array('BBvk' => array(), 'BBvh' => array(), 'LIvk' => array(),
+                            'BOvk' => array(), 'BOvh' => array(),
+                            'NBpr' => array(), 'NBty' => array(), 'NBbn' => array(),
+                            'NBvk' => array());
       
       if ($nodes !== false && count($nodes) > 0)
       {
@@ -74,8 +77,8 @@
           $dlm      = (string) $node->updated;
           $scenario = (string) array_shift($node->xpath('mcp:projectScenario'));
           
-          if (in_array($scenario, array('BBvk', 'BBvh', 'NBvk', 'LIvk', 'BOvk', 'BOvh')))
-            $entityLinks[$uuid] = new Yog3McpProjectLink($uuid, $url, $doc, $dlm, $scenario);
+          if (in_array($scenario, array('BBvk', 'BBvh', 'NBvk', 'LIvk', 'BOvk', 'BOvh', 'NBpr', 'NBty', 'NBbn')))
+            $entityLinks[$scenario][$uuid] = new Yog3McpProjectLink($uuid, $url, $doc, $dlm, $scenario);
         }
       }
       

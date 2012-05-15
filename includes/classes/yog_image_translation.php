@@ -7,8 +7,6 @@
   */
   class YogImageTranslation extends YogTranslationAbstract
   {
-    const POST_TYPE = 'attachment';
-    
     protected $mcp3Image;
     protected $mcp3Link;
     
@@ -45,7 +43,7 @@
     */
     public function getPostType()
     {
-      return self::POST_TYPE; 
+      return POST_TYPE_ATTACHMENT; 
     }
     
     /**
@@ -89,7 +87,8 @@
     public function getMetaData()
     {
       return array(
-        'type'                  => $this->mcp3Image->getType()
+        'type'                  => $this->mcp3Image->getType(),
+        'dlm'                   => $this->translateDate($this->mcp3Link->getDlm())
       );
     }
   }
