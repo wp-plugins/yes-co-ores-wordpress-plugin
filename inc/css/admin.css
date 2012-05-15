@@ -14,7 +14,9 @@ display:none;
 }
 /* Remove NBty / NBbn links from admin menu */
 #toplevel_page_yog_posts_menu li:nth-child(4),
-#toplevel_page_yog_posts_menu li:nth-child(5) {
+#toplevel_page_yog_posts_menu li:nth-child(5),
+#menu-posts-yog-nbty,
+#menu-posts-yog-nbbn {
 display:none;
 }
 /* Media box */

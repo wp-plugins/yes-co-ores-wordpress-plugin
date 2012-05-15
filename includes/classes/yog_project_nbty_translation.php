@@ -102,7 +102,7 @@
         'HoofdTuinBreedte'            => $this->mcp3Project->getIntByPath('//project:Details/project:Woonruimte/project:Tuin/project:Breedte'),
         'HoofdTuinTotaleOppervlakte'  => $this->mcp3Project->getIntByPath('//project:Details/project:Woonruimte/project:Tuin/project:Oppervlakte'),
         'TuinLigging'                 => $this->mcp3Project->getStringByPath('//project:Details/project:Woonruimte/project:Tuin/project:Ligging'),
-        'Achterom'                    => $this->translateBool($this->mcp3Project->getBoolByPath('//project:Details/project:Woonruimte/project:Tuin/project:Achterom')),
+        'HoofdTuinAchterom'           => $this->translateBool($this->mcp3Project->getBoolByPath('//project:Details/project:Woonruimte/project:Tuin/project:Achterom')),
         'BergingType'                 => $this->mcp3Project->getStringByPath('//project:Details/project:Woonruimte/project:SchuurBerging/project:Soort'),
         'BergingVoorzieningen'        => $this->mcp3Project->getStringByPath('//project:Details/project:Woonruimte/project:SchuurBerging/project:Voorzieningen/project:Voorziening/@naam'),
         'BergingIsolatievormen'       => $this->mcp3Project->getStringByPath('//project:Details/project:Woonruimte/project:SchuurBerging/project:Isolatievormen/project:Isolatievorm/@naam'),
@@ -112,7 +112,9 @@
         'CvKetelBouwjaar'             => $this->mcp3Project->getStringByPath('//project:Details/project:Woonruimte/project:Installatie/project:CvKetel/project:Bouwjaar'),
         'CvKetelBrandstof'            => $this->mcp3Project->getStringByPath('//project:Details/project:Woonruimte/project:Installatie/project:CvKetel/project:GasOlie'),
         'CvKetelEigendom'             => $this->mcp3Project->getStringByPath('//project:Details/project:Woonruimte/project:Installatie/project:CvKetel/project:Eigendom'),
-        'CvCombiketel'                => $this->translateBool($this->mcp3Project->getBoolByPath('//project:Details/project:Woonruimte/project:Installatie/project:CvKetel/project:Combiketel'))
+        'CvCombiketel'                => $this->translateBool($this->mcp3Project->getBoolByPath('//project:Details/project:Woonruimte/project:Installatie/project:CvKetel/project:Combiketel')),
+        'Dak'                         => $this->mcp3Project->getStringByPath('//project:Details/project:Woonruimte/project:Diversen/project:Dak'),
+        'DakMaterialen'               => $this->mcp3Project->getStringByPath('//project:Details/project:Woonruimte/project:Diversen/project:DakMaterialen/project:DakMateriaal/@naam')
       );
       
       // Type
