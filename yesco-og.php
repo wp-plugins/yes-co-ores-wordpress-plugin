@@ -3,7 +3,7 @@
   Plugin Name: Yes-co ORES
   Plugin URI: http://yes-co.nl/wordpress-voor-makelaars/
   Description: Publiceert uw onroerend goed op uw Wordpress Blog
-  Version: 1.1.4
+  Version: 1.2
   Author: Yes-co
   Author URI: http://yes-co.nl
   License: GPL2
@@ -45,6 +45,8 @@
       case 'sync_yesco_og':
         require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_system_link_manager.php');
         require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_synchronization_manager.php');
+        
+        set_time_limit(180);
         
         $yogSystemLinkManager       = new YogSystemLinkManager();
         $yogSystemLink              = $yogSystemLinkManager->retrieveByRequest($_REQUEST);
