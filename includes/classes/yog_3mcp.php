@@ -443,13 +443,39 @@
     */
     static protected function retrieveContent($url)
     {
-	    // Forceer HTTP 1.0 IVM Authenticatie via url
-	    ini_set('user_agent','MSIE 4\.0b2;');
-      
       if (ini_get('allow_url_fopen'))
+      {
+	      // Forceer HTTP 1.0 IVM Authenticatie via url
+	      ini_set('user_agent','MSIE 4\.0b2;');
+      
         $content = file_get_contents($url);
+      }
+      else if (function_exists('curl_init'))
+      {
+        // Check for username / password
+        $pos = strrpos($url, '@');
+        if ($pos !== false)
+        {
+          $protocol = substr($url, 0, strpos($url, '://')) . '://';
+          $userPwd  = str_replace($protocol, '', substr($url, 0, $pos));
+          $url      = $protocol . substr($url, $pos + 1);
+        }
+        
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HEADER, false);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        if (!empty($userPwd))
+          curl_setopt($ch, CURLOPT_USERPWD, $userPwd);
+        
+        $content = curl_exec($ch);
+        
+        curl_close($ch);
+      }
       else
+      {
         $content = wp_remote_fopen($url);
+      }
       
 	    if ($content === false) 
         throw new YogException(__METHOD__ . '; Unable to open XML file (' . $url . ')', YogException::GLOBAL_ERROR);

@@ -212,7 +212,7 @@
         $minField = $priceType . 'Min';
         $maxField = $priceType . 'Max';
         $min      = yog_retrieveSpec($minField, $postId);
-        $max      = yog_retrieveSpec($minField, $postId);
+        $max      = yog_retrieveSpec($maxField, $postId);
         $value    = '';
         
         if (!empty($min) && !empty($max))

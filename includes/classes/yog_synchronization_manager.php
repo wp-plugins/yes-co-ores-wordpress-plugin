@@ -327,9 +327,36 @@
             
               // Retrieve image data
               if (ini_get('allow_url_fopen'))
+              {
                 $imageData = file_get_contents($imageLink->getUrl());
+              }
+              else if (function_exists('curl_init'))
+              {
+                // Check for username / password
+                $url = $imageLink->getUrl();
+                $pos = strrpos($url, '@');
+                if ($pos !== false)
+                {
+                  $protocol = substr($url, 0, strpos($url, '://')) . '://';
+                  $userPwd  = str_replace($protocol, '', substr($url, 0, $pos));
+                  $url      = $protocol . substr($url, $pos + 1);
+                }
+                
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, $url);
+                curl_setopt($ch, CURLOPT_HEADER, false);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                if (!empty($userPwd))
+                  curl_setopt($ch, CURLOPT_USERPWD, $userPwd);
+                
+                $imageData = curl_exec($ch);
+                
+                curl_close($ch);
+              }
               else
+              {
                 $imageData = wp_remote_fopen($imageLink->getUrl());
+              }
               
               if ($imageData !== false)
               {

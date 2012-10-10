@@ -729,13 +729,25 @@
       if (!extension_loaded('libxml'))
         $errors[] = 'De php librairy <b>libxml</b> is niet geinstalleerd. Neem contact op met je hosting provider om libxml te laten installeren';
         
+      // allow_url_fopen / CURL check
+      if (!ini_get('allow_url_fopen') && !function_exists('curl_init'))
+        $errors[] = 'De php setting <b>allow_url_fopen</b> staat uit en de php librairy <b>CURL</b> is niet geinstalleerd. Voor de synchronisatie is 1 van deze 2 noodzakelijk. Neem contact op met je hosting provider hierover.';
+        
       // Single huis template check
       if (!is_file(get_template_directory() .'/single-huis.php'))
-        $warnings[] = 'Het ingestelde thema heeft op dit moment geen \'single_huis.php\' template. Er zal een alternatieve methode gebruikt worden voor het tonen van de object details.';
+        $warnings[] = 'Het ingestelde thema heeft op dit moment geen \'single-huis.php\' template. Er zal een alternatieve methode gebruikt worden voor het tonen van de Wonen object details.';
         
       // Single bedrijf template check
       if (!is_file(get_template_directory() .'/single-bedrijf.php'))
-        $warnings[] = 'Het ingestelde thema heeft op dit moment geen \'single_bedrijf.php\' template. Er zal een alternatieve methode gebruikt worden voor het tonen van de object details.';
+        $warnings[] = 'Het ingestelde thema heeft op dit moment geen \'single-bedrijf.php\' template. Er zal een alternatieve methode gebruikt worden voor het tonen van de BOG object details.';
+        
+      // Single NBpr template check
+      if (!is_file(get_template_directory() .'/single-yog-nbpr.php'))
+        $warnings[] = 'Het ingestelde thema heeft op dit moment geen \'single-yog-nbpr.php\' template. Er zal een alternatieve methode gebruikt worden voor het tonen van de Nieuwbouw Project details.';
+        
+      // Single NBpr template check
+      if (!is_file(get_template_directory() .'/single-yog-nbty.php'))
+        $warnings[] = 'Het ingestelde thema heeft op dit moment geen \'single-yog-nbty.php\' template. Er zal een alternatieve methode gebruikt worden voor het tonen van de Nieuwbouw type details.';
         
       // Wordpress version
       global $wp_version;
