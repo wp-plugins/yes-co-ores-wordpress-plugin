@@ -65,6 +65,15 @@
         exit;
         
         break;
+      // Remote checks
+      case 'check':
+        require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_system_link_manager.php');
+        
+        $yogSystemLinkManager       = new YogSystemLinkManager();
+        $yogSystemLink              = $yogSystemLinkManager->retrieveByRequest($_REQUEST);
+        
+        exit;
+        break;
       // Initialize plugin
       default:
         require_once(YOG_PLUGIN_DIR . '/includes/yog_public_functions.php');

@@ -129,7 +129,7 @@ abstract class YogSearchFormWidgetAbstract extends WP_Widget
   {
     $html = '';
 
-    if (!empty($min) && !empty($max) && $min < $max)
+    if ($min >= 0 && $max > 0 && $min < $max)
     {
       if (!empty($_REQUEST[$fieldName . '_min']))
         $minValue = $_REQUEST[$fieldName . '_min'];

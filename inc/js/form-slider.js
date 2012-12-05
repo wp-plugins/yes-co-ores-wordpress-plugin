@@ -47,8 +47,10 @@ jQuery(document).ready(function()
       var steps = 1;
     else if (difference <= 50)
       var steps = 5;
-    else if (difference <= 100)
+    else if (difference <= 500)
       var steps = 10;
+    else if (difference <= 1000)
+      var steps = 25;
     else if (difference <= 10000)
       var steps = 100;
     else

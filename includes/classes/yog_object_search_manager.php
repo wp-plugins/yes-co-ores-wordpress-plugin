@@ -181,11 +181,12 @@ class YogObjectSearchManager
             else if ($min > 0 && $max == 0)
               $query[] = "((" . $selectSql . ") >= " . $min . ")";
             else if ($min == 0 && $max > 0)
-              $query[] = "((" . $selectSql . ") <= " . $max . ")";
+              $query[] = "((" . $selectSql . ") <= " . $max . " OR (" . $selectSql . ") IS NULL)";
             break;
           // Range search on Min / Max fields
           case 'minmax-range':
             $requestKey = str_replace(array('Min', 'Max'), '', $requestKey);
+            
             $min        = empty($_REQUEST[$requestKey . '_min']) ? 0 : (int) $_REQUEST[$requestKey . '_min'];
             $max        = empty($_REQUEST[$requestKey . '_max']) ? 0 : (int) $_REQUEST[$requestKey . '_max'];
             
@@ -262,7 +263,7 @@ class YogObjectSearchManager
         else if ($min > 0 && $max == 0)
           $query[] = "((" . $koopSql . ") >= " . $min . " OR (" . $huurSql . ") >= " . $min . ")";
         else if ($min == 0 && $max > 0)
-          $query[] = "((" . $koopSql . ") <= " . $max . " OR (" . $huurSql . ") <= " . $max . ")";
+          $query[] = "((" . $koopSql . ") <= " . $max . " OR (" . $huurSql . ") <= " . $max . " OR ((" . $koopSql . ") IS NULL AND (" . $huurSql . ") IS NULL))";
       }
     }
 
@@ -274,7 +275,7 @@ class YogObjectSearchManager
   }
   
   /**
-  * @desc Retrieve the lowest available value for a specific meta field
+  * @desc Retrieve the lowest available price for a specific meta field
   * 
   * @param mixed $metaKeys (string or array)
   * @param $params (optional, default array)
@@ -284,18 +285,38 @@ class YogObjectSearchManager
   {
     if (!is_array($metaKeys))
       $metaKeys = array($metaKeys);
+      
+    $postType = substr($metaKeys[0], 0, strpos($metaKeys[0], '_'));
     
     // Determine where parts
     $where    = array();
-    $where[]  = $this->db->postmeta . ".meta_key IN ('" . implode("', '", $metaKeys) . "')";
-    $where[]  = $this->db->postmeta . ".meta_value != ''";
-    $where    = array_merge($where, $this->determineGlobalMetaWhere($params));
+    $where[]  = $this->db->posts . ".post_type = '" . $postType . "'";
+    $where    = array_merge($where, $this->determineGlobalMetaWhere($params, false));
     
-    $sql  = "SELECT " . $this->db->postmeta . ".meta_value FROM " . $this->db->postmeta . " WHERE ";
-    $sql .= implode(' AND ', $where) . ' ';
-    $sql .= "ORDER BY CAST(meta_value AS UNSIGNED INTEGER) LIMIT 1";
+    $sql  = "SELECT DISTINCT (";
+      $sql .= "SELECT MIN(CAST(meta_value  AS UNSIGNED INTEGER)) FROM " . $this->db->postmeta . " WHERE ";
+        $sql .= "meta_key IN ('" . implode("', '", $metaKeys) . "') AND ";
+        $sql .= $this->db->postmeta . ".post_id = " . $this->db->posts . ".ID";
+      $sql .= ") AS value FROM " . $this->db->posts;
+    $sql .= " WHERE " . implode(' AND ', $where);
     
-    return (int) $this->db->get_var($sql);
+    $results  = $this->db->get_results($sql);
+
+    $min      = null;
+    foreach ($results as $result)
+    {
+      if (empty($result->value))
+      {
+        $min = 0;
+        break;
+      }
+      else if (is_null($min) || (int) $result->value < $min)
+      {
+        $min = (int) $result->value;
+      }
+    }
+    
+    return $min;
   }
   
   /**
@@ -357,16 +378,18 @@ class YogObjectSearchManager
   * @desc Determine global where for meta selection
   * 
   * @param array $params
+  * @param bool $relativeToMeta (optional, default true)
   * @return array
   */
-  private function determineGlobalMetaWhere($params)
+  private function determineGlobalMetaWhere($params, $relativeToMeta = true)
   {
-    $where = array();
+    $where        = array();
+    $postIdField  = $relativeToMeta ? $this->db->postmeta . '.post_id' : $this->db->posts . '.ID';
     
     // Category based
     if (!empty($params['cat']))
     {
-      $where[]  = $this->db->postmeta . ".post_id IN (SELECT " . $this->db->term_relationships . ".object_id FROM " . $this->db->term_relationships . " WHERE " . $this->db->term_relationships . ".term_taxonomy_id = " . (int) $params['cat'] . ")";
+      $where[]  = $postIdField . " IN (SELECT " . $this->db->term_relationships . ".object_id FROM " . $this->db->term_relationships . " WHERE " . $this->db->term_relationships . ".term_taxonomy_id = " . (int) $params['cat'] . ")";
     }
     
     return $where;

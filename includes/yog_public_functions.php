@@ -192,20 +192,10 @@
         break;
       default:
         $priceFields      = array('KoopPrijs', 'HuurPrijs');
-        $replace          = yog_retrieveSpec('KoopPrijsVervanging', $postId);
-        
         break;
     }
     
-    if (!empty($replace))
-    {
-      $priceType  = yog_retrieveSpec('KoopPrijsSoort', $postId);
-      if (empty($priceType))
-        $priceType = 'Vraagprijs';
-            
-      $values[] = '<span class="' . $priceTypeClass . '">' . $priceType . ': </span> ' . $replace;
-    }
-    else if (!empty($priceMinMaxTypes))
+    if (!empty($priceMinMaxTypes))
     {
       foreach ($priceMinMaxTypes as $priceType => $label)
       {
@@ -236,29 +226,34 @@
     {
       foreach ($priceFields as $field)
       {
-        $price          = yog_retrieveSpec($field, $postId);
+        $replace        = yog_retrieveSpec($field . 'Vervanging', $postId);
+        $priceType      = ($field == 'HuurPrijs') ? 'Huurprijs' : yog_retrieveSpec($field . 'Soort', $postId);
         
-        if (!empty($price))
+        if (empty($priceType))
+          $priceType = 'Vraagprijs';
+        
+        if (empty($replace))
         {
-          if ($field == 'HuurPrijs')
-            $priceType  = 'Huurprijs';
-          else
-            $priceType  = yog_retrieveSpec($field . 'Soort', $postId);
+          $price          = yog_retrieveSpec($field, $postId);
+          
+          if (!empty($price))
+          {     
+            $priceCondition = yog_retrieveSpec($field . 'Conditie', $postId);
+            $value = '<span class="' . $priceTypeClass . '">' . $priceType . ': </span> ' . $price . (empty($priceCondition) ? '' : ' <span class="' . $priceConditionClass . '">' . $priceCondition . '</span>');
             
-          if (empty($priceType))
-            $priceType = 'Vraagprijs';
-                    
-          $priceCondition = yog_retrieveSpec($field . 'Conditie', $postId);
-          $value = '<span class="' . $priceTypeClass . '">' . $priceType . ': </span> ' . $price . (empty($priceCondition) ? '' : ' <span class="' . $priceConditionClass . '">' . $priceCondition . '</span>');
-          
-          if ($postType == POST_TYPE_BOG)
-          {
-            $btw = yog_retrieveSpec($field . 'BtwPercentage', $postId);
-            if (!empty($btw))
-              $value .= ' <span class="priceBtw">(' . $btw . '% BTW)</span>';
+            if ($postType == POST_TYPE_BOG)
+            {
+              $btw = yog_retrieveSpec($field . 'BtwPercentage', $postId);
+              if (!empty($btw))
+                $value .= ' <span class="priceBtw">(' . $btw . '% BTW)</span>';
+            }
+            
+            $values[] = $value;
           }
-          
-          $values[] = $value;
+        }
+        else
+        {
+          $values[] = '<span class="' . $priceTypeClass . '">' . $priceType . ': </span> '  . $replace;
         }
       }
     }
