@@ -708,55 +708,11 @@
     public function renderSettingsPage()
     {
       require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_system_link_manager.php');
+      require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_checks.php');
       
-      /* Start checks */
-      $errors   = array();
-      $warnings = array();
-      
-      // Upload folder writable
-      $uploadDir = wp_upload_dir();
-
-      if (!empty($uploadDir['error']))
-        $errors[] = $uploadDir['error'];
-	    else if (!is_writeable($uploadDir['basedir']))
-        $errors[] = 'De upload map van uw WordPress installatie is beveiligd tegen schrijven. Dat betekent dat er geen afbeelingen van de objecten gesynchroniseerd kunnen worden. Stel onderstaande locatie zo in, dat deze beschreven kan worden door de webserver. <br /><i><b>' . $uploadDir['basedir'] .'</b></i>';
-      
-      // PHP version check
-      if (!version_compare(PHP_VERSION, '5.2.1', '>='))
-        $errors[] = 'PHP versie ' . PHP_VERSION . ' is gedetecteerd, de plugin vereist minimaal PHP versie 5.2.1. Neem contact op met je hosting provider om de PHP versie te laten upgraden';
-      
-      // Lib XML check
-      if (!extension_loaded('libxml'))
-        $errors[] = 'De php librairy <b>libxml</b> is niet geinstalleerd. Neem contact op met je hosting provider om libxml te laten installeren';
-        
-      // allow_url_fopen / CURL check
-      if (!ini_get('allow_url_fopen') && !function_exists('curl_init'))
-        $errors[] = 'De php setting <b>allow_url_fopen</b> staat uit en de php librairy <b>CURL</b> is niet geinstalleerd. Voor de synchronisatie is 1 van deze 2 noodzakelijk. Neem contact op met je hosting provider hierover.';
-        
-      // Single huis template check
-      if (!is_file(get_template_directory() .'/single-huis.php'))
-        $warnings[] = 'Het ingestelde thema heeft op dit moment geen \'single-huis.php\' template. Er zal een alternatieve methode gebruikt worden voor het tonen van de Wonen object details.';
-        
-      // Single bedrijf template check
-      if (!is_file(get_template_directory() .'/single-bedrijf.php'))
-        $warnings[] = 'Het ingestelde thema heeft op dit moment geen \'single-bedrijf.php\' template. Er zal een alternatieve methode gebruikt worden voor het tonen van de BOG object details.';
-        
-      // Single NBpr template check
-      if (!is_file(get_template_directory() .'/single-yog-nbpr.php'))
-        $warnings[] = 'Het ingestelde thema heeft op dit moment geen \'single-yog-nbpr.php\' template. Er zal een alternatieve methode gebruikt worden voor het tonen van de Nieuwbouw Project details.';
-        
-      // Single NBpr template check
-      if (!is_file(get_template_directory() .'/single-yog-nbty.php'))
-        $warnings[] = 'Het ingestelde thema heeft op dit moment geen \'single-yog-nbty.php\' template. Er zal een alternatieve methode gebruikt worden voor het tonen van de Nieuwbouw type details.';
-        
-      // Wordpress version
-      global $wp_version;
-      if ((float) $wp_version < 3.0)
-        $errors[] = 'Wordpress versie ' . $wp_version . ' is gedetecteerd, voor deze plugin is Wordpress versie 3.0 of hoger vereist. Upgrade wordpress naar een nieuwere versie';
-      else if ((float) $wp_version < 3.1)
-        $warnings[] = 'Wordpress versie ' . $wp_version . ' is gedetecteerd, voor deze plugin raden we minimaal Wordpress versie 3.1 aan.';
-      
-      /* End checks */
+      // Checks
+      $errors 	= YogChecks::checkForErrors();
+      $warnings = YogChecks::checkForWarnings();
       
       // Render html
 	    echo '<div class="wrap">';

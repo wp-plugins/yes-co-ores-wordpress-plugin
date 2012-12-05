@@ -8,6 +8,8 @@
   Author URI: http://yes-co.nl
   License: GPL2
   */
+error_reporting(E_ALL);
+ini_set('display_errors', true);
 	
 	// Determine plugin directory
 	if (!defined('YOG_PLUGIN_DIR'))
@@ -68,9 +70,16 @@
       // Remote checks
       case 'check':
         require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_system_link_manager.php');
+        require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_checks.php');
         
         $yogSystemLinkManager       = new YogSystemLinkManager();
         $yogSystemLink              = $yogSystemLinkManager->retrieveByRequest($_REQUEST);
+        
+        $response = array('settings' 	=> YogChecks::getSettings(),
+        									'errors'		=> YogChecks::checkForErrors(),
+        									'warnings'	=> YogChecks::checkForWarnings());
+        
+        echo json_encode($response);
         
         exit;
         break;
