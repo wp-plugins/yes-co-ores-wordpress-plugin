@@ -20,28 +20,48 @@
    */
   class SVZ_Solutions_Maps_Google_Maps_Map extends SVZ_Solutions_Maps_MapAbstract
   {
-    const MAP_MODES                               = 'static;dynamic';
-    const MAP_TYPES                               = 'roadmap;satellite;hybrid;terrain';
-    const MAP_TYPE_CONTROL_STYLES                 = 'default;horizontal_bar;dropdown_menu';
-    const MAP_NAVIGATION_CONTROL_STYLES           = 'default;android;small;zoom_pan';
-    const MAP_SCALE_CONTROL_STYLES                = 'default';
-    const MAP_CONTROL_POSITIONS                   = 'bottom;bottom_left;bottom_right;left;right;top;top_left;top_right';
+    const MODES                                       = 'static;dynamic';
+    const DEFAULT_MAP_TYPE                                                = 'hybrid';
+    const CONTROL_MAP_TYPE_TYPES                  = 'roadmap;satellite;hybrid;terrain';
+    const CONTROL_MAP_TYPE_STYLES            = 'default;horizontal_bar;dropdown_menu';
+    const CONTROL_SCALE_STYLES                        = 'default';
+    const CONTROL_ZOOM_STYLES                         = 'default;small;large';
+    const CONTROL_POSITIONS                           = 'bottom_left;left_bottom;bottom_center;bottom_right;right_bottom;left_center;top_left;left_top;top_center;top_right;right_top;right_center';
+
+    const CONTROL_DEFAULT_MAP_TYPE_ENABLED                = true;
+    const CONTROL_DEFAULT_MAP_TYPE_POSITION                = 'top_right';
+    const CONTROL_DEFAULT_MAP_TYPE_STYLE                    = 'default';
+    const CONTROL_DEFAULT_MAP_TYPE_TYPES                    = 'roadmap;satellite;hybrid;terrain';
+
+    const CONTROL_DEFAULT_PAN_ENABLED                            = true;
+    const CONTROL_DEFAULT_PAN_POSITION                        = 'top_left';
+
+    const CONTROL_DEFAULT_SCALE_ENABLED                        = false;
+    const CONTROL_DEFAULT_SCALE_POSITION                    = 'bottom_left';
+    const CONTROL_DEFAULT_SCALE_STYLE                            = 'default';
+
+    const CONTROL_DEFAULT_STREET_VIEW_ENABLED            = true;
+    const CONTROL_DEFAULT_STREET_VIEW_POSITION        = '';
+
+    const CONTROL_DEFAULT_ZOOM_ENABLED                        = true;
+    const CONTROL_DEFAULT_ZOOM_POSITION                        = 'top_left';
+    const CONTROL_DEFAULT_ZOOM_STYLE                            = 'default';
+
+    const AVAILABLE_ZOOM_LEVELS                                        = '0;1;2;3;4;5;6;7;8;9;10;11;12;13;14;15;16;17;18;19;20';
+
+    const CACHING_DEFAULT_ENABLED                                                = true;
+    const CACHING_DEFAULT_MINUTES_UNTIL_OUTDATED_CHECK     = 60;
+
+    private $controls                                                            = array();
+    private $caching                                                            = array();
 
     private $libraryConfig                        = array();
     private $loadDataOnce                         = false;
     private $markerType                           = array();
     private $dataLoadUrl                          = '';
-    private $mapType                              = 'hybrid';
-    private $mapTypeControlStyle                  = 'default';
-    private $mapTypeControlPosition               = 'top_right';
-    private $mapNavigationControlStyle            = 'default';
-    private $mapNavigationControlPosition         = 'left';
-    private $mapScaleControlStyle                 = 'default';
-    private $mapScaleControlPosition              = 'bottom_left';
+    private $mapType                              = '';
     private $markerManager                        = null;
     private $mode                                 = 'dynamic';
-    private $layers                               = array();
-    private $enableStreetViewControl              = false;
 
     /**
      * Constructor
@@ -55,6 +75,47 @@
       $this->mode               = $mode;
       $this->centerGeocode      = new SVZ_Solutions_Generic_Geocode(50.5, 5);
       $this->markerManager      = new SVZ_Solutions_Generic_Marker_Manager();
+
+      // Call the methods to set the defaults
+      $this->setControlMapType();
+      $this->setControlPan();
+      $this->setControlScale();
+      $this->setControlStreetView();
+      $this->setControlZoom();
+      $this->setMapType();
+      $this->setCaching();
+    }
+
+    /**
+     * Method getAvailableZoomLevels which returns the available zoom levels
+     *
+     * @param void
+     * @return array
+     */
+    public static function getAvailableZoomLevels()
+    {
+        return explode(';', self::AVAILABLE_ZOOM_LEVELS);
+    }
+
+    /**
+     * Method setCaching
+     *
+     * @param boolean $enabled
+     * @param integer $minutesUntilOutdatedCheck
+     * @return void
+     */
+    public function setCaching($enabled = self::CACHING_DEFAULT_ENABLED, $minutesUntilOutdatedCheck = self::CACHING_DEFAULT_MINUTES_UNTIL_OUTDATED_CHECK)
+    {
+        if (!is_bool($enabled))
+            throw new Exception(__METHOD__ . '; Invalid $enabled, not a bool.');
+
+        if (!is_int($minutesUntilOutdatedCheck))
+            throw new Exception(__METHOD__ . '; Invalid $minutesUntilOutdatedCheck, not a integer.');
+
+        $this->caching = array(
+            'enabled'                                        => $enabled,
+            'minutesUntilOutdatedCheck' => $minutesUntilOutdatedCheck
+        );
     }
 
     /**
@@ -105,15 +166,154 @@
      * @param string $mapType
      * @return void
      */
-    public function setMapType($mapType)
+    public function setMapType($mapType = self::DEFAULT_MAP_TYPE)
     {
-      if (!is_string($mapType))
-        throw new Exception(__METHOD__ . '; Invalid $mapType, not a string.');
-
-      if (!in_array($mapType, explode(';', self::MAP_TYPES)))
-        throw new Exception(__METHOD__ . '; Invalid $mapType, not one of ' . implode(' / ', explode(';', self::MAP_TYPES)) . '.');
+        $this->isValidOption($mapType, self::CONTROL_MAP_TYPE_TYPES);
 
       $this->mapType = $mapType;
+    }
+
+    /**
+     * Method isValidOption which checks if the option provided is valid
+     *
+     * @param string $value
+     * @param string $optionString
+     * @throw Exceptions
+     * @return boolean
+     */
+    private function isValidOption($value, $optionString)
+    {
+        if (!is_string($value))
+        throw new Exception(__METHOD__ . '; Invalid $value, not a string.');
+
+      if (!is_string($optionString))
+        throw new Exception(__METHOD__ . '; Invalid $optionString, not a string.');
+
+        $options = explode(';', $optionString);
+
+        if (!in_array($value, $options))
+            throw new Exception(__METHOD__ . '; Invalid $value, provided [' . (string)$value . '] is not one of ' . implode(' / ', $options) . '.');
+
+        return true;
+    }
+
+    /**
+     * Method setControlMapType which will configure the map type control
+     *
+     * @param boolean $enabled
+     * @param string $position
+     * @param string $style
+     * @param array $types
+     */
+    public function setControlMapType($enabled = self::CONTROL_DEFAULT_MAP_TYPE_ENABLED, $position = self::CONTROL_DEFAULT_MAP_TYPE_POSITION, $style = self::CONTROL_DEFAULT_MAP_TYPE_STYLE, $types = null)
+    {
+        if ($types == null)
+            $types = explode(';', self::CONTROL_DEFAULT_MAP_TYPE_TYPES);
+
+      if (!is_array($types))
+        throw new Exception(__METHOD__ . '; Invalid $types, not an array.');
+
+      foreach ($types as $type)
+      {
+          $this->isValidOption($type, self::CONTROL_MAP_TYPE_TYPES);
+      }
+
+      $this->isValidOption($position, self::CONTROL_POSITIONS);
+      $this->isValidOption($style, self::CONTROL_MAP_TYPE_STYLES);
+
+      if (!isset($this->controls['mapType']))
+          $this->controls['mapType'] = array();
+
+      $this->controls['mapType'] = array(
+          'enabled'     => $enabled,
+          'position'     => $position,
+          'style'         => $style,
+          'types'         => $types
+      );
+    }
+
+      /**
+     * Method setControlPan which will configure the pan control
+     *
+     * @param boolean $enabled
+     * @param string $position
+     */
+    public function setControlPan($enabled = self::CONTROL_DEFAULT_PAN_ENABLED, $position = self::CONTROL_DEFAULT_PAN_POSITION)
+    {
+        $this->isValidOption($position, self::CONTROL_POSITIONS);
+
+      if (!isset($this->controls['pan']))
+          $this->controls['pan'] = array();
+
+      $this->controls['pan'] = array(
+          'enabled'     => $enabled,
+          'position'     => $position
+      );
+    }
+
+       /**
+     * Method setControlScale which will configure the scale control
+     *
+     * @param boolean $enabled
+     * @param string $position
+     * @param string $style
+     */
+    public function setControlScale($enabled = self::CONTROL_DEFAULT_SCALE_ENABLED, $position = self::CONTROL_DEFAULT_SCALE_POSITION, $style = self::CONTROL_DEFAULT_SCALE_STYLE)
+    {
+        $this->isValidOption($position, self::CONTROL_POSITIONS);
+        $this->isValidOption($style, self::CONTROL_SCALE_STYLES);
+
+      if (!isset($this->controls['scale']))
+          $this->controls['scale'] = array();
+
+      $this->controls['scale'] = array(
+          'enabled'     => $enabled,
+          'position'     => $position,
+          'style'         => $style
+      );
+    }
+
+      /**
+     * Method setControlStreetView which will configure the streetview control
+     *
+     * @param boolean $enabled
+     * @param string $position
+     */
+    public function setControlStreetView($enabled = self::CONTROL_DEFAULT_STREET_VIEW_ENABLED, $position = self::CONTROL_DEFAULT_STREET_VIEW_POSITION)
+    {
+        // Streetview default is an empty string
+        if ($position !== '')
+            $this->isValidOption($position, self::CONTROL_POSITIONS);
+
+      if (!isset($this->controls['streetView']))
+          $this->controls['streetView'] = array();
+
+      $this->controls['streetView'] = array(
+          'enabled'     => $enabled,
+          'position'     => $position
+      );
+    }
+
+   /**
+     * Method setControlZoom which will configure the zoom control
+     *
+     * @param boolean $enabled
+     * @param string $position
+     * @param string $style
+     */
+    public function setControlZoom($enabled = self::CONTROL_DEFAULT_ZOOM_ENABLED, $position = self::CONTROL_DEFAULT_ZOOM_POSITION, $style = self::CONTROL_DEFAULT_ZOOM_STYLE)
+    {
+        $this->isValidOption($position, self::CONTROL_POSITIONS);
+        $this->isValidOption($style, self::CONTROL_ZOOM_STYLES);
+
+      if (!isset($this->controls['zoom']))
+          $this->controls['zoom'] = array();
+
+      $this->controls['zoom'] = array(
+          'enabled'     => $enabled,
+          'position'     => $position,
+          'style'         => $style
+      );
     }
 
     /**
@@ -122,26 +322,9 @@
      * @param void
      * @return array
      */
-    public function getMapTypes()
+    public function getTypes()
     {
-      return explode(';', self::MAP_TYPES);
-    }
-
-    /**
-     * Method thats sets the style for the map type control
-     *
-     * @param string $mapTypeControlStyle
-     * @return void
-     */
-    public function setMapTypeControlStyle($mapTypeControlStyle)
-    {
-      if (!is_string($mapTypeControlStyle))
-        throw new Exception(__METHOD__ . '; Invalid $mapTypeControlStyle, not a string.');
-
-      if (!in_array($mapTypeControlStyle, $this->getMapTypeControlStyles()))
-        throw new Exception(__METHOD__ . '; Invalid $mapTypeControlStyle, not one of ' . implode(' / ', explode(';', self::MAP_TYPE_CONTROL_STYLES)) . '.');
-
-      $this->mapTypeControlStyle = $mapTypeControlStyle;
+      return explode(';', self::CONTROL_MAP_TYPE_TYPES);
     }
 
     /**
@@ -150,26 +333,9 @@
      * @param void
      * @return array
      */
-    public function getMapTypeControlStyles()
+    public function getControlTypeStyles()
     {
-      return explode(';', self::MAP_TYPE_CONTROL_STYLES);
-    }
-
-    /**
-     * Method thats sets the style for the map navigation control
-     *
-     * @param string $mapTypeControlStyle
-     * @return void
-     */
-    public function setMapNavigationControlStyle($mapNavigationControlStyle)
-    {
-      if (!is_string($mapNavigationControlStyle))
-        throw new Exception(__METHOD__ . '; Invalid $mapNavigationControlStyle, not a string.');
-
-      if (!in_array($mapNavigationControlStyle, $this->getMapNavigationControlStyles()))
-        throw new Exception(__METHOD__ . '; Invalid $mapNavigationControlStyle, not one of ' . implode(' / ', explode(';', self::MAP_NAVIGATION_CONTROL_STYLES)) . '.');
-
-      $this->mapNavigationControlStyle = $mapNavigationControlStyle;
+      return explode(';', self::CONTROL_MAP_TYPE_STYLES);
     }
 
     /**
@@ -178,26 +344,9 @@
      * @param void
      * @return array
      */
-    public function getMapNavigationControlStyles()
+    public function getControlZoomStyles()
     {
-      return explode(';', self::MAP_NAVIGATION_CONTROL_STYLES);
-    }
-
-    /**
-     * Method thats sets the style for the map scale control
-     *
-     * @param string $mapScaleControlStyle
-     * @return void
-     */
-    public function setMapScaleControlStyle($mapScaleControlStyle)
-    {
-      if (!is_string($mapScaleControlStyle))
-        throw new Exception(__METHOD__ . '; Invalid $mapScaleControlStyle, not a string.');
-
-      if (!in_array($mapScaleControlStyle, $this->getMapScaleControlStyles()))
-        throw new Exception(__METHOD__ . '; Invalid $mapScaleControlStyle, not one of ' . implode(' / ', explode(';', self::MAP_SCALE_CONTROL_STYLES)) . '.');
-
-      $this->mapScaleControlStyle = $mapScaleControlStyle;
+      return explode(';', self::CONTROL_ZOOM_STYLES);
     }
 
     /**
@@ -206,60 +355,9 @@
      * @param void
      * @return array
      */
-    public function getMapScaleControlStyles()
+    public function getControlScaleStyles()
     {
-      return explode(';', self::MAP_SCALE_CONTROL_STYLES);
-    }
-
-    /**
-     * Method thats sets the position for the map type control
-     *
-     * @param string $mapTypeControlPosition
-     * @return void
-     */
-    public function setMapTypeControlPosition($mapTypeControlPosition)
-    {
-      if (!is_string($mapTypeControlPosition))
-        throw new Exception(__METHOD__ . '; Invalid $mapTypeControlPosition, not a string.');
-
-      if (!in_array($mapTypeControlPosition, $this->getMapControlPositions()))
-        throw new Exception(__METHOD__ . '; Invalid $mapTypeControlPosition, not one of ' . implode(' / ', $this->getMapControlPositions()) . '.');
-
-      $this->mapTypeControlPosition = $mapTypeControlPosition;
-    }
-
-    /**
-     * Method thats sets the position for the map navigation control
-     *
-     * @param string $mapNavigationControlPosition
-     * @return void
-     */
-    public function setMapNavigationControlPosition($mapNavigationControlPosition)
-    {
-      if (!is_string($mapNavigationControlPosition))
-        throw new Exception(__METHOD__ . '; Invalid $mapNavigationControlPosition, not a string.');
-
-      if (!in_array($mapNavigationControlPosition, $this->getMapControlPositions()))
-        throw new Exception(__METHOD__ . '; Invalid $mapNavigationControlPosition, not one of ' . implode(' / ', $this->getMapControlPositions()) . '.');
-
-      $this->mapNavigationControlPosition = $mapNavigationControlPosition;
-    }
-
-    /**
-     * Method thats sets the position for the map scale control
-     *
-     * @param string $mapScaleControlPosition
-     * @return void
-     */
-    public function setMapScaleControlPosition($mapScaleControlPosition)
-    {
-      if (!is_string($mapScaleControlPosition))
-        throw new Exception(__METHOD__ . '; Invalid $mapScaleControlPosition, not a string.');
-
-      if (!in_array($mapScaleControlPosition, $this->getMapControlPositions()))
-        throw new Exception(__METHOD__ . '; Invalid $mapScaleControlPosition, not one of ' . implode(' / ', $this->getMapControlPositions()) . '.');
-
-      $this->mapScaleControlPosition = $mapScaleControlPosition;
+      return explode(';', self::CONTROL_SCALE_STYLES);
     }
 
     /**
@@ -268,20 +366,9 @@
      * @param void
      * @return array
      */
-    public function getMapControlPositions()
+    public function getControlPositions()
     {
-      return explode(';', self::MAP_CONTROL_POSITIONS);
-    }
-
-    /**
-     * Method which enables the street view control
-     *
-     * @param void
-     * @return void
-     */
-    public function enableStreetViewControl()
-    {
-      $this->enableStreetViewControl = true;
+      return explode(';', self::CONTROL_POSITIONS);
     }
 
     /**
@@ -344,19 +431,53 @@
     {
       $config                           = $this->getMainConfig();
       $config->libraryConfig            = $this->libraryConfig;
+      $config->mapId                    = $this->getId();
       $config->mapContainerId           = $this->getContainerId();
       $config->mapType                  = $this->mapType;
       $config->loadDataOnce             = $this->loadDataOnce;
       $config->zoomLevel                = $this->getZoomLevel();
       $config->centerGeoLat             = $this->getCenterGeocode()->getLatitude();
       $config->centerGeoLng             = $this->getCenterGeocode()->getLongitude();
-      $config->mapTypeControl           = true;
-      $config->mapTypeControlOptions    = array('style' => 'google.maps.MapTypeControlStyle.' . strtoupper($this->mapTypeControlStyle), 'position' => 'google.maps.ControlPosition.' . strtoupper($this->mapTypeControlPosition));
-      $config->navigationControl        = true;
-      $config->navigationControlOptions = array('style' => 'google.maps.NavigationControlStyle.' . strtoupper($this->mapNavigationControlStyle), 'position' => 'google.maps.ControlPosition.' . strtoupper($this->mapNavigationControlPosition));
-      $config->scaleControl             = true;
-      $config->scaleControlOptions      = array('style' => 'google.maps.ScaleControlStyle.' . strtoupper($this->mapScaleControlStyle), 'position' => 'google.maps.ControlPosition.' . strtoupper($this->mapScaleControlPosition));
-      $config->enableStreetViewControl  = $this->enableStreetViewControl;
+
+      $config->controls                                    = array();
+
+      // Caching
+      if ($this->caching['enabled'])
+      {
+          $config->caching                                = array(
+              'minutesUntilOutdatedCheck' => $this->caching['minutesUntilOutdatedCheck']
+          );
+      }
+
+      // Controls
+      if ($this->controls['mapType']['enabled'])
+          $config->controls['mapType'] = array(
+              'mapTypeIds'     => $this->controls['mapType']['types'],
+              'style'             => 'google.maps.MapTypeControlStyle.' . strtoupper($this->controls['mapType']['style']),
+              'position'         => 'google.maps.ControlPosition.' . strtoupper($this->controls['mapType']['position'])
+          );
+
+      if ($this->controls['zoom']['enabled'])
+          $config->controls['zoom'] = array(
+              'style'             => 'google.maps.ZoomControlStyle.' . strtoupper($this->controls['zoom']['style']),
+              'position'         => 'google.maps.ControlPosition.' . strtoupper($this->controls['zoom']['position'])
+          );
+
+      if ($this->controls['pan']['enabled'])
+          $config->controls['pan'] = array(
+              'position'         => 'google.maps.ControlPosition.' . strtoupper($this->controls['pan']['position'])
+          );
+
+      if ($this->controls['scale']['enabled'])
+          $config->controls['scale'] = array(
+              'style'             => 'google.maps.ScaleControlStyle.' . strtoupper($this->controls['scale']['style']),
+              'position'         => 'google.maps.ControlPosition.' . strtoupper($this->controls['scale']['position'])
+          );
+
+      if ($this->controls['streetView']['enabled'])
+          $config->controls['streetView'] = array(
+              'position'         => ($this->controls['streetView']['position'] !== '') ? 'google.maps.ControlPosition.' . strtoupper($this->controls['streetView']['position']) : ''
+          );
 
       if ($this->markerManager->hasMarkers())
         $config->markers                = $this->markerManager->toArray();
@@ -387,14 +508,18 @@
 
           }
 
-          $markerTypeConfig->correctionX  = $markerType->getOverlayCorrectionX();
-          $markerTypeConfig->correctionY  = $markerType->getOverlayCorrectionY();
-          $markerTypeConfig->autoCenter   = $markerType->getAutoCenter();
-          $markerTypeConfig->autoCenterY  = $markerType->getAutoCenterY();
-          $markerTypeConfig->autoCenterX  = $markerType->getAutoCenterX();
-          $markerTypeConfig->clickAction  = $markerType->getClickAction();
-          $markerTypeConfig->layerName    = $markerType->getLayer()->getName();
-          $markerTypeConfig->layerType    = $markerType->getLayer()->getType();
+          if ($markerType->hasIconSize())
+              $markerTypeConfig->iconSize = $markerType->getIconSize();
+
+          $markerTypeConfig->correctionX                              = $markerType->getOverlayCorrectionX();
+          $markerTypeConfig->correctionY                              = $markerType->getOverlayCorrectionY();
+          $markerTypeConfig->autoCenter                               = $markerType->getAutoCenter();
+          $markerTypeConfig->autoCenterY                              = $markerType->getAutoCenterY();
+          $markerTypeConfig->autoCenterX                              = $markerType->getAutoCenterX();
+          $markerTypeConfig->clickAction                              = $markerType->getClickAction();
+          $markerTypeConfig->layerName                                = $markerType->getLayer()->getName();
+          $markerTypeConfig->layerType                                = $markerType->getLayer()->getType();
+          $markerTypeConfig->enableDataLoadOnMouseOver                = $markerType->getEnableDataLoadOnMouseOver();
 
           $config->markerTypes[$markerType->getName()] = $markerTypeConfig;
         }

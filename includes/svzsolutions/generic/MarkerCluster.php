@@ -232,6 +232,30 @@
     }
 
     /**
+     * Method which returns an array with the count per marker type
+     *
+     * @param void
+     * @return array
+     */
+    public function getCountPerMarkerType()
+    {
+      $countPerType = array();
+
+      foreach ($this->markers as $marker)
+      {
+        $typeName = $marker->getTypeName();
+
+        if (isset($countPerType[$typeName]))
+          $countPerType[$typeName]++;
+        else
+          $countPerType[$typeName] = 1;
+
+      }
+
+      return $countPerType;
+    }
+
+    /**
      * Method which returns a new MarkerStack with the x number of closest markers
      *
      * @param integer $numberOfClosestsMarkers

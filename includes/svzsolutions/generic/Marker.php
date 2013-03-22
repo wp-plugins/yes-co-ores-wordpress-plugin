@@ -24,7 +24,8 @@
     private $typeName           = '';
     private $label              = '';
     private $type               = null;
-    private $draggable          = true;
+    private $draggable          = false;
+    private $showInfoWindow     = false;
     private $address            = null;
     private $title              = '';
     private $dataLoadUrl        = '';
@@ -127,6 +128,31 @@
       return $this->draggable;
     }
 
+  	/**
+     * Set show the info window when the map is loaded
+     *
+     * @param boolean $showInfoWindow
+     * @return void
+     */
+    public function setShowInfoWindow($showInfoWindow)
+    {
+      if (!is_bool($showInfoWindow))
+        throw new Exception(__METHOD__ . '; Invalid $showInfoWindow, not a boolean.');
+
+      $this->showInfoWindow = $showInfoWindow;
+    }
+
+    /**
+     * Check if the marker is show info window
+     *
+     * @param void
+     * @return boolean
+     */
+    public function hasShowInfoWindow()
+    {
+        return $this->showInfoWindow;
+    }
+
     /**
      * Set the label of the marker
      *
@@ -178,6 +204,17 @@
     }
 
     /**
+     * Has the title of the marker
+     *
+     * @param void
+     * @return string
+     */
+    public function hasTitle()
+    {
+        return (!empty($this->title) ? true : false);
+    }
+
+    /**
      * Get the title of the marker
      *
      * @param void
@@ -200,6 +237,17 @@
         throw new Exception(__METHOD__ . '; Invalid $entityId, not a integer.');
 
       $this->entityId = $entityId;
+    }
+
+    /**
+     * Check if this marker has an entityId
+     *
+     * @param void
+     * @return integer
+     */
+    public function hasEntityId()
+    {
+        return (!empty($this->entityId) ? true : false);
     }
 
     /**
@@ -359,15 +407,29 @@
      */
     public function toArray()
     {
-      $array                  = array();
-      $array['type']          = $this->getTypeName();
-      $array['title']         = $this->getTitle();
-      $array['geoLat']        = $this->getGeocode()->getLatitude();
-      $array['geoLng']        = $this->getGeocode()->getLongitude();
-      $array['dataLoadUrl']   = $this->getDataLoadUrl();
-      $array['draggable']     = $this->isDraggable();
-      $array['content']       = $this->getContent();
-      $array['entityId']      = $this->getEntityId();
+      $array                      = array();
+      $array['type']              = $this->getTypeName();
+
+      if ($this->hasTitle())
+          $array['title']             = $this->getTitle();
+
+      $array['geoLat']            = $this->getGeocode()->getLatitude();
+      $array['geoLng']            = $this->getGeocode()->getLongitude();
+
+      if ($this->hasDataLoadUrl())
+          $array['dataLoadUrl']       = $this->getDataLoadUrl();
+
+      if ($this->isDraggable())
+          $array['draggable']         = $this->isDraggable();
+
+      if ($this->hasShowInfoWindow())
+          $array['showInfoWindow']    = $this->showInfoWindow;
+
+      if ($this->hasContent())
+          $array['content']           = $this->getContent();
+
+      if ($this->hasEntityId())
+          $array['entityId']          = $this->getEntityId();
 
       return $array;
     }

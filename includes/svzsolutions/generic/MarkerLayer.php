@@ -59,14 +59,25 @@
     }
 
     /**
-     * Set if the layer should be fixed (meaning any markers living withing this layer won't get removed on loading of new data)
+     * Set if the layer should be static (meaning any markers living withing this layer won't get removed on loading of new data and shown on all zoom levels)
+     *
+     * @param void
+     * @return void
+     */
+    public function setTypeStatic()
+    {
+      $this->type = 'static';
+    }
+
+    /**
+     * Set if the layer should be fixed (meaning any markers living withing this layer won't get removed on loading of new data but only shown on this specific zoom level)
      *
      * @param void
      * @return void
      */
     public function setTypeFixed()
     {
-      return $this->type = 'fixed';
+      $this->type = 'fixed';
     }
 
     /**

@@ -57,7 +57,7 @@
 	    add_action('manage_posts_custom_column',                        array($this, 'generateColumnContent'));
 	    add_filter('manage_edit-' . $this->getPostType() . '_columns',  array($this, 'determineColumns'));
       add_action('init',                                              array($this, 'enqueueFiles'));
-      
+
       $this->addAjaxActions();
     }
     
@@ -147,10 +147,15 @@
 	    foreach ($fields as $field)
 	    {
         $settings = $fieldsSettings->getField($field);
-        
+
 		    $value    = array_key_exists($field, $customFieldValues) ? $customFieldValues[$field][0] : '';
 		    $title    = empty($settings['title']) ? str_replace($postType . '_', '', $field) : $settings['title'];
 		    $width    = empty($settings['width']) ? 300 : $settings['width'];
+
+        // Overwrite that a field is readonly
+        if (!empty($settings['readonly']) && $settings['readonly'] == true)
+          $readOnly = true;
+
 		    $prefix   = '';
 		    $addition = empty($settings['addition']) ? '' : ' ' . $settings['addition'];
 
@@ -181,7 +186,7 @@
 		    $html .= '<th scope="row">' . $title . '</th>';
 		    $html .= '<td>';
 		    $html .= $prefix;
-        
+
         if ($readOnly === true)
         {
           $html .= '<input type="hidden" name="' . $field . '" id="' . str_replace($postType, 'yog', $field) . '" value="' . $value . '" />';
@@ -195,7 +200,7 @@
         {
           $btwField = $field . 'BtwPercentage';
           $btwValue = array_key_exists($btwField, $customFieldValues) ? $customFieldValues[$btwField][0] : '';
-          
+
           $html .= '<input type="text" style="width: 100px;" name="' . $field . '" value="' . $value . '" />';
           $html .= '&nbsp;&nbsp;btw <input type="text" style="width: 40px;" name="' . $btwField . '" value="' . $btwValue . '" /> %';
         }
@@ -220,7 +225,65 @@
 
 	    return $html;
     }
-    
+
+    /**
+    * @desc Render Google maps meta box
+    *
+    * @param object @post
+    * @return void
+    */
+    public function renderMapsMetaBox($post)
+    {
+      $postId     = get_the_ID();
+      $post       = get_post($postId);
+      $postType   = $post->post_type;
+
+      $specs      = yog_retrieveSpecs(array('Latitude', 'Longitude'));
+
+      $latitude   = isset($specs['Latitude']) ? $specs['Latitude'] : false;
+      $longitude  = isset($specs['Longitude']) ? $specs['Longitude'] : false;
+
+      $html = '';
+
+      $html .= '<div class="row">';
+	      $html .= '<label for="' . $postType . '_Latitude">Latitude: </label><br />';
+        $html .= '<input id="' . $postType . '_Latitude" name="' . $postType . '_Latitude" type="text" value="' . $latitude . '" />';
+      $html .= '</div>';
+
+      $html .= '<div class="row">';
+	      $html .= '<label for="' . $postType . '_Longitude">Longitude: </label><br />';
+        $html .= '<input id="' . $postType . '_Longitude" name="' . $postType . '_Longitude" type="text" value="' . $longitude . '" />';
+      $html .= '</div>';
+
+      $html .= '<br /><br />';
+
+      echo $html;
+
+      $extraOnLoad = '
+                      require([ "yog/admin/Object" ], function() {
+
+                          ready(function() {
+
+                            var yogAdminObject = new yog.admin.Object("' . $postType . '");
+
+                          });
+                      });';
+
+      $dynamicMap = yog_retrieveDynamicMap('hybrid', 18, 260, 260, $extraOnLoad, true);
+
+      //$staticMap = yog_retrieveStaticMap('hybrid', 18, 260, 260);
+
+      if (empty($dynamicMap))
+      {
+        echo '<p>Er is geen locatie bekend.</p>';
+      }
+      else
+      {
+        //echo $staticMap;
+        echo $dynamicMap;
+      }
+    }
+
     abstract public function getPostType();
     abstract public function determineColumns($columns);
     abstract public function addMetaBoxes();
@@ -276,22 +339,7 @@
 	    echo $this->retrieveInputs($post->ID, array('scenario'), true);
 	    echo '</table>';
     }
-    
-    /**
-    * @desc Render Google maps meta box
-    * 
-    * @param object @post
-    * @return void
-    */
-    public function renderMapsMetaBox($post)
-    {
-      $staticMap = yog_retrieveStaticMap('hybrid', 18, 260, 260); 
-      
-      if (empty($staticMap))
-        echo '<p>Er is geen locatie bekend.</p>';
-      else
-        echo $staticMap;
-    }
+
     
     /**
     * @desc Render images meta box

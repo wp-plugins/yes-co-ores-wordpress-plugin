@@ -22,22 +22,24 @@
    */
   class SVZ_Solutions_Generic_Marker_Type
   {
-    const MARKER_TYPE_CLUSTER     = 'cluster';
-    const MARKER_TYPE_LIST        = 'list';
-    private $name                 = '';
-    private $layer                = null;
-    private $className            = '';
-    private $overlayCorrectionX   = 0;
-    private $overlayCorrectionY   = 0;
-    private $autoCenter           = false;
-    private $autoCenterX          = true;
-    private $autoCenterY          = false;
-    private $clickAction          = '';
-    private $iconEnabled          = false;
-    private $icon                 = null;
-    private $iconShadow           = null;
-    private $color                = '';
-    private $size                 = '';
+    const MARKER_TYPE_CLUSTER     			= 'cluster';
+    const MARKER_TYPE_LIST        			= 'list';
+    private $name                 			= '';
+    private $layer                			= null;
+    private $className            			= '';
+    private $overlayCorrectionX   			= 0;
+    private $overlayCorrectionY   			= 0;
+    private $autoCenter           			= false;
+    private $autoCenterX          			= true;
+    private $autoCenterY          			= false;
+    private $clickAction          			= '';
+    private $iconEnabled          			= false;
+    private $icon                 			= null;
+    private $iconShadow           			= null;
+    private $color                			= '';
+    private $size                 			= '';
+    private $iconSize                       = false;
+    private $enableDataLoadOnMouseOver 	= false;
 
     /**
      * Constructor
@@ -102,6 +104,29 @@
     public function getOverlayCorrectionY()
     {
       return $this->overlayCorrectionY;
+    }
+
+    /**
+     * Method enableDataLoadOnMouseOver which will enable the data load when the marker is hovered
+     * next to being clicked
+     *
+     * @param void
+     * @return void
+     */
+    public function enableDataLoadOnMouseOver()
+    {
+    	$this->enableDataLoadOnMouseOver = true;
+    }
+
+    /**
+     * Method getEnableDataLoadOnMouseOver
+     *
+     * @param void
+     * @return void
+     */
+    public function getEnableDataLoadOnMouseOver()
+    {
+    	return $this->enableDataLoadOnMouseOver;
     }
 
     /**
@@ -333,6 +358,46 @@
         $this->setIconShadow(new SVZ_Solutions_Generic_Marker_Image());
 
       return $this->iconShadow;
+    }
+
+    /**
+     * Method hasIconSize which checks if the icon size is defined
+     *
+     * @param {Void}
+     * @return {Boolean}
+     */
+    public function hasIconSize()
+    {
+        return ($this->iconSize !== false);
+    }
+
+    /**
+     * Method getIconSize which returns the icon size defintions
+     *
+     * @param {Void}
+     * @return {Array}
+     */
+    public function getIconSize()
+    {
+        return $this->iconSize;
+    }
+
+    /**
+     * Method setIconSize this can be used in the calculations (auto detect is more performance heavy)
+     *
+     * @param {Integer} $width
+     * @param {Integer} $height
+     * @return {Void}
+     */
+    public function setIconSize($width, $height)
+    {
+        if (!is_integer($width))
+            throw new Exception(__METHOD__ . '; Invalid width, not an integer');
+
+        if (!is_integer($height))
+            throw new Exception(__METHOD__ . '; Invalid height, not an integer');
+
+        $this->iconSize = array('width' => $width, 'height' => $height);
     }
 
     /**

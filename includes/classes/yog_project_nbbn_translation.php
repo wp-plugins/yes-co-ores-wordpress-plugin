@@ -114,6 +114,9 @@
 		  // State
       if (in_array($this->determineState(), array('verkocht', 'verhuurd')))
 			  $categories[] = 'nieuwbouw-bouwnummer-verkochtverhuurd';
+
+      // Allow the theme to add custom categories
+      $this->getThemeCategories($this->mcp3Project, $categories);
         
       return $categories;
     }

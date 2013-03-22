@@ -60,7 +60,7 @@
       add_meta_box('yog-bouwgrond-meta',      'Bouwgrond',            array($this, 'renderBouwgrondMetaBox'),       POST_TYPE_BOG, 'normal', 'low');
       add_meta_box('yog-gebouw-meta',         'Gebouw',               array($this, 'renderGebouwMetaBox'),          POST_TYPE_BOG, 'normal', 'low');
       add_meta_box('yog-bedrijfsruimte-meta', 'Bedrijfsruimte',       array($this, 'renderBedrijfsruimteMetaBox'),  POST_TYPE_BOG, 'normal', 'low');
-      add_meta_box('yog-kantooruimte-meta',   'Kantooruimte',         array($this, 'renderKantooruimteMetaBox'),    POST_TYPE_BOG, 'normal', 'low');
+      add_meta_box('yog-kantoorruimte-meta',   'Kantoorruimte',         array($this, 'renderKantoorruimteMetaBox'),    POST_TYPE_BOG, 'normal', 'low');
       add_meta_box('yog-winkelruimte-meta',   'Winkelruimte',         array($this, 'renderWinkelruimteMetaBox'),    POST_TYPE_BOG, 'normal', 'low');
       add_meta_box('yog-horeca-meta',         'Horeca',               array($this, 'renderHorecaMetaBox'),          POST_TYPE_BOG, 'normal', 'low');
 
@@ -169,22 +169,22 @@
       echo '<tr><th colspan="2"><b>Bedrijfshal</b></th></tr>';
       echo $this->retrieveInputs($post->ID, array('BedrijfshalOppervlakte', 'BedrijfshalInUnitsVanaf', 'BedrijfshalVrijeHoogte', 'BedrijfshalVrijeOverspanning', 'BedrijfshalVloerbelasting', 'BedrijfshalVoorzieningen', 'BedrijfshalPrijs'));
       echo '<tr><th colspan="2"><b>Kantoorruimte</b></th></tr>';
-      echo $this->retrieveInputs($post->ID, array('KantoorruimteOppervlakte', 'KantooruimteAantalVerdiepingen', 'KantooruimteVoorzieningen', 'KantooruimtePrijs'));
+      echo $this->retrieveInputs($post->ID, array('KantoorruimteOppervlakte', 'KantoorruimteAantalVerdiepingen', 'KantoorruimteVoorzieningen', 'KantoorruimtePrijs'));
       echo '<tr><th colspan="2"><b>Terrein</b></th></tr>';
       echo $this->retrieveInputs($post->ID, array('TerreinOppervlakte', 'TerreinBouwvolumeBouwhoogte', 'TerreinBouwvolumeVloerOppervlakte', 'TerreinPrijs'));
       echo '</table>';
     }
     
     /**
-    * @desc Render kantooruimte meta box
+    * @desc Render kantoorruimte meta box
     * 
     * @param object $post
     * @return void
     */
-    public function renderKantooruimteMetaBox($post)
+    public function renderKantoorruimteMetaBox($post)
     {
       echo '<table class="form-table">';
-      echo $this->retrieveInputs($post->ID, array('KantoorruimteOppervlakte', 'KantooruimteAantalVerdiepingen', 'KantooruimteVoorzieningen', 'KantooruimteInUnitsVanaf', 'KantooruimteTurnKey'));
+      echo $this->retrieveInputs($post->ID, array('KantoorruimteOppervlakte', 'KantoorruimteAantalVerdiepingen', 'KantoorruimteVoorzieningen', 'KantoorruimteInUnitsVanaf', 'KantoorruimteTurnKey'));
       echo '</table>';
     }
     

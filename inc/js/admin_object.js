@@ -170,7 +170,7 @@ function yogToggleMetaContainers(objectType)
   var bouwgrondVisible      = false;
   var gebouwVisible         = false;
   var bedrijfsruimteVisible = false;
-  var kantooruimteVisible   = false;
+  var kantoorruimteVisible  = false;
   var winkelruimteVisible   = false;
   var horecaVisible         = false;
   
@@ -183,9 +183,9 @@ function yogToggleMetaContainers(objectType)
       gebouwVisible         = true;
       bedrijfsruimteVisible = true;
       break;
-    case 'Kantooruimte':
+    case 'Kantoorruimte':
       gebouwVisible         = true;
-      kantooruimteVisible   = true;
+      kantoorruimteVisible  = true;
       break;
     case 'Winkelruimte':
       gebouwVisible         = true;
@@ -212,10 +212,10 @@ function yogToggleMetaContainers(objectType)
   else
     jQuery('#yog-bedrijfsruimte-meta').hide();
     
-  if (kantooruimteVisible)
-    jQuery('#yog-kantooruimte-meta').show();
+  if (kantoorruimteVisible)
+    jQuery('#yog-kantoorruimte-meta').show();
   else
-    jQuery('#yog-kantooruimte-meta').hide();
+    jQuery('#yog-kantoorruimte-meta').hide();
     
   if (winkelruimteVisible)
     jQuery('#yog-winkelruimte-meta').show();

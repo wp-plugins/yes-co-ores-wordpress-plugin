@@ -159,6 +159,9 @@
       $max = $this->mcp3Project->getIntByPath('//project:Details/project:Huur/project:Prijs/project:Max');
       if (!empty($min) || !empty($max))
         $categories[] = 'nieuwbouw-type-verhuur';
+
+      // Allow the theme to add custom categories
+      $this->getThemeCategories($this->mcp3Project, $categories);
         
       return $categories;
     }

@@ -67,6 +67,7 @@
 	    add_meta_box('yog-contact-meta',        'Contact gegevens', array($this, 'renderContactMetaBox'),         POST_TYPE_RELATION, 'normal', 'low');
       add_meta_box('yog-main-address-meta',   'Hoofd adres',      array($this, 'renderMainAddressMetaBox'),     POST_TYPE_RELATION, 'normal', 'low');
       add_meta_box('yog-postal-address-meta', 'Post adres',       array($this, 'renderPostalAddressMetaBox'),   POST_TYPE_RELATION, 'normal', 'low');
+      add_meta_box('yog-location',            'Locatie',          array($this, 'renderMapsMetaBox'),            POST_TYPE_RELATION, 'side', 'low');
     }
     
     /**

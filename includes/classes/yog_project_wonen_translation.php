@@ -162,6 +162,9 @@
 		  // State
       if (in_array($this->determineState(), array('Verkocht', 'Verhuurd')))
 			  $categories[] = 'verkochtverhuurd';
+
+      // Allow the theme to add custom categories
+      $this->getThemeCategories($this->mcp3Project, $categories);
         
       return $categories;
     }

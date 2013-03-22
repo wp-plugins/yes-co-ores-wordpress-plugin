@@ -58,21 +58,21 @@ jQuery(document).ready(function()
                         YogImageSlider.scrollLeft(YogImageSlider.scrollLeft() - 2);
                       }, 15);
   });
-  
+
   /**
   * Scroll right
   */
-  jQuery('.yog-image-slider-holder.yog-scrolling-enabled .yog-scroll.right').mouseover(function()
+  jQuery('.yog-image-slider-holder.yog-scrolling-enabled .yog-scroll.right').mouseover(function(event)
   {
     var elem          = jQuery(event.currentTarget);
     var imagesHolder  = elem.closest('.yog-images-holder');
     YogImageSlider    = jQuery('.yog-image-slider', imagesHolder);
-    
+
     YogScrollTimer    = setInterval(function() {
                         YogImageSlider.scrollLeft(YogImageSlider.scrollLeft() + 2);
                       }, 15);
   });
-  
+
   // Adjust .left / .right height
   var yogSliderHeight = jQuery('.yog-image-slider-holder.yog-scrolling-enabled').height();
   if (yogSliderHeight)

@@ -240,18 +240,44 @@
       {
         $relations[$relationReference->getUuid()] = $relationReference->getRole();
       }
-      
+
       return $relations;
     }
-    
+
     /**
     * @desc Get the categories to link project to
     * Should be extended by implementing class
-    * 
+    *
     * @param void
     * @return array
     */
     abstract public function getCategories();
+
+    /**
+     * @desc Method getThemeCategories Allow the theme to influence creation of extra categories on projects
+     *
+     * @param {Yog3McpXmlProjectAbstract} $mcp3Project
+     * @param {Array} $categories
+     * @return {Void}
+     */
+    protected function getThemeCategories(Yog3McpXmlProjectAbstract $mcp3Project, &$categories)
+    {
+      $templateDir = get_template_directory();
+
+      // Include the Theme's function directory
+      if (file_exists($templateDir . '/functions.php'))
+        require_once($templateDir . '/functions.php');
+
+      // Execute the hook if provided in the functions.php
+      if (function_exists('yog_plugin_get_categories'))
+      {
+        $extendCategories = yog_plugin_get_categories($mcp3Project);
+
+        if (is_array($extendCategories))
+          $categories       = array_merge($categories, $extendCategories);
+
+      }
+    }
 
     /**
     * @desc get the text content

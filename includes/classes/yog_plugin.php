@@ -30,6 +30,7 @@
       require_once(YOG_PLUGIN_DIR . '/includes/widgets/yog_linked_objects_widget.php');
       require_once(YOG_PLUGIN_DIR . '/includes/widgets/yog_linked_relations_widget.php');
       require_once(YOG_PLUGIN_DIR . '/includes/widgets/yog_contact_form_widget.php');
+      require_once(YOG_PLUGIN_DIR . '/includes/widgets/yog_map_widget.php');
       require_once(YOG_PLUGIN_DIR . '/includes/widgets/yog_object_attachments_widget.php');
       
       global $wp_version;
@@ -127,15 +128,39 @@
 	    }
     }
     */
-    
+
+    /**
+     * @desc Method preScript
+     *
+     * @param {Void}
+     * @return {Void}
+     */
+    public function preScript()
+    {
+      echo '<script type="text/javascript">
+              // <![CDATA[
+                var djConfig = {
+                cacheBust: "' . YOG_PLUGIN_VERSION . '"
+                };
+              // ]]>
+              </script>';
+
+      echo '<script data-dojo-config="async: true" src="http://ajax.googleapis.com/ajax/libs/dojo/1.8.3/dojo/dojo.js"></script>';
+
+    }
+
     /**
     * @desc Enqueue files
-    * 
+    *
     * @param void
-    * @return void    
+    * @return void
     */
     public function enqueueFiles()
     {
+      add_action('wp_head', array($this, 'preScript'));
+      add_action('admin_head', array($this, 'preScript'));
+      // add_action('wp_head', array($this, 'preScript'));
+
       wp_enqueue_script('jquery', YOG_PLUGIN_URL . '/javascript/' .'jquery-1.4.1' .'.js');
     }
     
@@ -301,6 +326,7 @@
       register_widget('YogSearchFormNBprWidget');
       register_widget('YogSearchFormNBtyWidget');
       register_widget('YogContactFormWidget');
+      register_widget('YogMapWidget');
       register_widget('YogObjectAttachmentsWidget');
       register_widget('YogLinkedObjectsWidget');
       register_widget('YogLinkedRelationsWidget');
@@ -325,7 +351,6 @@
       
       add_filter('pre_get_posts',           array($this, 'extendPostQuery'));
       add_filter('the_content',             array($this, 'extendTheContent'));
-      add_action('wp_head',                 array($this, 'includeDojo'));
       add_action('init',                    array($this, 'enqueueFiles'));
       
       $searchManager = YogObjectSearchManager::getInstance();
@@ -344,7 +369,8 @@
     public function enqueueFiles()
     {
       parent::enqueueFiles();
-      
+
+      wp_enqueue_script('jquery-ui-touch-punch', YOG_PLUGIN_URL .'/inc/js/jquery.ui.touch-punch.min.js', array('jquery', 'jquery-ui-core'));
       wp_enqueue_script('yog-image-slider', YOG_PLUGIN_URL .'/inc/js/image_slider.js', array(), YOG_PLUGIN_VERSION);
       wp_enqueue_style('yog-photo-slider',  YOG_PLUGIN_URL . '/inc/css/photo_slider.css', array(), YOG_PLUGIN_VERSION);
     }
@@ -417,33 +443,10 @@
       
       return $prefix . $content . $suffix;
     }
-    
-    /**
-     * @desc Method which ensures the dojo library is included
-     *
-     * @param void
-     * @return void
-     */
-    public function includeDojo()
-    {
-      $html = '<script type="text/javascript">
-              // <![CDATA[
-                var djConfig = {
-                parseOnLoad: false,
-                cacheBust: "1",
-                baseUrl: "' . home_url() . '/",
-                modulePaths: { svzsolutions: "' . substr(YOG_PLUGIN_URL, strpos(YOG_PLUGIN_URL, 'wp-content')) . '/inc/svzsolutions" }
-                };
-              // ]]>
-              </script>
-              <script src="http://ajax.googleapis.com/ajax/libs/dojo/1.5.0/dojo/dojo.xd.js"></script>';
 
-      echo $html;
-    }
-    
     /**
     * @desc Register the post types to use on several pages
-    * 
+    *
     * @param WP_Query $query
     * @return WP_Query
     */
@@ -526,6 +529,8 @@
   */
   class YogPluginAdmin extends YogPlugin
   {
+    private $optionGroup = 'yesco_OG';
+
     /**
     * @desc Initialize Wordpress admin
     * 
@@ -673,21 +678,21 @@
 
     /**
     * @desc Enqueue files
-    * 
+    *
     * @param void
-    * @return void    
+    * @return void
     */
     public function enqueueFiles()
     {
       parent::enqueueFiles();
-      
+
       wp_enqueue_script('yog-admin-js',   YOG_PLUGIN_URL .'/inc/js/admin.js', array('jquery'), YOG_PLUGIN_VERSION);
       wp_enqueue_style('yog-admin-css',   YOG_PLUGIN_URL . '/inc/css/admin.css', array(), YOG_PLUGIN_VERSION);
     }
-    
+
     /**
     * @desc Create admin menu
-    * 
+    *
     * @param void
     * @return void
     */
@@ -695,13 +700,13 @@
     {
       if ($this->wpVersion >= 3.1)
         add_object_page('Yes-co ORES', 'Yes-co ORES', 'edit_posts', 'yog_posts_menu', '', YOG_PLUGIN_URL . '/img/icon_yes-co.gif');
-      
+
       add_options_page('Yes-co ORES opties', 'Yes-co ORES', 'edit_plugins', 'yesco_OG', array($this, 'renderSettingsPage'));
     }
-    
+
     /**
     * @desc Render plugin settings page
-    * 
+    *
     * @param void
     * @return void
     */
@@ -709,17 +714,17 @@
     {
       require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_system_link_manager.php');
       require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_checks.php');
-      
+
       // Checks
       $errors 	= YogChecks::checkForErrors();
       $warnings = YogChecks::checkForWarnings();
-      
+
       // Render html
 	    echo '<div class="wrap">';
         echo '<div class="icon32 icon32-config-yog"><br /></div>';
 	      echo '<h2>Yes-co Open Real Estate System instellingen</h2>';
 	      wp_nonce_field('update-options');
-          
+
         if (!empty($errors))
         {
 		      echo '<div id="message" class="error below-h2" style=" padding: 5px 10px;">';
@@ -727,14 +732,14 @@
             echo '<ul style="padding-left:15px;list-style-type:circle"><li>' . implode('</li><li>', $errors) . '</li></ul>';
           echo '</div>';
         }
-        
+
         if (!empty($warnings))
         {
 		      echo '<div id="message" class="error below-h2" style="padding: 5px 10px; background-color:#feffd1;border-color:#d5d738;">';
             echo '<ul style="padding-left:15px;list-style-type:circle"><li>' . implode('</li><li>', $warnings) . '</li></ul>';
           echo '</div>';
         }
-		    
+
         if (empty($errors))
         {
           echo '<h3>Objecten plaatsen</h3>';
@@ -746,13 +751,15 @@
             echo '<input type="checkbox" ' .(get_option('yog_objectsinarchief')?'checked':'') .' id="yog-toggle-archive" /><span id="yog-objects-on-home-msg"></span>';
 	          echo '<label for="yog-toggle-archive">Objecten plaatsen in archief (Objecten zullen tussen \'normale\' blogposts verschijnen)</label><span id="yog-objects-on-archive-msg"></span>';
           echo '</div>';
-          
+
+          echo '<br /><br />';
+
 	        echo '<h3>Gekoppelde yes-co open accounts</h3>';
           echo '<span id="yog-add-system-link-holder">';
 	          echo '<b>Een koppeling toevoegen:</b><br>';
 	          echo 'Activatiecode: <input id="yog-new-secret" name="yog-new-secret" type="text" style="width: 58px" maxlength="6" value="" /> <input type="button" class="button-primary" id="yog-add-system-link" value="Koppeling toevoegen" style="margin-left: 10px;" />';
           echo '</span>';
-          
+
           // Retrieve system links
           $systemLinkManager  = new YogSystemLinkManager();
           $systemLinks        = $systemLinkManager->retrieveAll();
@@ -774,13 +781,222 @@
 		        }
 	        }
 	        echo '</div>';
+
+          // BEGIN YOG MAP SHORTCODE GENERATOR
+
+          echo '<br /><br />';
+
+          echo '<form method="post" action="options-general.php?page=' . $this->optionGroup . '" enctype="multipart/form-data">';
+          register_setting($this->optionGroup, $this->optionGroup);
+          settings_fields($this->optionGroup);
+
+          $settingsSectionId = 'markerSettings';
+          $settingsMarkerPage = 'page-marker-settings';
+
+          add_settings_section($settingsSectionId, 'Marker Settings', array($this, 'section'), $settingsMarkerPage);
+
+          $postTypes    = yog_getAllPostTypes();
+
+          foreach ($postTypes as $postType)
+          {
+            $postTypeObject = get_post_type_object($postType);
+            $optionName     = 'yog-marker-type-' . $postType;
+            $logoOptions    = get_option($optionName);
+
+            add_settings_field('markerSettings_' . $postType, $postTypeObject->labels->singular_name, array($this, 'inputFile'), $settingsMarkerPage, $settingsSectionId, array($logoOptions, $postType, $optionName));
+          }
+
+          // Render the section and fields to the screen of the provided page
+          do_settings_sections($settingsMarkerPage);
+
+          submit_button();
+
+          echo '</form>';
+
+
+          // END YOG MAP SHORTCODE GENERATOR
+
+          $shortcode = (!empty($_GET['shortcode']) ? $_GET['shortcode'] : '');
+
+          $yogMapWidget = new YogMapWidget();
+          $settings     = $yogMapWidget->shortcodeToSettings($shortcode);
+
+          // BEGIN YOG MAP SHORTCODE GENERATOR
+          echo '<br /><br /><h3>Shortcode generator</h3>';
+          echo '<p>Hiermee kun je snel een shortcode genereren die je kan plaatsen in een Page of Post.</p>';
+
+          echo 'Shortcode: <br /><b id="yogShortcode" class="bold">[yog-map]</b><br /><br />';
+
+          $html = '<table class="form-table"><tbody>';
+
+          // Types
+          $checkboxesHtml = '';
+
+          foreach ($postTypes as $postTypeTmp)
+          {
+            $checked        = '';
+
+            if (in_array($postTypeTmp, $settings['postTypes']))
+              $checked = ' checked="checked"';
+
+            $id             = 'shortcode_PostTypes_' . $postTypeTmp;
+            $label          = '';
+
+            $postTypeObject = get_post_type_object($postTypeTmp);
+
+            $label          = $postTypeObject->labels->singular_name;
+
+            $checkboxesHtml .= '<input type="checkbox" id="' . $id . '" name="shortcode_PostTypes[]" value="' . $postTypeTmp . '"' . $checked . ' />&nbsp;<label for="' . $id . '">' . $label . '</label><br />';
+          }
+
+          $checkboxesHtml .= '</select>';
+
+          $html .= $this->renderRow('<label for="shortcode_PostTypes">Post types: </label>', $checkboxesHtml);
+
+          // Latitude
+          $html .= $this->renderRow('<label for="shortcode_Latitude">Latitude: </label>', '<input id="shortcode_Latitude" name="shortcode_Latitude" type="text" value="' . esc_attr($settings['latitude']) . '" />');
+
+          // Longitude
+          $html .= $this->renderRow('<label for="shortcode_Longitude">Longitude: </label>', '<input id="shortcode_Longitude" name="shortcode_Longitude" type="text" value="' . esc_attr($settings['longitude']) . '" />');
+
+          // Width
+          $html .= $this->renderRow('<label for="shortcode_Width">Breedte (Geheel getal): </label>', '<input id="shortcode_Width" name="shortcode_Width" type="text" value="' . esc_attr($settings['width']) . '" />');
+
+          // Width Unit
+          $selectHtml = '';
+          $selectHtml .= '<select id="shortcode_WidthUnit" name="shortcode_WidthUnit">';
+          $selectHtml .= '<option value="px"' . ($settings['widthUnit'] == 'px' ? ' selected="selected"' : '')  . '>px</option>';
+          $selectHtml .= '<option value="%"' . ($settings['widthUnit'] == '%' ? ' selected="selected"' : '')  . '>%</option>';
+          $selectHtml .= '</select>';
+
+          $html .= $this->renderRow('<label for="shortcode_WidthUnit">Breedte in ...: </label>', $selectHtml);
+
+          // Width
+          $html .= $this->renderRow('<label for="shortcode_Width">Hoogte (Geheel getal): </label>', '<input id="shortcode_Height" name="shortcode_Height" type="text" value="' . esc_attr($settings['height']) . '" />');
+
+          // Height Unit
+          $selectHtml = '';
+          $selectHtml .= '<select id="shortcode_HeightUnit" name="shortcode_HeightUnit">';
+          $selectHtml .= '<option value="px"' . ($settings['heightUnit'] == 'px' ? ' selected="selected"' : '')  . '>px</option>';
+          $selectHtml .= '<option value="%"' . ($settings['heightUnit'] == '%' ? ' selected="selected"' : '')  . '>%</option>';
+          $selectHtml .= '</select>';
+
+          $html .= $this->renderRow('<label for="shortcode_HeightUnit">Hoogte in ...: </label>', $selectHtml);
+
+          $html .= '</tbody></table>';
+
+          echo $html;
+
+          echo '<br /><br />';
+
+          $extraOnLoad = '
+                      require([ "yog/admin/Shortcode" ], function() {
+
+                          ready(function() {
+
+                            var yogAdminShortcode = new yog.admin.Shortcode();
+
+                          });
+                      });';
+
+          $settings['width']      = 800;
+          $settings['widthUnit']  = 'px';
+          $settings['height']     = 480;
+          $settings['heightUnit'] = 'px';
+
+          echo $yogMapWidget->generate($settings, $extraOnLoad, true);
+
+
+          // END YOG MAP SHORTCODE GENERATOR
+
         }
 	    echo '</div>';
     }
-    
+
+    /**
+     * @desc Method renderRow
+     *
+     * @param {String} $label
+     * @param {String} $value
+     * @return {String}
+     */
+    public function renderRow($label, $value)
+    {
+      $html = '';
+
+      $html .= '<tr valign="top">';
+	      $html .= '<th scope="row">' . $label . '</th>';
+        $html .= '<td><div style="margin-bottom: 10px;">' . $value . '</div></td>';
+      $html .= '</tr>';
+
+      return $html;
+    }
+
+    /**
+     * @desc Method section
+     *
+     * @param {Void}
+     * @return {String}
+     */
+    public function section()
+    {
+      echo '<p>Stel hier je eigen gewenste plaatjes in voor de markers op de map:</p>';
+    }
+
+    /**
+     * @desc Method inputFile
+     *
+     * @param {Array}
+     * @return {Void}
+     */
+    public function inputFile($args)
+    {
+      $logoOptions = $args[0];
+      $postType    = $args[1];
+      $optionName  = $args[2];
+      $filesKey    = 'marker_type_' . $postType;
+
+      if (!empty($_FILES) && !empty($_FILES[$filesKey]) && !empty($_FILES[$filesKey]['tmp_name']))
+      {
+        $file = $_FILES[$filesKey];
+
+        $response = wp_handle_upload($_FILES[$filesKey], array('test_form' => false));
+
+        if (!empty($response))
+        {
+          $imageSize          = getimagesize($response['file']);
+          $response['width']  = $imageSize[0];
+          $response['height'] = $imageSize[1];
+
+          // Remove old logo
+          $options  = get_option($optionName);
+
+          if (!($options === false || empty($options['file'])))
+            @unlink($options['file']);
+
+          // Update logo settings
+          update_option($optionName, $response);
+        }
+      }
+
+      $html = '';
+
+      if ($logoOptions === false || empty($logoOptions['url']))
+        $logoUrl = YOG_PLUGIN_URL . '/img/svzmaps/marker_type_' . $postType . '.png';
+      else
+        $logoUrl = $logoOptions['url'];
+
+      $html .= '<div style="margin-bottom:10px;">';
+      $html .= '<input style="float: left;" type="file" name="marker_type_' . $postType . '" />';
+      $html .= '<img style="margin-left:80px;float: left;" src="' . $logoUrl . '" alt="" /><br />';
+      $html .= '</div>';
+
+      echo $html;
+    }
+
     /**
     * @desc Ajax toggle objects on home handler
-    * 
+    *
     * @param void
     * @return void
     */

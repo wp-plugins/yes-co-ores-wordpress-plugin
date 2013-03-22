@@ -935,7 +935,109 @@
 
     return $html;
   }
-  
+
+  /**
+   * @desc Method yog_generateMap which generates the map based on the settings
+   *
+   * @param {}
+   * @param {String} $onLoad
+   * @param {String} $extraAfterOnLoad
+   * @param {Boolean} $adminMode
+   * @return {String}
+   */
+  function yog_generateMap($map, $onLoad, $extraAfterOnLoad = '', $adminMode = false)
+  {
+      $markerTypeCss = '';
+
+      $postTypes    = yog_getAllPostTypes();
+
+      foreach ($postTypes as $postType)
+      {
+        // Add a admin marker type
+        $markerType = new SVZ_Solutions_Generic_Marker_Type($postType);
+        //$markerType->enableIcon();
+        //$markerType->getLayer()->setName('admin'); // Define a layer where the provided marker types should live in
+        //$markerType->getLayer()->setTypeFixed();
+        $map->addMarkerType($markerType);
+
+        $option = get_option('yog-marker-type-' . $postType);
+
+        if ($option !== false && !empty($option['url']))
+        {
+          $markerTypeCss .= '.sg-marker-' . $postType . ' {
+                          width: ' . $option['width'] . 'px;
+                          height: ' . $option['height'] . 'px;';
+
+          $markerTypeCss .= 'background-image: url("' . $option['url'] . '");';
+          $markerTypeCss .= '}';
+        }
+
+      }
+
+      // Add a admin marker type
+      $markerType = new SVZ_Solutions_Generic_Marker_Type('admin');
+      $markerType->enableIcon();
+      $markerType->getLayer()->setName('admin'); // Define a layer where the provided marker types should live in
+
+      if ($adminMode === true)
+        $markerType->getLayer()->setTypeStatic();
+      else
+        $markerType->getLayer()->setTypeFixed();
+
+      $map->addMarkerType($markerType);
+
+      $baseUrl = substr(YOG_PLUGIN_URL, strpos(YOG_PLUGIN_URL, 'wp-content')) . '/inc/';
+
+      $html = '<style type="text/css">' . $markerTypeCss . '</style>';
+
+      $html .= '<script type="text/javascript">
+                // <![CDATA[
+
+                  var yogMap, yogMapManager, map;
+
+                  require({
+                      baseUrl: "' . home_url() . '/",
+                      packages: [
+                        { name: "svzsolutions", location: "' . $baseUrl . 'svzsolutions/0.6.2" },
+                        { name: "yog", location: "' . $baseUrl . 'js/" }
+                      ]
+
+                  }, [ "dojo/ready", "dojo/_base/kernel", "dojo" ], function(ready)
+                  {
+                      require([ "svzsolutions/all" ], function() {
+
+                          ready(function() {
+
+                            ' . $onLoad . '
+
+                            yogMapManager  = new svzsolutions.maps.MapManager();
+
+                            // The SVZ_Solutions_Maps_Google_Maps_Map php class will generate a config object depending on your settings for you,
+                            // this generated object can be encoded into a JSON string and can be put encoded into the svzsolutions.maps.MapManager object.
+                            yogMap             = yogMapManager.initByConfig(\'' . json_encode($map->getConfig()) . '\');
+
+                            map                = yogMap; // 2013-02-01: Old reference for older themes
+
+                            // Startup all the maps (call after subscribing within your extensions)
+                            yogMapManager.startup();
+
+                            ' . $extraAfterOnLoad . '
+
+                          });
+
+                      });
+
+                  });
+
+                // ]]>
+                </script>';
+
+      //$html = '';
+      $html .= '<div id="' . $map->getContainerId() . '" class="map-holder" style="display: none; width: ' . $map->getWidth() . $map->getWidthUnit() . '; height: ' . $map->getHeight() . $map->getHeightUnit() . ';"></div>';
+
+      return $html;
+  }
+
   /**
    * @desc function that generates a dynamic map based on SvzMaps
    *
@@ -943,10 +1045,15 @@
    * @param integer $zoomLevel
    * @param integer width
    * @param integer height
-   * @return html
+   * @param {String} $extraAfterOnLoad
+   * @param {Boolean} $adminMode
+   * @return {String}
    */
-  function yog_retrieveDynamicMap($mapType = 'hybrid', $zoomLevel = 18, $width = 486, $height = 400)
+  function yog_retrieveDynamicMap($mapType = 'hybrid', $zoomLevel = 18, $width = 486, $height = 400, $extraAfterOnLoad = '', $adminMode = false)
   {
+    $latitude = false;
+    $longitude = false;
+
     $postId     = get_the_ID();
 
     $specs      = yog_retrieveSpecs(array('Latitude', 'Longitude'));
@@ -956,8 +1063,14 @@
 
     $html       = '';
 
-    if ($latitude !== false && $longitude !== false)
+    if (($latitude !== false && $longitude !== false) || $adminMode === true)
     {
+      if ($adminMode && $latitude === false && $longitude === false)
+      {
+        $latitude   = 52.06758749919184;
+        $longitude  = 5.34619140625;
+      }
+
       // Including of the SVZ Solutions library
       require_once(YOG_PLUGIN_DIR . '/includes/svzsolutions/maps/Map.php');
 
@@ -972,74 +1085,148 @@
       // Sets the default map type to satellite
       $map->setMapType($mapType);
 
-      // Enable the street view control
-      $map->enableStreetViewControl();
-
       // Sets the zoom level to start with to 18.
       $map->setZoomLevel($zoomLevel);
 
       // Sets the geocode the map should start at centered.
       $map->setCenterGeocode(new SVZ_Solutions_Generic_Geocode((float)$latitude, (float)$longitude));
 
-      // Add a admin marker type
-      $markerType = new SVZ_Solutions_Generic_Marker_Type('admin');
-      $markerType->enableIcon();
-      $markerType->getLayer()->setName('admin'); // Define a layer where the provided marker types should live in
-      $markerType->getLayer()->setTypeFixed();
-      $map->addMarkerType($markerType);
+      if ($adminMode === true)
+      {
+        // Add a single marker
+        $marker     = new SVZ_Solutions_Generic_Marker('admin', (float)$latitude, (float)$longitude);
 
-      // Add a single admin marker
-      $marker     = new SVZ_Solutions_Generic_Marker('admin', (float)$latitude, (float)$longitude);
-      $marker->setDraggable(false);
+        $marker->setDraggable(true);
+      }
+      else
+      {
+        // Use the object type custom marker
+        $post       = get_post($postId);
+        $postType   = $post->post_type;
+
+        // Add a single marker
+        $marker     = new SVZ_Solutions_Generic_Marker($postType, (float)$latitude, (float)$longitude);
+
+        $marker->setDraggable(false);
+      }
+
       $map->addMarker($marker);
 
-      $html .= '<script type="text/javascript">
-                // <![CDATA[
-                
-                  var map;
+      $onLoad = '
+                            // Hide the static version
+                            var staticMapHolder = dojo.byId("yesco-og-static-map-holder");
 
-                  /**
-                   * Function which is called after the DOM has finished loading
-                   *
-                   * @param void
-                   * @return void
-                   */
-                  var init = function()
-                  {
-                    // Hide the static version
-                    var staticMapHolder = dojo.byId("yesco-og-static-map-holder");
+                            if (staticMapHolder)
+                              dojo.style(staticMapHolder, "display", "none");
 
-                    if (staticMapHolder)
-                      dojo.style(staticMapHolder, "display", "none");
+                            // Show the dynamic version
+                            var dynamicMap = dojo.byId("yesco-og-dynamic-map");
 
-                    // Show the dynamic version
-                    var dynamicMap = dojo.byId("yesco-og-dynamic-map");
+                            if (dynamicMap)
+                              dojo.style(dynamicMap, "display", "block");
 
-                    if (dynamicMap)
-                      dojo.style(dynamicMap, "display", "block");
+                            ';
 
-                    var mapManager  = new svzsolutions.maps.MapManager();
-
-                    // The SVZ_Solutions_Maps_Google_Maps_Map php class will generate a config object depending on your settings for you,
-                    // this generated object can be encoded into a JSON string and can be put encoded into the svzsolutions.maps.MapManager object.
-                    map             = mapManager.initByConfig(\'' . json_encode($map->getConfig()) . '\');
-
-                    // Startup all the maps (call after subscribing within your extensions)
-                    mapManager.startup();
-
-                  };
-
-                  dojo.require("svzsolutions.all");
-                  dojo.addOnLoad(init);
-                // ]]>
-                </script>';
-
-      $html .= '<div id="' . $map->getContainerId() . '" class="map-holder" style="display: none; width: ' . $map->getWidth() . 'px; height: ' . $map->getHeight() . 'px;"></div>';
+      $html = yog_generateMap($map, $onLoad, $extraAfterOnLoad, $adminMode);
     }
 
     return $html;
   }
-  
+
+  // [yog-map ]
+  function yog_map_shortcode($atts)
+  {
+    // Yog Map Widget
+    $mapWidget = new YogMapWidget();
+    $settings  = $mapWidget->shortcodeAttributesToSettings($atts);
+
+    $html = $mapWidget->generate($settings);
+
+    return $html;
+  }
+
+  add_shortcode( 'yog-map', 'yog_map_shortcode' );
+
+
+  /**
+   * @desc Method yog_loadMapData
+   *
+   * @param {Void}
+   * @return {Void}
+   */
+  function yog_loadMapData()
+  {
+    // Including of the SVZ Solutions library
+    require_once(YOG_PLUGIN_DIR . '/includes/svzsolutions/maps/Map.php');
+
+    // Reading out data applied in the requests
+    $mapClusterMode   = SVZ_Solutions_Generic_Marker_Manager::CLUSTER_MODE_NONE;
+
+    $markerManager    = new SVZ_Solutions_Generic_Marker_Manager();
+    $markerManager->setListDataLoadUrl('data-info-window-list.php');
+    $markerManager->setClusterMode($mapClusterMode);
+
+    // Depending on the map type retrieve the property using wp_query
+    $postTypes  = (!empty($_GET['post_types']) ? explode(',', $_GET['post_types']) : array());
+
+    // @TODO: Filter the ones that are activated in this plugin
+
+    $posts      = get_posts(array('numberposts' => 999999, 'post_type' => $postTypes));
+
+    foreach ($posts as $post)
+    {
+      $postType      = $post->post_type;
+      $latitude      = yog_retrieveSpec('Latitude', $post->ID);
+      $longitude     = yog_retrieveSpec('Longitude', $post->ID);
+
+      if (strlen(trim($latitude)) > 0 && strlen(trim($longitude)) > 0)
+      {
+        $latitude   = (float)$latitude;
+        $longitude  = (float)$longitude;
+
+        $marker     = new SVZ_Solutions_Generic_Marker($postType, $latitude, $longitude);
+
+        // Set the url to load all the markers from
+        $dataLoadUrl = admin_url('admin-ajax.php') . '?action=loadmarkerdetails&postID=' . $post->ID;
+        $marker->setDataLoadUrl($dataLoadUrl);
+
+        $markerManager->addMarker($marker);
+      }
+    }
+
+    // Generate JSON output
+    $output           = new StdClass();
+    $output->markers  = $markerManager->toArray();
+
+    echo json_encode($output);
+    exit;
+  }
+
+  /**
+   * @desc Method yog_loadMarkerDetails which loads the info window details
+   *
+   * @param {Void}
+   * @return {Void}
+   */
+  function yog_loadMarkerDetails()
+  {
+    $postID         = $_GET['postID'];
+
+    $yogMapWidget   = new YogMapWidget();
+    echo $yogMapWidget->generateDetailWindow($postID);
+
+    exit;
+  }
+
+  // Make available in case the user is logged in and in case it is not
+  add_action('wp_ajax_loadmapdata', 'yog_loadMapData');
+  add_action('wp_ajax_nopriv_loadmapdata', 'yog_loadMapData');
+
+  // Make available in case the user is logged in and in case it is not
+  add_action('wp_ajax_loadmarkerdetails', 'yog_loadMarkerDetails');
+  add_action('wp_ajax_nopriv_loadmarkerdetails', 'yog_loadMarkerDetails');
+
+
   /**
    * @desc Method which generates a photo slider and main image
    *
@@ -1108,4 +1295,25 @@
 
     return $html;
   }
+
+  /**
+   * @desc Method yog_retrievePostTypes
+   *
+   * @param {Void}
+   * @return {Array}
+   */
+  function yog_getAllPostTypes()
+  {
+    $postTypes  = array(
+      POST_TYPE_WONEN,
+      POST_TYPE_BOG,
+      POST_TYPE_NBPR,
+      POST_TYPE_NBTY,
+      POST_TYPE_NBBN,
+      POST_TYPE_RELATION
+    );
+
+    return $postTypes;
+  }
+
 ?>

@@ -41,6 +41,7 @@
     private $enableClusterBounds          = false;
     private $numberOfClosestsMarkers      = 0;
     private $numMarkers                   = 0;
+    private $returnCountPerMarkerType     = false;
 
     /**
      * Constructor
@@ -55,6 +56,17 @@
       $this->availableClusterModes[]  = self::CLUSTER_MODE_ADDRESS;
 
       $this->markers                  = new SVZ_Solutions_Generic_Marker_Stack();
+    }
+    
+    /**
+     * Method getAvailableClusterModes which will return the available cluster modes
+     * 
+     * @param void
+     * @return array
+     */
+    public static function getAvailableClusterModes()
+    {
+    	return array(self::CLUSTER_MODE_NONE, self::CLUSTER_MODE_DISTANCE, self::CLUSTER_MODE_ADDRESS);
     }
 
     /**
@@ -89,6 +101,17 @@
     public function disableSmartClusterNavigation()
     {
       $this->enableSmartClusterNavigation = false;
+    }
+
+    /**
+     * Method which enables the count per marker type on a cluster / list marker
+     *
+     * @param void
+     * @return void
+     */
+    public function enableReturnCountPerMarkerType()
+    {
+      $this->returnCountPerMarkerType = true;
     }
 
     /**
@@ -359,6 +382,9 @@
 
             if (!empty($this->numberOfClosestsMarkers))
               $clusterMarker['closestsMarkers'] = $marker->getClosestsMarkers($this->numberOfClosestsMarkers)->toArray();
+
+            if ($this->returnCountPerMarkerType)
+              $clusterMarker['countPerMarkerType'] = $marker->getCountPerMarkerType();
 
             $array[] = $clusterMarker;
           }

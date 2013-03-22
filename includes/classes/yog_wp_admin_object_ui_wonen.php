@@ -118,7 +118,7 @@
     public function renderObjectDetailsMetaBox($post)
     {
 	    echo '<table class="form-table">';
-	    echo $this->retrieveInputs($post->ID, array('Type', 'SoortWoning', 'TypeWoning', 'KenmerkWoning', 'Bouwjaar', 'Aantalkamers', 'Oppervlakte', 'OppervlaktePerceel', 'Inhoud', 'Ligging', 'GarageType', 'TuinType', 'BergingType', 'PraktijkruimteType', 'EnergielabelKlasse'));
+	    echo $this->retrieveInputs($post->ID, array('Type', 'SoortWoning', 'TypeWoning', 'KenmerkWoning', 'Bouwjaar', 'Aantalkamers', 'Oppervlakte', 'OppervlaktePerceel', 'Inhoud', 'Ligging', 'GarageType', 'TuinType', 'BergingType', 'PraktijkruimteType', 'EnergielabelKlasse', 'Bijzonderheden'));
 	    echo '</table>';
     }
     
@@ -220,7 +220,7 @@
 		  }
       
 		  // Handle open huis
-		  if ($_POST['yog_openhuis_actief'] == 'on')
+		  if (!empty($_POST['yog_openhuis_actief']) && $_POST['yog_openhuis_actief'] == 'on')
       {
 			  $tijdVan = $_POST['yog_oh_van_jaar'] . '-' . $_POST['yog_oh_van_maand'] . '-' . $_POST['yog_oh_van_dag'] . ' ' . $_POST['yog_oh_van_uur'] . ':' . $_POST['yog_oh_van_minuut'];
 			  $tijdTot = $_POST['yog_oh_van_jaar'] ."-" .$_POST['yog_oh_van_maand'] ."-" .$_POST['yog_oh_van_dag'] ." " .$_POST['yog_oh_tot_uur'] .":" .$_POST['yog_oh_tot_minuut'];

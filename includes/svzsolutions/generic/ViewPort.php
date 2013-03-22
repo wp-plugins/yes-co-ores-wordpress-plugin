@@ -71,7 +71,7 @@
      * @param boolean $forceNew
      * @return SVZ_Solutions_Generic_ViewPort
      */
-    public function getInstance($forceNew = false)
+    public static function getInstance($forceNew = false)
     {
       if (is_null(self::$instance) || $forceNew)
         self::$instance = new self();
@@ -232,7 +232,7 @@
      * @param integer $radiusInPixels
      * @return void
      */
-    public function setRadiusInPixels($radiusInPixels = 100)
+    public function setRadiusInPixels($radiusInPixels = 50)
     {
       if (!is_int($radiusInPixels) || empty($radiusInPixels))
         throw new Exception(__METHOD__ . '; Invalid $radiusInPixels, not a integer or empty');

@@ -57,7 +57,7 @@
         $uuid                     = $relationEntityLink->getUuid();
         $processedRelationUuids[] = $uuid;
         $publicationDlm           = strtotime($relationEntityLink->getDlm());
-        
+
         // Check if relation allready exists
         $postType             = YogRelationTranslationAbstract::POST_TYPE;
         $existingRelation     = array_key_exists($uuid, $existingRelationUuids);
@@ -68,27 +68,27 @@
         {
           $mcp3Relation         = $this->feedReader->retrieveRelationByLink($relationEntityLink);
           $translationRelation  = YogRelationTranslationAbstract::create($mcp3Relation, $relationEntityLink);
-          
+
           // Insert / Update post
           if ($existingRelation)
             @wp_update_post(array_merge(array('ID' => $postId), $translationRelation->getPostData()));
           else
             $postId = @wp_insert_post($translationRelation->getPostData());
-          
+
           // Store meta data
           $this->handlePostMetaData($postId, $postType, $translationRelation->getMetaData());
-          
+
           // Update system link name (if needed)
           if ($mcp3Relation->getType() == 'office' && $this->systemLink->getName() == YogSystemLink::EMPTY_NAME)
           {
             $this->systemLink->setName($translationRelation->determineTitle());
-            
+
             $systemLinkManager = new YogSystemLinkManager();
             $systemLinkManager->store($this->systemLink);
           }
         }
       }
-      
+
       /* Cleanup old relations */
       $deleteRelationUuids = array_diff(array_flip($existingRelationUuids), $processedRelationUuids);
 
@@ -320,43 +320,12 @@
             $existingMedia          = array_key_exists($uuid, $existingMediaMapping);
             $attachmentId           = ($existingMedia === true) ? $existingMediaMapping[$uuid] : null;
             $attachmenDlm           = $this->retrievePostDlm($attachmentId, POST_TYPE_ATTACHMENT);
-            
+
             if (!$existingMedia || ($publicationDlm > $attachmenDlm))
             {
               $translationImage = YogImageTranslation::create($mcp3Image, $imageLink);
-            
-              // Retrieve image data
-              if (ini_get('allow_url_fopen'))
-              {
-                $imageData = file_get_contents($imageLink->getUrl());
-              }
-              else if (function_exists('curl_init'))
-              {
-                // Check for username / password
-                $url = $imageLink->getUrl();
-                $pos = strrpos($url, '@');
-                if ($pos !== false)
-                {
-                  $protocol = substr($url, 0, strpos($url, '://')) . '://';
-                  $userPwd  = str_replace($protocol, '', substr($url, 0, $pos));
-                  $url      = $protocol . substr($url, $pos + 1);
-                }
-                
-                $ch = curl_init();
-                curl_setopt($ch, CURLOPT_URL, $url);
-                curl_setopt($ch, CURLOPT_HEADER, false);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                if (!empty($userPwd))
-                  curl_setopt($ch, CURLOPT_USERPWD, $userPwd);
-                
-                $imageData = curl_exec($ch);
-                
-                curl_close($ch);
-              }
-              else
-              {
-                $imageData = wp_remote_fopen($imageLink->getUrl());
-              }
+
+              $imageData = YogHttpManager::retrieveContent($imageLink->getUrl());
               
               if ($imageData !== false)
               {
@@ -542,7 +511,7 @@
       // Add uuid / collection uuid mapping to meta data
       if (isset($metaData['uuid']))
         $metaData[$this->systemLink->getCollectionUuid() . '_uuid'] = $metaData['uuid'];
-        
+
       // Retrieve current meta data
       $oldFields = get_post_custom_keys((int) $postId);
       if (empty($oldFields))
@@ -567,7 +536,11 @@
       $deleteFields = array_diff($oldFields, array($postType . '_Relaties', $postType . '_Links', $postType . '_Documenten', $postType . '_Videos'));
       // Do not delete updated fields
       $deleteFields = array_diff($deleteFields, $updatedFields);
-      
+
+      // Do not delete the relation latitude / longitude fields upon syncing (they are not available in
+      // Yes-co yet so we need to prevent them from being deleted when edited manually in WordPress)
+      $deleteFields = array_diff($deleteFields, array( 'relatie_Longitude', 'relatie_Latitude' ));
+
       if (is_array($deleteFields) && count($deleteFields) > 0)
       {
         foreach ($deleteFields as $deleteField)
@@ -592,6 +565,15 @@
       $nbprId       = $this->createCategory('Nieuwbouw project',    'nieuwbouw-project',    $nbId);
       $nbtyId       = $this->createCategory('Nieuwbouw type',       'nieuwbouw-type',       $nbId);
       $nbbnId       = $this->createCategory('Nieuwbouw bouwnummer', 'nieuwbouw-bouwnummer', $nbId);
+
+      $categoryIdMapping = array(
+        'consument'             => $consumentId,
+        'woonruimte'            => $woonruimteId,
+        'bedrijf'               => $bogId,
+        'nieuwbouw-projecten'   => $nbprId,
+        'nieuwbouw-type'        => $nbtyId,
+        'nieuwbouw-bouwnummer'  => $nbbnId,
+      );
       
 	    // Subcategories
 	    $subcategories  = array($consumentId  => array( 'bestaand'            => 'Bestaand',
@@ -615,7 +597,7 @@
                                                       'bedrijfsruimte'        => 'Bedrijfsruimte',
                                                       'bog-bouwgrond'         => 'Bouwgrond',
                                                       'horeca'                => 'Horeca',
-                                                      'kantoorruimte'         => 'Kantooruimte',
+                                                      'kantoorruimte'         => 'Kantoorruimte',
                                                       'winkelruimte'          => 'Winkelruimte'),
                               $nbprId       => array( 'nieuwbouw-project-verkoop'             => 'Verkoop',
                                                       'nieuwbouw-project-verhuur'             => 'Verhuur',
@@ -624,7 +606,9 @@
                                                       'nieuwbouw-type-verhuur'                => 'Verhuur'),
                               $nbbnId       => array( 'nieuwbouw-bouwnummer-verkochtverhuurd' => 'Verkocht/verhuurd')
                               );
-      
+
+      $this->registerNewThemeCategories($categoryIdMapping, $subcategories);
+
       // Create subcategories
       foreach ($subcategories as $parentId => $values)
       {
@@ -634,7 +618,48 @@
 	      }
       }
     }
-    
+
+    /**
+     * @desc Method registerNewThemeCategories Allow the theme to influence creation of extra categories
+     *
+     * @param {Array} $categoryIdMapping
+     * @param {Array} $subcategories
+     * @return {Void}
+     */
+    private function registerNewThemeCategories($categoryIdMapping, &$subcategories)
+    {
+      $templateDir = get_template_directory();
+
+      // Include the Theme's function directory
+      if (file_exists($templateDir . '/functions.php'))
+        require_once($templateDir . '/functions.php');
+
+      // Execute the hook if provided in the functions.php
+      if (function_exists('yog_plugin_register_new_categories'))
+      {
+        $extendCategories = yog_plugin_register_new_categories($categoryIdMapping);
+
+        if (is_array($extendCategories))
+        {
+          foreach ($extendCategories as $categoryId => $values)
+          {
+            if (is_numeric($categoryId) && isset($subcategories[$categoryId]))
+            {
+              $currentValues = $subcategories[$categoryId];
+
+              if (is_array($values))
+              {
+                $currentValues = array_merge($currentValues, $values);
+
+                // Overwrite the current categories
+                $subcategories[$categoryId] = $currentValues;
+              }
+            }
+          }
+        }
+      }
+    }
+
     /**
     * @desc Create a term (if not existing
     * 

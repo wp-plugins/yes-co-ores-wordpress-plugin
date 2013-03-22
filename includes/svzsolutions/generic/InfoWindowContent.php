@@ -26,12 +26,16 @@
     const COMPONENT_TAB_CONTENT_HOLDER_CLASSNAME    = 'sg-component-tab-content-holder';
     const MAIN_CLASSNAME                            = 'sg-info-window-content-main-holder';
     const HEADER_CLASSNAME                          = 'sg-info-window-content-header-holder';
+    const CONTENT_CLASSNAME                         = 'sg-info-window-content-holder';
     const FOOTER_CLASSNAME                          = 'sg-info-window-content-footer-holder';
+    const CONFIG_CLASSNAME													= 'sg-info-window-content-config';
 
     private $tabs       = array();
     private $className  = 'sg-info-window-content';
     private $headerHtml = '';
     private $footerHtml = '';
+    private $content		= '';
+    private $config			= false;
 
     /**
      * Constructor
@@ -42,6 +46,20 @@
     public function __construct()
     {
 
+    }
+    
+    /**
+     * Method setJSONConfig which will allow for a config to be given to the Javascript object by JSON encoding it
+     * 
+     * @param object $config (JSON encoded string or an object / array which will be auto json)
+     * @return void
+     */
+    public function setConfig($config)
+    {
+    	if (!is_string($config))
+    		$config = json_encode($config);
+    	
+    	$this->config = $config;
     }
 
     /**
@@ -55,7 +73,7 @@
       if (!is_string($headerHtml))
         throw new Exception(__METHOD__ . '; Invalid $headerHtml, not a string');
 
-      $this->headerHtml .= $headerHtml;
+      $this->headerHtml = $headerHtml;
     }
 
     /**
@@ -139,6 +157,28 @@
     public function getClassName()
     {
       return $this->className;
+    }
+    
+    /**
+     * Method setContent which will set the content 
+     * 
+     * @param string $content
+     * @return void
+     */
+    public function setContent($content)
+    {
+    	$this->content = $content;
+    }
+    
+  	/**
+     * Method getContentHtml which will return the content 
+     * 
+     * @param void
+     * @return string $content
+     */
+    public function getContentHtml()
+    {
+    	return '<div class="' . self::CONTENT_CLASSNAME . '">' . $this->content . '</div>';
     }
 
     /**
@@ -251,13 +291,19 @@
     public function getHTML()
     {
       $html = '<div class="' . $this->getClassName() . '">';
+      
+      if ($this->config !== false)
+      	$html .= '<div class="sg-config ' . self::CONFIG_CLASSNAME . '">' . $this->config . '</div>';
 
       $html .= '<div class="' . self::MAIN_CLASSNAME . '">';
-
+      
       if ($this->hasHeaderHtml())
         $html .= $this->getHeaderHtml();
 
-      $html .= $this->getTabHtml();
+      if ($this->hasTabs())
+      	$html .= $this->getTabHtml();
+      else
+      	$html .= $this->getContentHtml();
 
       if ($this->hasFooterHtml())
         $html .= $this->getFooterHtml();

@@ -26,7 +26,7 @@
    */
   class SVZ_Solutions_Maps_Map
   {
-    const APP_VERSION                             = '0.6.1';
+    const APP_VERSION                             = '0.6.2';
     const MAP_TYPE_GOOGLE_MAPS                    = 'googlemaps';
     const MAP_TYPE_GOOGLE_MAPS_CLASS              = 'Google_Maps_Map';
     private static $instances                     = array();
@@ -62,7 +62,7 @@
      * @param string map version
      * @return void
      */
-    public function getInstance($mapType = '', $mapVersion = '', $mapMode = 'dynamic', $instanceName = 'default')
+    public static function getInstance($mapType = '', $mapVersion = '', $mapMode = 'dynamic', $instanceName = 'default')
     {
       if (!is_string($instanceName) || empty($instanceName))
         throw new Exception(__METHOD__ . '; Invalid $instanceName, not a string or empty.');

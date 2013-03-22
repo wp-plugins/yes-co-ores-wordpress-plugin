@@ -6,12 +6,15 @@
    */
   abstract class SVZ_Solutions_Maps_MapAbstract
   {
-    const APP_VERSION                             = '0.6.1';
+    const APP_VERSION                             = '0.6.2';
     private $containerId                          = '';
+    private $id																		= '';
     private $centerGeocode                        = null;
     private $zoomLevel                            = 8;
     private $width                                = 0;
+    private $widthUnit                            = 'px';
     private $height                               = 0;
+    private $heightUnit                           = 'px';
 
     /**
      * Method thats sets the center geocode starting position
@@ -81,11 +84,25 @@
       if ($this->getMaxWidth() && $width > $this->getMaxWidth())
         throw new Exception(__METHOD__ . '; Invalid $width, exceeds max width of ' . $this->getMaxWidth() . '.');
 
-      $this->width = $width;
+      $this->width     = $width;
     }
 
     /**
-     * Method thats sets the width of the image
+     * Method thats sets the width of the unit
+     *
+     * @param {String} $widthUnit
+     * @return void
+     */
+    final public function setWidthUnit($widthUnit = 'px')
+    {
+      if (!in_array($widthUnit, array( 'px', '%' )))
+        throw new Exception(__METHOD__ . '; Invalid $widthUnit, not px or %.');
+
+      $this->widthUnit = $widthUnit;
+    }
+
+    /**
+     * Method thats gets the width
      *
      * @param void
      * @return integer
@@ -96,6 +113,20 @@
         throw new Exception(__METHOD__ . '; Invalid $width, empty.');
 
       return $this->width;
+    }
+
+    /**
+     * Method thats gets the width unit
+     *
+     * @param void
+     * @return integer
+     */
+    final public function getWidthUnit()
+    {
+      if (empty($this->widthUnit))
+        throw new Exception(__METHOD__ . '; Invalid $widthUnit, empty.');
+
+      return $this->widthUnit;
     }
 
     /**
@@ -116,6 +147,20 @@
     }
 
     /**
+     * Method thats sets the height of the unit
+     *
+     * @param {String} $heightUnit
+     * @return void
+     */
+    final public function setHeightUnit($heightUnit = 'px')
+    {
+      if (!in_array($heightUnit, array( 'px', '%' )))
+        throw new Exception(__METHOD__ . '; Invalid $heightUnit, not px or %.');
+
+      $this->heightUnit = $heightUnit;
+    }
+
+    /**
      * Method thats sets the height of the image
      *
      * @param void
@@ -127,6 +172,45 @@
         throw new Exception(__METHOD__ . '; Invalid $height, empty.');
 
       return $this->height;
+    }
+
+    /**
+     * Method thats gets the height unit
+     *
+     * @param void
+     * @return integer
+     */
+    final public function getHeightUnit()
+    {
+      if (empty($this->heightUnit))
+        throw new Exception(__METHOD__ . '; Invalid $heightUnit, empty.');
+
+      return $this->heightUnit;
+    }
+    
+    /**
+     * Method thats sets the id which can be used to identify the map in extensions
+     *
+     * @param string $id
+     * @return void
+     */
+    final public function setId($id)
+    {
+      if (!is_string($id) || empty($id))
+        throw new Exception(__METHOD__ . '; Invalid $id, not a string or empty.');
+
+      $this->id = $id;
+    }
+
+    /**
+     * Method thats gets the id which can be used to identift the map in extensions
+     *
+     * @param void
+     * @return string
+     */
+    final public function getId()
+    {
+      return $this->id;
     }
 
     /**

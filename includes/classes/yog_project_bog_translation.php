@@ -128,6 +128,9 @@
 		  // State
       if (in_array($this->determineState(), array('verkocht', 'verhuurd')))
 			  $categories[] = 'bog-verkochtverhuurd';
+
+      // Allow the theme to add custom categories
+      $this->getThemeCategories($this->mcp3Project, $categories);
         
       return $categories;
     }
@@ -250,8 +253,8 @@
         'BedrijfshalVloerbelasting'       => $this->mcp3Project->getIntByPath('//project:Gebouw/project:Bedrijfsruimte/project:Bedrijfshal/project:Vloerbelasting'),
         'BedrijfshalVoorzieningen'        => $this->mcp3Project->getStringByPath('//project:Gebouw/project:Bedrijfsruimte/project:Bedrijfshal/project:Voorzieningen/project:Voorziening/@naam'),
         'KantoorruimteOppervlakte'        => $this->mcp3Project->getIntByPath('//project:Gebouw/project:Bedrijfsruimte/project:Kantoorruimte/project:Oppervlakte'),
-        'KantooruimteAantalVerdiepingen'  => $this->mcp3Project->getIntByPath('//project:Gebouw/project:Bedrijfsruimte/project:Kantoorruimte/project:Verdiepingen/project:Aantal'),
-        'KantooruimteVoorzieningen'       => $this->mcp3Project->getStringByPath('//project:Gebouw/project:Bedrijfsruimte/project:Kantoorruimte/project:Voorzieningen/project:Voorziening/@naam'),
+        'KantoorruimteAantalVerdiepingen'  => $this->mcp3Project->getIntByPath('//project:Gebouw/project:Bedrijfsruimte/project:Kantoorruimte/project:Verdiepingen/project:Aantal'),
+        'KantoorruimteVoorzieningen'       => $this->mcp3Project->getStringByPath('//project:Gebouw/project:Bedrijfsruimte/project:Kantoorruimte/project:Voorzieningen/project:Voorziening/@naam'),
         'TerreinOppervlakte'              => $this->mcp3Project->getIntByPath('//project:Gebouw/project:Bedrijfsruimte/project:Terrein/project:Oppervlakte'),
         'TerreinBouwvolumeBouwhoogte'     => $this->mcp3Project->getIntByPath('//project:Gebouw/project:Bedrijfsruimte/project:Terrein/project:Bouwvolume/project:Bouwhoogte')
       );
@@ -267,7 +270,7 @@
       
       // Prices
       $data = array_merge($data, $this->handlePriceBtw('//project:Gebouw/project:Bedrijfsruimte/project:Bedrijfshal/project:Prijs', 'BedrijfshalPrijs'));
-      $data = array_merge($data, $this->handlePriceBtw('//project:Gebouw/project:Bedrijfsruimte/project:Kantoorruimte/project:Prijs', 'KantooruimtePrijs'));
+      $data = array_merge($data, $this->handlePriceBtw('//project:Gebouw/project:Bedrijfsruimte/project:Kantoorruimte/project:Prijs', 'KantoorruimtePrijs'));
       $data = array_merge($data, $this->handlePriceBtw('//project:Gebouw/project:Bedrijfsruimte/project:Terrein/project:Prijs', 'TerreinPrijs'));
       
       // Gebouw meta data
@@ -286,10 +289,10 @@
     {
       $data = array(
         'KantoorruimteOppervlakte'        => $this->mcp3Project->getIntByPath('//project:Gebouw/project:Kantoorruimte/project:Oppervlakte'),
-        'KantooruimteAantalVerdiepingen'  => $this->mcp3Project->getIntByPath('//project:Gebouw/project:Kantoorruimte/project:Verdiepingen/project:Aantal'),
-        'KantooruimteVoorzieningen'       => $this->mcp3Project->getStringByPath('//project:Gebouw/project:Kantoorruimte/project:Voorzieningen/project:Voorziening/@naam'),
-        'KantooruimteInUnitsVanaf'        => $this->mcp3Project->getIntByPath('//project:Gebouw/project:Kantoorruimte/project:InUnitsVanaf'),
-        'KantooruimteTurnKey'             => $this->translateBool($this->mcp3Project->getBoolByPath('//project:Gebouw/project:Kantoorruimte/project:Turnkey'))
+        'KantoorruimteAantalVerdiepingen'  => $this->mcp3Project->getIntByPath('//project:Gebouw/project:Kantoorruimte/project:Verdiepingen/project:Aantal'),
+        'KantoorruimteVoorzieningen'       => $this->mcp3Project->getStringByPath('//project:Gebouw/project:Kantoorruimte/project:Voorzieningen/project:Voorziening/@naam'),
+        'KantoorruimteInUnitsVanaf'        => $this->mcp3Project->getIntByPath('//project:Gebouw/project:Kantoorruimte/project:InUnitsVanaf'),
+        'KantoorruimteTurnKey'             => $this->translateBool($this->mcp3Project->getBoolByPath('//project:Gebouw/project:Kantoorruimte/project:Turnkey'))
       );
       
       // Gebouw meta data
