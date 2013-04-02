@@ -3,7 +3,7 @@ Contributors: yesco
 Tags: yes-co, yesco, projecten, project, projects, huizen, huis, house, onroerend goed, real estate, makelaar, realtor, broker
 Requires at least: 3.0
 Tested up to: 3.4.2
-Stable tag: 1.2.2
+Stable tag: 1.2.3
 
 Directly post real estate objects from your Yes-co system to your wordpress blog with the Yes-co Open Real Estate System (Yes-co ORES) Plugin.
 
@@ -31,7 +31,7 @@ Een WordPress website blog is zonder twijfel de slimst beschikbare technologie. 
 **Over het Yes-co Open Real Estate Systeem**
 
 Yes-co ORES is een snel en intuïtief CRM systeem voor makelaars en vastgoedprofessionals. Het werkt volledig in je webbrowser. Geen installatie nodig dus. Maak een account aan en je kunt direct aan de slag.
-Bij Yes-co ORES betaal je alleen voor extra, optionele, diensten. Maak [hier](http://yes-co.nl/direct-starten/ "Maak je eigen Yes-co ORES aan") je eigen Yes-co ORES systeem aan om automatisch je objecten te publiceren.
+Bij Yes-co ORES betaal je alleen voor extra, optionele, diensten. Maak [hier](http://makelaars-crm.nl/aanmelden/ "Maak je eigen Yes-co ORES aan") je eigen Yes-co ORES systeem aan om automatisch je objecten te publiceren.
 
 = EN =
 **Homes publishing blog**
@@ -51,7 +51,7 @@ A WordPress website blog is without a doubt the smartest technology available. T
 **About Yes-co Open Real Estate System**
 
 With Yes-co ORES you can manage your real estate and publish it to several listing sites and services.
-With Yes-co ORES you only pay for addional, optional, services. [Create your own Yes-co ORES system](http://yes-co.nl/direct-starten/ "Create your own Yes-co ORES system") to publish your real estate automatically.
+With Yes-co ORES you only pay for addional, optional, services. [Create your own Yes-co ORES system](http://makelaars-crm.nl/aanmelden/ "Create your own Yes-co ORES system") to publish your real estate automatically.
 
 == Installation ==
 
@@ -59,7 +59,7 @@ With Yes-co ORES you only pay for addional, optional, services. [Create your own
 * Ga na of je hosting php5 ondersteund
 * Installeer de Yes-co ORES plugin vanuit je wordpress admin
 * Activeer de Yes-co ORES plugin
-* Installeer het [Yes-co ORES voorbeeld thema](http://www.yes-co.nl/downloads/yesco_ores_theme_1.2.zip "Download het Yes-co ORES voorbeeld thema") of creëer je eigen thema (neem de code van het [Yes-co ORES voorbeeld thema](http://www.yes-co.nl/downloads/yesco_ores_theme_1.2.zip "Download het Yes-co ORES voorbeeld thema") als basis). 
+* Installeer het [Yes-co ORES voorbeeld thema](http://www.yes-co.nl/downloads/yesco_ores_theme_1.3.zip "Download het Yes-co ORES voorbeeld thema") of creëer je eigen thema (neem de code van het [Yes-co ORES voorbeeld thema](http://www.yes-co.nl/downloads/yesco_ores_theme_1.3.zip "Download het Yes-co ORES voorbeeld thema") als basis).
 * Activeer het "Wordpress Blog" marketing kanaal in de App Market van je Yes-co Open Real Estate Systeem. Na het activeren wordt je doorgestuurd naar de instellingen, vul hier de url van je wordpress blog in.
 * Kopieër de code in het instellingen scherm en plak deze in het "Activatiecode" veld in de Yes-co ORES instellingen pagina van je Wordpress blog. Klik op de "Koppeling toevoegen" knop om de activerings code toe te voegen.
 * Klik op de "Koppeling controleren" knop in het instellingen scherm van het "Wordpress Blog" marketing kanaal in de App Market van je Yes-co Open Real Estate Systeem.
@@ -70,7 +70,7 @@ Publicaties van je Yes-co Open Real Estate Systeem naar je Wordpress blog zijn n
 * Make sure your hosting supports php5
 * Install the Yes-co ORES plugin from your wordpress admin
 * Activate the Yes-co ORES plugin
-* Install the [Yes-co ORES example theme](http://www.yes-co.nl/downloads/yesco_ores_theme_1.2.zip "Download the Yes-co ORES example theme") or create your own theme (check out the code of the [Yes-co ORES example theme](http://www.yes-co.nl/downloads/yesco_ores_theme_1.2.zip "Download the Yes-co ORES example theme") to help out)
+* Install the [Yes-co ORES example theme](http://www.yes-co.nl/downloads/yesco_ores_theme_1.3.zip "Download the Yes-co ORES example theme") or create your own theme (check out the code of the [Yes-co ORES example theme](http://www.yes-co.nl/downloads/yesco_ores_theme_1.3.zip "Download the Yes-co ORES example theme") to help out)
 * Activate the "Wordpress Blog" marketing channel in the App Market of your Yes-co Open Real Estate System. After the activation you will be redirected to the settings. Fill out the URL of your Wordpress blog.
 * Copy the code in the settings screen and paste it to the "Activatiecode" field on the Yes-co ORES settings page of your Wordpress blog. Click on the "Koppeling toevoegen" button to add the activation code.
 * Click on the "Koppeling controleren" button on the settings screen of the "Wordpress Blog" marketing channel in the App Market of your Yes-co Open Real Estate System.
@@ -87,6 +87,20 @@ Publications from your Yes-co Open Real Estate System to your Wordpress blog are
 7. Project details on the Wordpress Admin
 
 == Changelog ==
+= 1.2.3 =
+* Changed: Upgraded dojo from 1.5.0 to 1.8.3;
+* Changed: Updated SvzMaps to version 0.6.2 using AMD Module system;
+* Added: Widget to render a map with post types;
+* Added: Shortcode to render a map within a post or page;
+* Added: Ability to select the location of an object using a map;
+* Added: Ability to generate a shortcode to use in a page or post using a map;
+* Added: Support to add a location to the Relation objects;
+* Fixed: Kantooruimte renamed to Kantoorruimte;
+* Fixed: E_NOTICE for openhuis;
+* Changed: Wonenobject now shows the Bijzonderheden as a readonly field;
+* Fixed: Foto slider navigation to the right fixed for Firefox;
+* Fixed: Sliders now work on touch based devices;
+* Added: Theme's can now influence the registration of categories when synchronizing projects by adding a function "yog_plugin_register_new_categories" and "yog_plugin_get_categories";
 = 1.2.2 =
 * Fixed: Objects without a price can now still be found through the Yes-co search widget
 * Fixed: BOG rental price replacement is now also used by yog_retrievePrices
