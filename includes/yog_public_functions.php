@@ -439,12 +439,15 @@
     $relations      = get_post_meta($postId, $postType . '_Relaties',true);
     $relationPosts  = array();
     
-    foreach ($relations as $uuid => $relation)
+    if (!empty($relations))
     {
-      $relationId = (int) $relation['postId'];
-      $role       = $relation['rol'];
-      
-      $relationPosts[$role] = get_post($relationId);
+	    foreach ($relations as $uuid => $relation)
+	    {
+	      $relationId = (int) $relation['postId'];
+	      $role       = $relation['rol'];
+	      
+	      $relationPosts[$role] = get_post($relationId);
+	    }
     }
     
     return $relationPosts;
@@ -515,7 +518,7 @@
               
               if (empty($videos[$uuid]['videoereference_id']) && !empty($videos[$uuid]['websiteurl']))
               {
-                $chunks = parse_url($videos[$uuid]['websiteurl'], PHP_URL_QUERY);
+                $chunks = @parse_url($videos[$uuid]['websiteurl'], PHP_URL_QUERY);
                 if (!empty($chunks))
                 {
                   parse_str($chunks, $params);
