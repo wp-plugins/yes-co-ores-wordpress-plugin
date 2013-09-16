@@ -724,6 +724,7 @@
   * 
   * @param string $size (thumbnail, medium, large)
   * @param int $limit
+  * @param int $postId (optional)
   * @return array
   */
   function yog_retrieveImages($size, $limit = null, $postId = null)
@@ -758,11 +759,14 @@
   /**
   * @desc Check if there are images without type 'Plattegrond'
   * 
-  * @param void
+  * @param int $postId (optional)
   * @return bool
   */
-  function yog_hasNormalImages()
+  function yog_hasNormalImages($postId = null)
   {
+  	if (is_null($postId))
+  		$postId = get_the_ID();
+  	
     $found      = false;
     $arguments  = array('post_type'        => 'attachment',
                         'post_parent'     => $postId,
@@ -785,6 +789,7 @@
   * 
   * @param string $size (thumbnail, medium, large)
   * @param int $limit
+  * @param int $postId (optional)
   * @return array
   */
   function yog_retrieveNormalImages($size, $limit = null, $postId = null)
@@ -823,10 +828,10 @@
   /**
   * @desc Check if there are images with type 'Plattegrond'
   * 
-  * @param void
+  * @param int $postId (optional)
   * @return bool
   */
-  function yog_hasImagePlans()
+  function yog_hasImagePlans($postId = null)
   {
     if (is_null($postId))
       $postId = get_the_ID();
@@ -847,6 +852,7 @@
   * 
   * @param string $size (thumbnail, medium, large)
   * @param int $limit
+  * @param int $postId (optional)
   * @return array
   */
   function yog_retrieveImagePlans($size, $limit = null, $postId = null)
@@ -883,12 +889,12 @@
   /**
   * @desc Check if geo location is set
   * 
-  * @param void
+  * @param int $postId (optional)
   * @return bool
   */
-  function yog_hasLocation()
+  function yog_hasLocation($postId = null)
   {
-    $specs = yog_retrieveSpecs(array('Latitude', 'Longitude'));
+    $specs = yog_retrieveSpecs(array('Latitude', 'Longitude'), $postId);
     return (!empty($specs['Latitude']) && !empty($specs['Longitude']));
   }
   
@@ -899,13 +905,12 @@
    * @param integer $zoomLevel
    * @param integer width
    * @param integer height
+   * @param int $postId (optional)
    * @return html
    */
-  function yog_retrieveStaticMap($mapType = 'hybrid', $zoomLevel = 18, $width = 486, $height = 400)
+  function yog_retrieveStaticMap($mapType = 'hybrid', $zoomLevel = 18, $width = 486, $height = 400, $postId = null)
   {
-    $postId     = get_the_ID();
-
-    $specs      = yog_retrieveSpecs(array('Latitude', 'Longitude'));
+    $specs      = yog_retrieveSpecs(array('Latitude', 'Longitude'), $postId);
 
     $latitude   = isset($specs['Latitude']) ? $specs['Latitude'] : false;
     $longitude  = isset($specs['Longitude']) ? $specs['Longitude'] : false;
@@ -1044,15 +1049,16 @@
   /**
    * @desc function that generates a dynamic map based on SvzMaps
    *
-   * @param string $mapType
-   * @param integer $zoomLevel
-   * @param integer width
-   * @param integer height
-   * @param {String} $extraAfterOnLoad
-   * @param {Boolean} $adminMode
-   * @return {String}
+   * @param string $mapType (optional, default hybrid)
+   * @param integer $zoomLevel (optional, default 18)
+   * @param integer width (optional, default 486)
+   * @param integer height (optional, default 400)
+   * @param string $extraAfterOnLoad (optional, default empty string)
+   * @param bool $adminMode (optional, default false)
+   * @param int $postId (optional)
+   * @return string
    */
-  function yog_retrieveDynamicMap($mapType = 'hybrid', $zoomLevel = 18, $width = 486, $height = 400, $extraAfterOnLoad = '', $adminMode = false)
+  function yog_retrieveDynamicMap($mapType = 'hybrid', $zoomLevel = 18, $width = 486, $height = 400, $extraAfterOnLoad = '', $adminMode = false, $postId = null)
   {
     $latitude = false;
     $longitude = false;
@@ -1233,13 +1239,14 @@
   /**
    * @desc Method which generates a photo slider and main image
    *
-   * @param string $largeImageSize (thumbnail, medium, large. default: large)
-   * @param string $thumbnailSize (thumbnail, medium, large. default: thumbnail)
-   * @param bool $scrollable (default false)
-   * @param string $type (Plattegrond or null)
-   * @return void
+   * @param string $largeImageSize (optional; thumbnail, medium, large. default: large)
+   * @param string $thumbnailSize (optional; thumbnail, medium, large. default: thumbnail)
+   * @param bool $scrollable (optional, default false)
+   * @param string $type (optional; Plattegrond, Normaal or null)
+   * @param int $postId (optional)
+   * @return string
    */
-  function yog_retrievePhotoSlider($largeImageSize = 'large', $thumbnailSize = 'thumbnail', $scrollable = false, $type = null)
+  function yog_retrievePhotoSlider($largeImageSize = 'large', $thumbnailSize = 'thumbnail', $scrollable = false, $type = null, $postId = null)
   {
     if ($type == 'Plattegrond')
       $largeImages      = yog_retrieveImagePlans($largeImageSize);
