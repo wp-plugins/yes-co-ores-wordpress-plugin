@@ -138,7 +138,7 @@
               $postId                   = ($existingProject) ? $existingProjectUuids[$uuid] : null;
               $postDlm                  = $this->retrievePostDlm($postId, $postType);
 
-              if ($publicationDlm > $postDlm)
+              if ($publicationDlm > $postDlm || (isset($_GET['force']) && $postId == $_GET['force']))
               {
                 $mcp3Project            = $this->feedReader->retrieveProjectByLink($projectEntityLink);
                 $translationProject     = YogProjectTranslationAbstract::create($mcp3Project, $projectEntityLink);
@@ -366,9 +366,19 @@
         
         // Set main photo
         if (!is_null($mainPhotoId))
-          update_post_meta($parentPostId, '_thumbnail_id', $mainPhotoId);	
+        {
+        	if (function_exists('set_post_thumbnail'))
+        		set_post_thumbnail($parentPostId, $mainPhotoId);
+        	else
+          	update_post_meta($parentPostId, '_thumbnail_id', $mainPhotoId);
+        }	
         else
-          delete_post_meta($parentPostId, '_thumbnail_id');
+        {
+        	if (function_exists('delete_post_thumbnail'))
+        		delete_post_thumbnail($parentPostId);
+        	else
+          	delete_post_meta($parentPostId, '_thumbnail_id');
+        }
           
         /* Cleanup old media */
         $deleteMediaUuids = array_diff(array_flip($existingMediaMapping), $processedMediaUuids);
