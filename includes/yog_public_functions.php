@@ -265,7 +265,7 @@
   * @desc Check if object has a parent object
   * 
   * @param $postId (optional, default: ID of current post)
-  * @return array
+  * @return bool
   */
   function yog_hasParentObject($postId = null)
   {
@@ -901,10 +901,10 @@
   /**
    * @desc function that generates a static map based on SvzMaps
    *
-   * @param string $mapType
-   * @param integer $zoomLevel
-   * @param integer width
-   * @param integer height
+   * @param string $mapType (optional, default hybrid)
+   * @param integer $zoomLevel (optional, default 18)
+   * @param integer width (optional, default 486)
+   * @param integer height (optional, default 400)
    * @param int $postId (optional)
    * @return html
    */
@@ -1309,8 +1309,8 @@
   /**
    * @desc Method yog_retrievePostTypes
    *
-   * @param {Void}
-   * @return {Array}
+   * @param void
+   * @return array
    */
   function yog_getAllPostTypes()
   {
