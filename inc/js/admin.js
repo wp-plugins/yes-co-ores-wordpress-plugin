@@ -68,8 +68,8 @@ jQuery(document).ready( function($)
   var mainMenuItem  = jQuery('#toplevel_page_yog_posts_menu');
   if (mainMenuItem.length > 0)
   {
-    jQuery('li:nth-child(4)', mainMenuItem).hide();
-    jQuery('li:nth-child(5)', mainMenuItem).hide();
+    jQuery('li a[href="edit.php?post_type=yog-nbty"]', mainMenuItem).parent().hide();
+    jQuery('li a[href="edit.php?post_type=yog-nbbn"]', mainMenuItem).parent().hide();
   }
 });
 
@@ -100,8 +100,8 @@ var yogActivateNbAdminMenu = function ()
   
   if (mainMenuItem.length > 0)
   {
-    var nbMenuItem    = jQuery('li:nth-child(3)', mainMenuItem);
-    var nbMenuLink    = jQuery('li:nth-child(3) a', mainMenuItem);
+	var nbMenuLink    = jQuery('li a[href="edit.php?post_type=yog-nbpr"]', mainMenuItem);
+    var nbMenuItem    = nbMenuLink.parent();
     
     if (nbMenuItem.length > 0 && nbMenuLink.length > 0)
     {

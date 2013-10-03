@@ -13,8 +13,6 @@ background: url('../../img/icon_yes-co_32.png') no-repeat transparent !important
 display:none;
 }
 /* Remove NBty / NBbn links from admin menu */
-#toplevel_page_yog_posts_menu li:nth-child(4),
-#toplevel_page_yog_posts_menu li:nth-child(5),
 #menu-posts-yog-nbty,
 #menu-posts-yog-nbbn {
 display:none;

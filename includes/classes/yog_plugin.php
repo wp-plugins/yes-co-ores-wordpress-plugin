@@ -281,7 +281,7 @@
                           'public'            => false,
 	                        'show_ui'           => true, // UI in admin panel
                           'show_in_menu'      => 'yog_posts_menu',
-	                        'show_in_nav_menus' => false,
+	                        'show_in_nav_menus' => true,
 	                        'capability_type'   => 'post',
                           'menu_icon'         => YOG_PLUGIN_URL . '/img/icon_yes-co.gif',
 	                        'hierarchical'      => true,

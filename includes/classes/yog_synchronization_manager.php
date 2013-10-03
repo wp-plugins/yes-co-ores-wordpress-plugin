@@ -4,8 +4,7 @@
   require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_project_wonen_translation.php');
   require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_relation_translation.php');
   require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_image_translation.php');
-  require_once(ABSPATH . 'wp-admin/includes/image.php');
-
+  
   /**
   * @desc YogSynchronizationManager
   * @author Kees Brandenburg - Yes-co Nederland
@@ -26,6 +25,16 @@
     */
     public function __construct(YogSystemLink $systemLink)
     {
+   		/*
+   		* Require needed wordpress files 
+   		*/
+    	// image.php is needed to use wp_generate_attachment_metadata()
+   		if (file_exists(ABSPATH . 'wp-admin/includes/image.php'))
+   			require_once(ABSPATH . 'wp-admin/includes/image.php');
+   		// pluggable.php is needed because image.php requires it, but doesn't include it (WP >= 3.6.1)
+   		if (file_exists(ABSPATH . 'wp-includes/pluggable.php'))
+   			require_once(ABSPATH . 'wp-includes/pluggable.php');
+    	
       $this->systemLink = $systemLink;
       
       $this->feedReader = Yog3McpFeedReader::getInstance();
