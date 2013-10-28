@@ -416,6 +416,27 @@
       {
 		    wp_delete_attachment($mediaPostId, true); 
 	    }
+	    
+	    if (!is_null($this->uploadDir) && is_dir($this->uploadDir .'projecten/' .$postId))
+	    {
+	    	// Remove remaining files from projects/$postId folder
+	    	$files = glob($this->uploadDir .'projecten/' .$postId . '/*');
+	    	if (is_array($files))
+	    	{
+	    		foreach ($files as $file)
+	    		{
+	    			if (is_file($file))
+	    			{
+	    				if (!@unlink($file))
+	    					$this->warning[] = 'Unable to unlink ' . $file;
+	    			}
+	    		}
+	    	}
+	    	
+	    	// Unlink post directory
+	    	if (!@rmdir($this->uploadDir .'projecten/' .$postId))
+	    		$this->warning[] = 'Unable to rmdir ' . $this->uploadDir .'projecten/' .$postId;
+	    }
     }
     
     /**

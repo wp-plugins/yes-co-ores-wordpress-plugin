@@ -2,8 +2,8 @@
 Contributors: yesco
 Tags: yes-co, yesco, projecten, project, projects, huizen, huis, house, onroerend goed, real estate, makelaar, realtor, broker
 Requires at least: 3.0
-Tested up to: 3.6.1
-Stable tag: 1.2.4
+Tested up to: 3.7
+Stable tag: 1.2.5
 
 Directly post real estate objects from your Yes-co system to your wordpress blog with the Yes-co Open Real Estate System (Yes-co ORES) Plugin.
 
@@ -87,10 +87,12 @@ Publications from your Yes-co Open Real Estate System to your Wordpress blog are
 7. Project details on the Wordpress Admin
 
 == Changelog ==
+= 1.2.5 =
+* Fixed: project upload folders are now also removed when project is revoked
+* Fixed: Fatal error on Wordpress 3.7
 = 1.2.4 =
 * Fixed: Synchronization between Yes-co system and Wordpress for Wordpress 3.6.1
 * Added: Technical documentation
-
 = 1.2.3 =
 * Changed: Upgraded dojo from 1.5.0 to 1.8.3;
 * Changed: Updated SvzMaps to version 0.6.2 using AMD Module system;

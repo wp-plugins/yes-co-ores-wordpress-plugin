@@ -47,7 +47,8 @@
     {
       if (is_null(self::$instance))
       {
-        if (is_admin())
+      	// Check script name, because using is_admin() is causing fatal on wp 3.7
+      	if (strpos($_SERVER['SCRIPT_NAME'], '/wp-admin/') !== false)
           self::$instance = new YogPluginAdmin();
         else
           self::$instance = new YogPluginPublic();
@@ -352,12 +353,10 @@
       add_filter('pre_get_posts',           array($this, 'extendPostQuery'));
       add_filter('the_content',             array($this, 'extendTheContent'));
       add_action('init',                    array($this, 'enqueueFiles'));
+      add_action('init',                    array($this, 'updateOpenhuizen'));
       
       $searchManager = YogObjectSearchManager::getInstance();
-      $searchManager->extendSearch();
-      
-      
-      $this->updateOpenhuizen();
+     	$searchManager->extendSearch();
     }
     
     /**
@@ -578,6 +577,14 @@
         // Make sure rewrite rules are up-to-date
         $this->registerPostTypes();
         flush_rewrite_rules();
+        
+        // Run fixes for specific plugin version
+        switch (YOG_PLUGIN_VERSION)
+        {
+        	case '1.2.5':
+        		$this->removeUnusedProjectImages();
+        		break;
+        }
         
         // Update plugin version
         update_option('yog_plugin_version', YOG_PLUGIN_VERSION);
@@ -1068,6 +1075,62 @@
 
       echo $_POST['activatiecode'];
 		  exit();
+	  }
+	  
+	  /**
+	   * Try to remove images of deleted projects
+	   * 
+	   * @param void
+	   * @return void
+	   */
+	  private function removeUnusedProjectImages()
+	  {
+	  	$uploadDir 			= wp_upload_dir();
+	  	
+	  	// If wp_upload_dir returns errors, skip everything else
+	  	if (!empty($uploadDir['error']))
+				return;
+	  	
+	  	// Skip everything if projects upload dir does not exist
+	  	if (!is_dir($uploadDir['basedir'] . '/projecten/'))	
+	  		return;
+	  	
+	  	// Skip everything if projects upload dir is not writeable
+	  	if (!is_writeable($uploadDir['basedir'] . '/projecten/'))
+	  		return;
+	  	
+	  	// Set variables
+	  	$activePostIds 			= array();
+	  	$projectsUploadDir	= $uploadDir['basedir'] . '/projecten/';
+	  				
+	  	// Retrieve existing YOG posts
+	  	$posts = get_posts(array(
+	  													'post_type' 			=> array(POST_TYPE_WONEN, POST_TYPE_BOG, POST_TYPE_NBPR, POST_TYPE_NBTY, POST_TYPE_NBBN),
+	  													'post_status'			=> 'any',
+	  													'posts_per_page'	=> -1
+	  												));
+	  	
+	  	// Determine id's of extisting YOG posts
+	  	foreach ($posts as $post)
+	  	{
+	  		$activePostIds[] = (int) $post->ID;
+	  	}
+	  	
+	  	// Determine all project folders
+	  	$projectFolders = glob($projectsUploadDir . '*');
+	  	
+	  	if (is_array($projectFolders))
+	  	{
+	  		foreach ($projectFolders as $projectFolder)
+	  		{
+	  			$postId = (int) basename($projectFolder);
+	  			if (!in_array($postId, $activePostIds))
+	  			{
+	  				@array_map( "unlink", glob($projectFolder . '/*') );
+	  				@rmdir($projectFolder);
+	  			}
+	  		}
+	  	}
 	  }
   }
 ?>

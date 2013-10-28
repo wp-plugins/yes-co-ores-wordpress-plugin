@@ -16,5 +16,5 @@
   define('POST_TYPE_RELATION',      'relatie');
   define('POST_TYPE_ATTACHMENT',    'attachment');
   
-  define('YOG_PLUGIN_VERSION',      '1.2.3');
+  define('YOG_PLUGIN_VERSION',      '1.2.5');
 ?>
