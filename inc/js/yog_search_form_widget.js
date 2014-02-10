@@ -17,7 +17,7 @@ jQuery(document).ready(function()
 yogSearchFormUpdateNum = function(formId)
 {
   // Detemine base url
-  var baseUrl     = djConfig.baseUrl;
+  var baseUrl     = YogConfig.baseUrl;
   var formElem    = jQuery('#' + formId);
   
   formElem.addClass('loading');

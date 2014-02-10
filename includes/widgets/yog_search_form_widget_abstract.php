@@ -52,8 +52,8 @@ abstract class YogSearchFormWidgetAbstract extends WP_Widget
           $objectText   = 'nieuwbouw type';
           break;
         default:
-          $objectsText  = 'objecten die';
-          $objectText   = 'object die';
+          $objectsText  = 'objecten';
+          $objectText   = 'object';
           break; 
       }
         
