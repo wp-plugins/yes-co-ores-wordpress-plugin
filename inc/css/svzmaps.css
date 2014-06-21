@@ -146,6 +146,11 @@ height: 20px;
 
 /* BEGIN SVZ GOOGLE MAPS INFO WINDOW */
 
+	
+.sg-info-window-content-holder {
+overflow: hidden;
+}
+	
 .sg-info-window-content,
 .sg-info-window-content.list {
 /*width: 600px;*/
