@@ -630,11 +630,10 @@
       switch ($movie['videoereference_serviceuri'])
       {
         case 'http://www.youtube.com':
-          $code = '<object width="' . $width . '" height="' . $height . '" type="application/x-shockwave-flash">';
-            $code .= '<param name="movie" value="' . $movie['videostreamurl'] . '" />';
-            $code .= '<param name="allowFullScreen" value="true" />';
-            $code .= '<param name="allowscriptaccess" value="always" />';
-          $code .= '</object>';
+
+            $code = '<iframe class="youtube-player" type="text/html" width="' . $width . '" height="' . $height . '" src="' . $movie['videostreamurl'] . '" allowfullscreen frameborder="0">
+                </iframe>';
+
           break;
         case 'http://vimeo.com':
           $code = '<iframe src="' . $movie['videostreamurl'] . '" width="' . $width . '" height="' . $height . '" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>';
