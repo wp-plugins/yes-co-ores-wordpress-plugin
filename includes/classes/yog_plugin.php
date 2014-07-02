@@ -35,6 +35,10 @@
 
       global $wp_version;
       $this->wpVersion = (float) $wp_version;
+
+      $timeZone = get_option('timezone_string');
+      if (!empty($timeZone))
+        date_default_timezone_set($timeZone);
     }
 
     /**

@@ -7,18 +7,18 @@
   {
     /**
     * @desc Get the post type
-    * 
+    *
     * @param void
     * @return string
     */
     public function getPostType()
     {
-      return POST_TYPE_WONEN; 
+      return POST_TYPE_WONEN;
     }
-    
+
     /**
     * @desc Get base name
-    * 
+    *
     * @param void
     * @return string
     */
@@ -26,10 +26,10 @@
     {
       return plugin_basename(__FILE__);
     }
-    
+
     /**
     * @desc Determine columns used in overview
-    * 
+    *
     * @param array $columns
     * @return array
     */
@@ -44,10 +44,10 @@
         'dlm'           => 'Laatste wijziging'
 	    );
     }
-    
+
     /**
     * @desc Add containers to project screen
-    * 
+    *
     * @param void
     * @return void
     */
@@ -60,20 +60,20 @@
 	    add_meta_box('yog-movies',        'Video',                array($this, 'renderMoviesMetaBox'),        POST_TYPE_WONEN, 'normal', 'low');
 	    add_meta_box('yog-documents',     'Documenten',           array($this, 'renderDocumentsMetaBox'),     POST_TYPE_WONEN, 'normal', 'low');
 	    add_meta_box('yog-links',         'Externe koppelingen',  array($this, 'renderLinksMetaBox'),         POST_TYPE_WONEN, 'normal', 'low');
-      
+
       // Only show parent object container when there is a parent object
       if (!empty($_REQUEST['post']) && yog_hasParentObject((int) $_REQUEST['post']))
         add_meta_box('yog-parent-meta',   'Nieuwbouw type',       array($this, 'renderParentMetaBox') ,       $this->getPostType(), 'side', 'high');
-      
-      add_meta_box('yog-meta-sync',     'Synchronisatie',       array($this, 'renderSyncMetaBox') ,         POST_TYPE_WONEN, 'side', 'low'); 
+
+      add_meta_box('yog-meta-sync',     'Synchronisatie',       array($this, 'renderSyncMetaBox') ,         POST_TYPE_WONEN, 'side', 'low');
       add_meta_box('yog-location',      'Locatie',              array($this, 'renderMapsMetaBox'),          POST_TYPE_WONEN, 'side', 'low');
       add_meta_box('yog-relations',     'Relaties',             array($this, 'renderRelationsMetaBox'),     POST_TYPE_WONEN, 'side', 'low');
       add_meta_box('yog-images',        'Afbeeldingen',         array($this, 'renderImagesMetaBox'),        POST_TYPE_WONEN, 'side', 'low');
     }
-    
+
     /**
     * @desc Render basic meta box
-    * 
+    *
     * @param object $post
     * @return void
     */
@@ -83,10 +83,10 @@
 	    echo $this->retrieveInputs($post->ID, array('Naam', 'Straat', 'Huisnummer', 'Postcode', 'Wijk', 'Buurt', 'Plaats', 'Gemeente', 'Provincie', 'Land', 'Status'));
 	    echo '</table>';
     }
-    
+
     /**
     * @desc Render price meta box
-    * 
+    *
     * @param object $post
     * @return void
     */
@@ -108,10 +108,10 @@
 
 	    echo '</table>';
     }
-    
+
     /**
     * @desc Render object details meta box
-    * 
+    *
     * @param object $post
     * @return void
     */
@@ -121,10 +121,10 @@
 	    echo $this->retrieveInputs($post->ID, array('Type', 'SoortWoning', 'TypeWoning', 'KenmerkWoning', 'Bouwjaar', 'Aantalkamers', 'Oppervlakte', 'OppervlaktePerceel', 'Inhoud', 'Ligging', 'GarageType', 'TuinType', 'BergingType', 'PraktijkruimteType', 'EnergielabelKlasse', 'Bijzonderheden'));
 	    echo '</table>';
     }
-    
+
     /**
     * @desc Render open house meta box
-    * 
+    *
     * @param object $post
     * @return void
     */
@@ -132,9 +132,9 @@
     {
 	    $openhuisVan = get_post_meta($post->ID,'huis_OpenHuisVan',true);
 	    $openhuisTot = get_post_meta($post->ID,'huis_OpenHuisTot',true);
-	    
+
 	    $aanwezig = ($openhuisTot && $openhuisVan);
-	    
+
 	    echo '<div class="form-table" style="margin: 10px;">';
 		    echo '<b>Open huis actief: <input type="checkbox" ' .($aanwezig?'checked':'') .' name="yog_openhuis_actief" id="openhuischeck" onchange="if(jQuery(\'#openhuischeck:checked\').val() !== undefined) { jQuery(\'#datumselectie\').slideDown(); }else{ jQuery(\'#datumselectie\').slideUp(); }"><b>';
 	    echo '</div>';
@@ -181,10 +181,10 @@
 		    echo $select;
 	    echo '</div>';
     }
-    
+
     /**
       * @desc Extend saving of huis post type with storing of custom fields
-      * 
+      *
       * @param int $postId
       * @param StdClass $post
       * @return void
@@ -198,7 +198,7 @@
       // Verify nonce
 	    if ( !wp_verify_nonce($_POST['yog_nonce'], plugin_basename(__FILE__) ))
 		    return $postId;
-        
+
 	    // verify if this is an auto save routine. If it is our form has not been submitted, so we dont want to do anything
 	    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE)
 	      return $postId;
@@ -206,7 +206,7 @@
 	    // Check permissions
 		  if (!current_user_can( 'edit_page', $postId ) )
 		    return $postId;
-      
+
 		  // Handle meta data
       $fieldsSettings = YogFieldsSettingsAbstract::create($post->post_type);
 
@@ -218,16 +218,16 @@
 			  else
 			    update_post_meta($postId, $fieldName, $_POST[$fieldName]);
 		  }
-      
+
 		  // Handle open huis
 		  if (!empty($_POST['yog_openhuis_actief']) && $_POST['yog_openhuis_actief'] == 'on')
       {
 			  $tijdVan = $_POST['yog_oh_van_jaar'] . '-' . $_POST['yog_oh_van_maand'] . '-' . $_POST['yog_oh_van_dag'] . ' ' . $_POST['yog_oh_van_uur'] . ':' . $_POST['yog_oh_van_minuut'];
 			  $tijdTot = $_POST['yog_oh_van_jaar'] ."-" .$_POST['yog_oh_van_maand'] ."-" .$_POST['yog_oh_van_dag'] ." " .$_POST['yog_oh_tot_uur'] .":" .$_POST['yog_oh_tot_minuut'];
-        
+
 			  update_post_meta($postId, POST_TYPE_WONEN . '_OpenHuisVan',$tijdVan);
 			  update_post_meta($postId, POST_TYPE_WONEN . '_OpenHuisTot',$tijdTot);
-			  
+
 			  if ((!empty($tijdVan) && strtotime($tijdVan) > time()) || (!empty($tijdTot) && strtotime($tijdTot) > time()))
 				  wp_set_object_terms( $postID, 'open-huis', 'category', true );
 		  }
