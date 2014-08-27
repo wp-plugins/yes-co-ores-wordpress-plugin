@@ -530,7 +530,7 @@
               if (!empty($videos[$uuid]['videoereference_id']))
               {
                 $videos[$uuid]['websiteurl']      = 'http://www.youtube.com/watch?v=' . $videos[$uuid]['videoereference_id'];
-                $videos[$uuid]['videostreamurl']  = 'http://www.youtube.com/v/' . $videos[$uuid]['videoereference_id'];
+                $videos[$uuid]['videostreamurl']  = 'http://www.youtube.com/embed/' . $videos[$uuid]['videoereference_id'];
               }
 
               break;
