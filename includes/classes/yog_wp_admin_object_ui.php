@@ -1,6 +1,6 @@
 <?php
   require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_fields_settings.php');
-  
+
   /**
   * @desc YogWpAdminUiAbstract
   * @author Kees Brandenburg - Yes-co Nederland
@@ -9,7 +9,7 @@
   {
     /**
     * @desc Create a YogWpAdminUiAbstract based on the post type
-    * 
+    *
     * @param string $postType
     * @return mixed
     */
@@ -43,10 +43,10 @@
           break;
       }
     }
-    
+
     /**
     * @desc Initialize WP admin interface
-    * 
+    *
     * @param void
     * @return void
     */
@@ -60,21 +60,23 @@
 
       $this->addAjaxActions();
     }
-    
+
     /**
     * @desc Enqueue files
-    * 
+    *
     * @param void
     * @return void
     */
     public function enqueueFiles()
     {
       wp_enqueue_script('yog-admin-object-js',     YOG_PLUGIN_URL .'/inc/js/admin_object.js', array('jquery'));
+      wp_enqueue_script('jquery-ui-datepicker');
+      wp_enqueue_style('jquery-ui-css', 'http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/themes/smoothness/jquery-ui.css');
     }
-    
+
     /**
     * @desc Determine content of a single column in overview
-    * 
+    *
     * @param string $columnId
     * @return void
     */
@@ -88,7 +90,7 @@
             echo $thumbnail;
           else
             echo '<div class="no-image" style="width:' . get_option('thumbnail_size_w', 0) . 'px;"></div>';
-          
+
           break;
         case 'title':
           echo yog_retrieveSpec('Naam');
@@ -97,7 +99,7 @@
           $content = get_the_excerpt();
           if (strlen($content) > 150)
             $content = substr($content, 0, 150) . '...';
-            
+
           echo $content;
           break;
         case 'address':
@@ -108,7 +110,7 @@
           break;
         case 'location':
           $specs = yog_retrieveSpecs(array('Postcode', 'Plaats', 'Land'));
-          
+
           echo implode('<br />', $specs);
           break;
         case 'dlm':
@@ -119,10 +121,10 @@
           break;
       }
     }
-    
+
     /**
     * @desc Retrieve input fields for specific fields
-    * 
+    *
     * @param $postId
     * @param array $fields
     * @param $readOnly (default: false)
@@ -132,7 +134,7 @@
     {
 	    if (!is_array($fields))
 	      throw new Exception(__METHOD__ . '; Invalid specs provided, must be an array');
-        
+
       $postType           = get_post_type($postId);
 
 	    foreach ($fields as $key => $field)
@@ -217,7 +219,7 @@
         {
 		      $html .= '<input type="text" style="width: ' . $width . 'px;" name="' . $field . '" value="' . $value . '" />';
         }
-        
+
 		    $html .= $addition;
 		    $html .= '</td>';
 		    $html .= '</tr>';
@@ -288,20 +290,20 @@
     abstract public function determineColumns($columns);
     abstract public function addMetaBoxes();
     abstract public function extendSave($postId, $post);
-    
+
     /**
     * @desc Add ajax actions
     * Can be overwritten by implementing class
-    * 
+    *
     * @param void
     * @return void
     */
     public function addAjaxActions()
     {
-      
+
     }
   }
-  
+
   /**
   * @desc YogWpAdminObjectUiAbstract
   * @author Kees Brandenburg - Yes-co Nederland
@@ -310,7 +312,7 @@
   {
     /**
     * @desc Add ajax actions
-    * 
+    *
     * @param void
     * @return void
     */
@@ -321,12 +323,12 @@
 	    add_action('wp_ajax_removevideo',     array($this, 'ajaxRemoveVideo'));
 	    add_action('wp_ajax_addlink',         array($this, 'ajaxAddLink'));
 	    add_action('wp_ajax_adddocument',     array($this, 'ajaxAddDocument'));
-	    add_action('wp_ajax_addvideo',        array($this, 'ajaxAddVideo')); 
+	    add_action('wp_ajax_addvideo',        array($this, 'ajaxAddVideo'));
     }
-    
+
     /**
     * @desc Render synchronization meta box
-    * 
+    *
     * @param object $post
     * @return void
     */
@@ -334,56 +336,56 @@
     {
 	    echo '<input type="hidden" name="yog_nonce" id="myplugin_noncename" value="' .wp_create_nonce($this->getBaseName()) . '" />';
       echo '<input type="hidden" name="uuid" value="' . yog_retrieveSpec('uuid', $post->ID) . '" />';
-      
+
 	    echo '<table class="form-table">';
 	    echo $this->retrieveInputs($post->ID, array('scenario'), true);
 	    echo '</table>';
     }
 
-    
+
     /**
     * @desc Render images meta box
-    * 
+    *
     * @param object $post
     * @return void
     */
     public function renderImagesMetaBox($post)
     {
       $images = yog_retrieveImages('thumbnail', null, $post->ID);
-      
+
       $html = '<div class="images-holder">';
       foreach ($images as $image)
       {
         $html .= '<div class="image-holder">';
-          $html .= '<img src="' . $image[0] . '" />'; 
+          $html .= '<img src="' . $image[0] . '" />';
         $html .= '</div>';
       }
       $html .= '</div>';
-      
+
       echo $html;
     }
-    
+
     /**
     * @desc Render movies meta box
-    * 
+    *
     * @param object $post
     * @return void
     */
     public function renderMoviesMetaBox($post)
     {
       $videos      = yog_retrieveMovies($post->ID);
-      
+
 	    $videoservices = array( 'Youtube' => 'http://www.youtube.com/',
 	                            'Vimeo'   => 'http://vimeo.com/',
 	                            'Flickr'  => 'http://www.flickr.com/');
-                              
+
 	    $select = '<select id="video_type" name="video_type">';
 	    foreach ($videoservices as $videoservice => $link)
       {
 		    $select.= '<option value="' .$link .'">' .$videoservice .'</option>';
 	    }
 	    $select.= '</select>';
-      
+
       $html  = '<div class="media-box" id="yog-video-form">';
         $html .= '<div class="row">';
 	        $html .= '<label for="video_type">Videoprovider: </label>' . $select;
@@ -398,44 +400,44 @@
           $html .= '<input type="button" class="button-primary" id="yog-add-video" value="Toevoegen" />';
         $html .= '</div>';
       $html .= '</div>';
-	    
+
       $html .= '<div id="yog-videos-overview" class="media-overview' . ((is_array($videos) && count($videos) > 0) ? '' : ' hide') . '">';
 	      $html .= '<b>Gekoppelde videos:</b>';
 	      $html .= '<div class="media-box">';
           $html .= '<table class="form-table" id="yog-video-tabel">';
             $html .= '<tbody>';
-            
+
 	          if (is_array($videos) && count($videos))
             {
 		          foreach ($videos as $videoUUID => $video)
 		          {
                 $url  = !empty($video['websiteurl']) ? $video['websiteurl'] : $video['videostreamurl'];
-                
+
 			          $html .= '<tr id="video-' . $video['uuid'] . '">';
 			          $html .= '<td><a href="' . $url .'" class="' . $video['type'] . '" target="_blank">' . $video['title'] . '</a></td>';
 			          $html .= '<td class="actions"><input type="button" class="button-primary" onclick="yogRemoveVideo(\'' .$video['uuid'] .'\');" value="Verwijderen" style="margin-left: 5px;"></td>';
 			          $html .= '</tr>';
 		          }
 	          }
-            
+
             $html .= '</tbody>';
 	        $html .= '</table>';
         $html .= '</div>';
       $html .= '</div>';
-      
+
 	    echo $html;
     }
-    
+
     /**
     * @desc Render documents meta box
-    * 
+    *
     * @param object $post
     * @return void
     */
     public function renderDocumentsMetaBox($post)
     {
       $documents  = yog_retrieveDocuments($post->ID);
-      
+
 	    $html  = '<div class="media-box" id="yog-document-form">';
         $html .= '<div class="row">';
           $html .= '<label for="document_type">Type (bijvoorbeeld \'brochure\'): </label>';
@@ -451,44 +453,44 @@
           $html .= '<input type="button" class="button-primary" id="yog-add-document" value="Toevoegen" />';
         $html .= '</div>';
       $html .= '</div>';
-	    
+
       $html .= '<div id="yog-documents-overview" class="media-overview' . ((is_array($documents) && count($documents) > 0) ? '' : ' hide') . '">';
 	      $html .= '<b>Gekoppelde documenten:</b>';
 	      $html .= '<div class="media-box">';
           $html .= '<table class="form-table" id="yog-documents-table">';
             $html .= '<tbody>';
-            
+
 	          if(is_array($documents) && count($documents))
             {
 		          foreach ($documents as $documentsUUID => $document)
 		          {
                 $type = empty($document['type']) ? 'brochure' : $document['type'];
-                
+
 			          $html .= '<tr id="document-' . $document['uuid'] . '">';
 			            $html .= '<td><a href="' . $document['url'] . '" class="' . $type . '">' . $document['title'] . '</a></td>';
 			            $html .= '<td class="actions"><input type="button" class="button-primary" onclick="yogRemoveDocument(\'' .$document['uuid'] .'\');" value="Verwijderen" /></td>';
 			          $html .= '</tr>';
 		          }
 	          }
-            
+
             $html .=  '</tbody>';
 	        $html .= '</table>';
         $html .= '</div>';
       $html .= '</div>';
-      
+
 	    echo $html;
     }
-    
+
     /**
     * @desc Render links meta box
-    * 
+    *
     * @param object $post
     * @return void
     */
     public function renderLinksMetaBox($post)
     {
       $links      = yog_retrieveLinks($post->ID);
-      
+
 	    $html  = '<div class="media-box" id="yog-link-form">';
         $html .= '<div class="row">';
           $html .= '<label for="link_type">Type: </label>';
@@ -510,20 +512,20 @@
 	      $html .= '<div class="media-box">';
           $html .= '<table class="form-table" id="yog-links-table">';
 	          $html .= '<tbody>';
-            
+
 	          if (is_array($links) && count($links) > 0)
             {
 		          foreach ($links as $linkUUID => $link)
 		          {
                 $type = empty($link['type']) ? 'website' : $link['type'];
-                
+
 			          $html .= '<tr id="link-' . $linkUUID . '">';
 			          $html .= '<td><a href="' . $link['url'] . '" class="' . $type . '" target="_blank">' . $link['title'] . '</a></td>';
 			          $html .= '<td class="actions"><input type="button" class="button-primary" onclick="yogRemoveLink(\'' .$link['uuid'] .'\');" value="Verwijderen" /></td>';
 			          $html .= '</tr>';
 		          }
 	          }
-            
+
             $html .= '</tbody>';
 	        $html .= '</table>';
         $html .= '</div>';
@@ -531,10 +533,10 @@
 
 	    echo $html;
     }
-    
+
     /**
     * @desc Render parent meta box
-    * 
+    *
     * @param StdClass $post
     * @return void
     */
@@ -544,19 +546,19 @@
       if ($parentId !== false)
       {
         $parent   = get_post($parentId);
-        
+
         $thumbnail = get_the_post_thumbnail($parent->ID, array(258,258));
         if (empty($thumbnail))
           $thumbnail = '<div class="no-image" style="width:100%;"></div>';
-        
+
         echo $thumbnail;
         echo '<strong><a href="' . get_edit_post_link($parent->ID) . '">' . $parent->post_title . '</a></strong>';
       }
     }
-    
+
     /**
     * @desc Render child projects meta box
-    * 
+    *
     * @param StdClass $post
     * @return void
     */
@@ -569,7 +571,7 @@
                                 'post_parent'     => $post->ID,
                                 'post_type'       => array(POST_TYPE_NBTY, POST_TYPE_NBBN, POST_TYPE_WONEN),
                                 'post_status'     => array('publish', 'pending', 'trash', 'draft', 'auto-draft', 'future', 'private')));
-      
+
       $thumbnailWidth   = get_option('thumbnail_size_w', 0);
       $noImageHtml      = '<div class="no-image" style="width:' . $thumbnailWidth . 'px;"></div>';
 
@@ -592,10 +594,10 @@
             $thumbnail = get_the_post_thumbnail($child->ID, 'thumbnail');
             if (empty($thumbnail))
               $thumbnail = $noImageHtml;
-              
+
             // Determine scenario
             $scenario = yog_retrieveSpec('scenario', $child->ID);
-            
+
             // Determine state
             switch ($child->post_status)
             {
@@ -604,12 +606,12 @@
                 break;
               default:
                 $state = __(ucfirst($child->post_status));
-                break; 
+                break;
             }
-            
+
             // Determine admin links
             $links = array();
-            
+
             if ($child->post_status != 'trash')
             {
               $links[] = '<a href="' . get_edit_post_link($child->ID) . '">' . __('Edit') . '</a>';
@@ -619,15 +621,15 @@
               $links[] = '<a href="' . $this->getUntrashUrl($child) . '">' . __('Restore') . '</a>';
               $links[] = '<a href="' . get_delete_post_link($child->ID, '', true) . '">' . __('Delete Permanently') . '</a>';
             }
-            
+
             if ($scenario != 'NBbn' && $child->post_status != 'trash')
               $links[] = '<a href="' . get_permalink($child->ID) . '">' . __('View') . '</a>';
-              
+
             // Determine title
             $title = $child->post_title;
             if ($child->post_status != 'trash')
               $title = '<a href="' . get_edit_post_link($child->ID) . '">' . $title . '</a>';
-          
+
             echo '<tr>';
               echo '<td>' . $thumbnail . '</td>';
               echo '<td>';
@@ -642,15 +644,15 @@
         }
         else
         {
-          echo ' <tr><td colspan="3">Geen gelinkte objecten gevonden</td></tr>'; 
+          echo ' <tr><td colspan="3">Geen gelinkte objecten gevonden</td></tr>';
         }
         echo '</tbody>';
       echo '</table>';
     }
-    
+
     /**
     * @desc Get the untrash url of a post
-    * 
+    *
     * @param StdClass $post
     * @return string
     */
@@ -659,10 +661,10 @@
       $post_type_object = get_post_type_object($post->post_type);
       return wp_nonce_url(admin_url(sprintf($post_type_object->_edit_link . '&amp;action=untrash', $post->ID)), 'untrash-' . $post->post_type . '_' . $post->ID);
     }
-    
+
     /**
     * @desc Render address meta box
-    * 
+    *
     * @param StdClass $post
     * @return void
     */
@@ -672,20 +674,20 @@
 	    echo $this->retrieveInputs($post->ID, array('Straat', 'Huisnummer', 'Postcode', 'Wijk', 'Buurt', 'Plaats', 'Gemeente', 'Provincie', 'Land'));
 	    echo '</table>';
     }
-    
+
     /**
     * @desc Render linked relations meta box
-    * 
+    *
     * @param StdClass $post
     * @return void
     */
     public function renderRelationsMetaBox($post)
     {
       $relations = yog_retrieveRelations();
-      
+
       $html  = '<table class="form-table" id="yog-links-table">';
         $html .= '<tbody>';
-      
+
         foreach ($relations as $role => $relation)
         {
           $html .= '<tr id="relation-' . $relation->ID . '">';
@@ -693,16 +695,16 @@
             $html .= '<td><a href="' . get_edit_post_link($relation->ID) . '">' . $relation->post_title . '</a></td>';
           $html .= '</tr>';
         }
-        
+
         $html .= '</tbody>';
       $html .= '</table>';
-      
+
       echo $html;
     }
-    
+
     /**
     * @desc Redirect to parent post
-    * 
+    *
     * @param int $postId
     * @return void
     */
@@ -719,10 +721,10 @@
         exit;
       }
     }
-    
+
     /**
     * @desc Add video handler
-    * 
+    *
     * @param void
     * @return void
     */
@@ -734,13 +736,13 @@
 		  $titel      = $_POST['titel'];
 		  $serviceUri = $_POST['type'];
 		  $url        = $_POST['url'];
-      
+
       if (strpos($url, 'http://') === false && strpos($url, 'https://') === false && strpos($url, 'ftp://') === false)
         $url = 'http://' . $url;
-      
+
 		  $videos = get_post_meta($postId, $postType . '_Videos',true);
 		  $order  = 10;
-      
+
 		  if (!is_array($videos))
       {
 			  $videos = array();
@@ -753,22 +755,22 @@
 					  $order = $video['order'] + 1;
 			  }
 		  }
-      
+
 		  $videos[$uuid] = array('uuid'                       => $uuid,
                             'videoereference_serviceuri'  => $serviceUri,
                             'title'                       => $titel,
                             'websiteurl'                  => $url,
                             'order'                       => $order);
-      
+
 		  update_post_meta($postId, $postType . '_Videos', $videos);
-      
+
 		  echo $uuid;
 		  exit();
 	  }
-    
+
     /**
     * @desc Remove video handle
-    * 
+    *
     * @param void
     * @return void
     */
@@ -777,23 +779,23 @@
       $uuid     = $_POST['uuid'];
       $postId   = (int) $_POST['post'];
       $postType = get_post_type($postId);
-      
+
 		  $videos = get_post_meta($postId, $postType . '_Videos', true);
 		  if (is_array($videos) && count($videos))
       {
         if (isset($videos[$uuid]))
 			    unset($videos[$uuid]);
-        
+
 			  update_post_meta($postId, $postType . '_Videos', $videos);
 		  }
-      
+
       echo $uuid;
 		  exit();
 	  }
-    
+
     /**
     * @desc Add link handler
-    * 
+    *
     * @param void
     * @return void
     */
@@ -805,24 +807,24 @@
 		  $titel    = $_POST['titel'];
 		  $type     = $_POST['type'];
       $url      = $_POST['url'];
-      
+
       if (strpos($url, 'http://') === false && strpos($url, 'https://') === false && strpos($url, 'ftp://') === false)
         $url = 'http://' . $url;
-		  
+
 		  $links = get_post_meta($postId, $postType . '_Links', true);
 		  if (!is_array($links))
 			  $links = array();
-        
+
 		  $links[$uuid] = array('uuid' => $uuid,'type' => $type,'title' => $titel,'url' => $url);
 		  update_post_meta($postId, $postType . '_Links', $links);
-      
+
 		  echo $uuid;
 		  exit();
 	  }
-    
+
     /**
     * @desc Remove link handler
-    * 
+    *
     * @param void
     * @return void
     */
@@ -832,22 +834,22 @@
       $postType = get_post_type($postId);
       $uuid     = $_POST['uuid'];
 		  $links    = get_post_meta($postId, $postType . '_Links', true);
-      
+
 		  if (is_array($links) && count($links))
       {
         if (isset($links[$uuid]))
 			    unset($links[$uuid]);
-        
+
 			  update_post_meta($postId, $postType . '_Links',$links);
 		  }
-      
+
       echo $uuid;
 		  exit();
 	  }
-    
+
     /**
     * @desc Add document handler
-    * 
+    *
     * @param void
     * @return void
     */
@@ -859,13 +861,13 @@
 		  $titel      = $_POST['titel'];
 		  $type       = $_POST['type'];
 		  $url        = $_POST['url'];
-      
+
       if (strpos($url, 'http://') === false && strpos($url, 'https://') === false && strpos($url, 'ftp://') === false)
         $url = 'http://' . $url;
-      
+
 		  $documenten = get_post_meta($postId, $postType . '_Documenten', true);
 		  $order      = 10;
-      
+
 		  if(!is_array($documenten))
       {
 			  $documenten = array();
@@ -878,21 +880,21 @@
 					  $order = $document['order']+1;
 			  }
 		  }
-      
+
 		  $documenten[$uuid] = array( 'uuid'  => $uuid,
                                   'type'  => $type,
                                   'title' => $titel,
                                   'url'   => $url,
                                   'order' => $order);
-      
-		  update_post_meta($postId, $postType . '_Documenten', $documenten);		
+
+		  update_post_meta($postId, $postType . '_Documenten', $documenten);
 		  echo $uuid;
 		  exit();
 	  }
-    
+
     /**
     * @desc Remove document handler
-    * 
+    *
     * @param void
     * @return void
     */
@@ -901,17 +903,17 @@
       $postId   = (int) $_POST['post'];
       $postType = get_post_type($postId);
       $uuid     = $_POST['uuid'];
-      
+
 		  $links = get_post_meta($postId, $postType . '_Documenten', true);
-      
+
 		  if (is_array($links) && count($links))
       {
         if (isset($links[$uuid]))
 			    unset($links[$uuid]);
-        
+
 			  update_post_meta($postId, $postType . '_Documenten', $links);
 		  }
-      
+
       echo $uuid;
 		  exit();
 	  }

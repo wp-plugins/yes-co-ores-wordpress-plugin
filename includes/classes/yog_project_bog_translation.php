@@ -7,18 +7,18 @@
   {
     /**
     * @desc Get post type
-    * 
+    *
     * @param void
     * @return string
     */
     public function getPostType()
     {
-      return POST_TYPE_BOG; 
+      return POST_TYPE_BOG;
     }
-    
+
     /**
     * @desc Get the title
-    * 
+    *
     * @param void
     * @return string
     */
@@ -33,13 +33,13 @@
       {
         $title    = $this->mcp3Project->getName();
       }
-      
+
       return $title;
     }
-    
+
     /**
     * @desc Get meta data
-    * 
+    *
     * @param void
     * @return array
     */
@@ -48,7 +48,7 @@
       // General meta data
       $data = $this->getGeneralMetaData();
       $type = ($this->mcp3Project->hasSubType()) ? $this->mcp3Project->getSubType() : $this->mcp3Project->getType();
-      
+
       // Type specific meta data
       switch (strtolower($type))
       {
@@ -71,10 +71,10 @@
 
       return $data;
     }
-    
+
     /**
     * @desc Get the categories to link project to
-    * 
+    *
     * @param void
     * @return array
     */
@@ -83,9 +83,9 @@
       $type = ($this->mcp3Project->hasSubType()) ? $this->mcp3Project->getSubType() : $this->mcp3Project->getType();
       if ($type == 'Bouwgrond')
         $type = 'bog-bouwgrond';
-      
+
 	    $categories = array('bedrijf', strtolower($type));
-      
+
       // Bestaand / Nieuwbouw
       $bouwType = $this->mcp3Project->getStringByPath('//project:General/project:BouwType');
       if (!empty($bouwType))
@@ -100,17 +100,17 @@
             break;
         }
       }
-      
+
       // Verkoop
       $koopPrijs = $this->mcp3Project->getStringByPath('//project:Details/project:Koop/project:Prijs');
       if (!empty($koopPrijs))
         $categories[] = 'bog-verkoop';
-		    
+
       // Verhuur
       $koopPrijs = $this->mcp3Project->getStringByPath('//project:Details/project:Huur/project:Prijs');
       if (!empty($koopPrijs))
         $categories[] = 'bog-verhuur';
-      
+
       // Determine verkoop / verhuur category based on scenario (fallback)
       if (!in_array('bog-verkoop', $categories) && !in_array('bog-verhuur', $categories))
       {
@@ -131,13 +131,13 @@
 
       // Allow the theme to add custom categories
       $this->getThemeCategories($this->mcp3Project, $categories);
-        
+
       return $categories;
     }
-    
+
     /**
     * @desc General meta data
-    * 
+    *
     * @param void
     * @return array
     */
@@ -184,43 +184,43 @@
         'WoonruimteSituatie'          => $this->mcp3Project->getStringByPath('//project:Details/project:Woonruimte/project:Situatie'),
         'WoonruimteStatus'            => $this->mcp3Project->getStringByPath('//project:Details/project:Woonruimte/project:Status')
       );
-      
+
       // Prices
       $data = array_merge($data, $this->handlePriceBtw('//project:Details/project:Koop/project:Prijs', 'KoopPrijs'));
       $data = array_merge($data, $this->handlePriceBtw('//project:Details/project:Huur/project:Prijs', 'HuurPrijs'));
       $data = array_merge($data, $this->handlePriceBtw('//project:Details/project:Koop/project:Belegging/project:Huuropbrengst', 'Huuropbrengst'));
-      
+
 
       // Erfpacht duur
 	    $data['ErfpachtDuur']     = $this->mcp3Project->getStringByPath('//project:KadastraleInformatie[0]/project:Eigendom/project:ErfpachtDuur');
 	    if ($data['ErfpachtDuur'] != 'eeuwig')
 		    $data['ErfpachtDuur'] .= ' ' . $this->mcp3Project->getStringByPath('//project:KadastraleInformatie[0]/project:Eigendom/project:EindDatum');
-      
+
       // Housenumber
       $address                  = $this->mcp3Project->getAddress();
       $data['Huisnummer']       = $address->getHouseNumber() . $address->getHouseNumberAddition();
-      
+
       // Type
 		  $type                     = ($this->mcp3Project->hasSubType()) ? $this->mcp3Project->getSubType() : $this->mcp3Project->getType();
 	    $data['Type']             = $type;
-      
+
       // Aanvaarding
       $aanvaardingType          = $this->mcp3Project->getStringByPath('//project:Details/project:Aanvaarding/project:Type');
    	  if($aanvaardingType == 'per datum')
 		    $data['Aanvaarding'] = 'per ' . $this->mcp3Project->getStringByPath('//project:Details/project:Aanvaarding/project:Datum');
       else
 		    $data['Aanvaarding'] = $this->mcp3Project->getStringByPath('//project:Details/project:Aanvaarding/project:Type');
-      
+
       $toelichting              = $this->mcp3Project->getStringByPath('//project:Details/project:Aanvaarding/project:Toelichting');
 	    if (is_string($toelichting) && strlen(trim($toelichting)) > 0)
 		    $data['Aanvaarding'] .= ', ' .$toelichting;
-      
+
       return $data;
     }
-    
+
     /**
     * @desc Get bouwgrond meta data
-    * 
+    *
     * @param void
     * @return array
     */
@@ -233,13 +233,13 @@
         'BouwgrondVloerOppervlakte'             => $this->mcp3Project->getIntByPath('//project:Details/project:Bouwgrond/project:VloerOppervlakte'),
         'BouwgrondVloerOppervlakteProcentueel'  => $this->mcp3Project->getIntByPath('//project:Details/project:Bouwgrond/project:VloerOppervlakteProcentueel')
       );
-      
+
       return $data;
     }
-    
+
     /**
     * @desc Get bedrijfsruimte meta data
-    * 
+    *
     * @param void
     * @return array
     */
@@ -258,30 +258,30 @@
         'TerreinOppervlakte'              => $this->mcp3Project->getIntByPath('//project:Gebouw/project:Bedrijfsruimte/project:Terrein/project:Oppervlakte'),
         'TerreinBouwvolumeBouwhoogte'     => $this->mcp3Project->getIntByPath('//project:Gebouw/project:Bedrijfsruimte/project:Terrein/project:Bouwvolume/project:Bouwhoogte')
       );
-      
+
       // Vloer oppervlakte terrein
       $vloerOppervlakte             = $this->mcp3Project->getIntByPath('//project:Gebouw/project:Bedrijfsruimte/project:Terrein/project:Bouwvolume/project:VloerOppervlakte');
       $vloerOppervlakteProcentueel  = $this->mcp3Project->getIntByPath('//project:Gebouw/project:Bedrijfsruimte/project:Terrein/project:Bouwvolume/project:VloerOppervlakteProcentueel');
-      
+
       if (!empty($vloerOppervlakte))
         $data['TerreinBouwvolumeVloerOppervlakte'] = $vloerOppervlakte . ' m&sub2;';
       else if (!empty($vloerOppervlakteProcentueel))
         $data['TerreinBouwvolumeVloerOppervlakte'] = $vloerOppervlakteProcentueel . '%';
-      
+
       // Prices
       $data = array_merge($data, $this->handlePriceBtw('//project:Gebouw/project:Bedrijfsruimte/project:Bedrijfshal/project:Prijs', 'BedrijfshalPrijs'));
       $data = array_merge($data, $this->handlePriceBtw('//project:Gebouw/project:Bedrijfsruimte/project:Kantoorruimte/project:Prijs', 'KantoorruimtePrijs'));
       $data = array_merge($data, $this->handlePriceBtw('//project:Gebouw/project:Bedrijfsruimte/project:Terrein/project:Prijs', 'TerreinPrijs'));
-      
+
       // Gebouw meta data
       $data = array_merge($data, $this->getGebouwMetaData());
-      
+
       return $data;
     }
-    
+
     /**
     * @desc Get kantoor ruimte meta data
-    * 
+    *
     * @param void
     * @return array
     */
@@ -294,16 +294,16 @@
         'KantoorruimteInUnitsVanaf'        => $this->mcp3Project->getIntByPath('//project:Gebouw/project:Kantoorruimte/project:InUnitsVanaf'),
         'KantoorruimteTurnKey'             => $this->translateBool($this->mcp3Project->getBoolByPath('//project:Gebouw/project:Kantoorruimte/project:Turnkey'))
       );
-      
+
       // Gebouw meta data
       $data = array_merge($data, $this->getGebouwMetaData());
-      
+
       return $data;
     }
-    
+
     /**
     * @desc Get winkelruimte meta data
-    * 
+    *
     * @param void
     * @return array
     */
@@ -321,19 +321,19 @@
         'WinkelruimteBijdrageWinkeliersvereniging'  => $this->translateBool($this->mcp3Project->getBoolByPath('//project:Gebouw/project:Winkelruimte/project:BijdrageWinkeliersvereniging')),
         'WinkelruimtePersoneelTerOvername'          => $this->translateBool($this->mcp3Project->getBoolByPath('//project:Gebouw/project:Winkelruimte/project:TerOvername/project:Personeel'))
       );
-      
+
       // Prices
       $data = array_merge($data, $this->handlePriceBtw('//project:Gebouw/project:Winkelruimte/project:TerOvername/project:PrijsInventarisGoodwill', 'WinkelruimtePrijsInventarisGoodwill'));
-      
+
       // Gebouw meta data
       $data = array_merge($data, $this->getGebouwMetaData());
-      
+
       return $data;
     }
-    
+
     /**
     * @desc Get Horeca meta data
-    * 
+    *
     * @param void
     * @return array
     */
@@ -348,23 +348,23 @@
         'HorecaRegio'                   => $this->mcp3Project->getStringByPath('//project:Gebouw/project:Horeca/project:Regio'),
         'HorecaPersoneelTerOvername'    => $this->translateBool($this->mcp3Project->getBoolByPath('//project:Gebouw/project:Horeca/project:TerOvername/project:Personeel'))
       );
-      
+
       // Prices
       $data = array_merge($data, $this->handlePriceBtw('//project:Gebouw/project:Horeca/project:TerOvername/project:PrijsInventarisGoodwill', 'HorecaPrijsInventarisGoodwill'));
-      
+
       // Verdiepingen
       $verdiepingNodes = $this->mcp3Project->getNodesByXpath('//project:Gebouw/project:Horeca/project:Verdiepingen/project:Verdieping');
       $data['HorecaAantalVerdiepingen'] = count($verdiepingNodes);
-      
+
       // Gebouw meta data
       $data = array_merge($data, $this->getGebouwMetaData());
-      
+
       return $data;
     }
-    
+
     /**
     * @desc Get bouwjaar meta data
-    * 
+    *
     * @param void
     * @return array
     */
@@ -400,7 +400,7 @@
         'AantalParkeerplaatsenOverdekt'     => $this->mcp3Project->getIntByPath('//project:Gebouw/project:Lokatie/project:Parkeren[project:Overdekt = \'true\']/project:Aantal'),
         'AantalParkeerplaatsenNietOverdekt' => $this->mcp3Project->getIntByPath('//project:Gebouw/project:Lokatie/project:Parkeren[project:Overdekt != \'true\']/project:Aantal')
       );
-      
+
       $periode = $this->mcp3Project->getStringByPath('//project:Gebouw/project:Bouwjaar/project:Periode');
       if (!empty($periode))
       {
@@ -410,47 +410,38 @@
       {
         $data['Bouwjaar'] = $this->mcp3Project->getStringByPath('//project:Gebouw/project:Bouwjaar/project:BouwjaarOmschrijving[0]/project:Jaar');
       }
-      
+
       return $data;
     }
-    
+
     /**
     * @desc Determine project state
-    * 
+    *
     * @param void
     * @return string
     */
     private function determineState()
     {
-	    $state          = 'beschikbaar';
+      $state          = $this->mcp3Project->getStringByPath('//project:General/project:ObjectStatus');
 	    $voorbehoudDate = $this->mcp3Project->getStringByPath('//project:Details/project:DatumVoorbehoudTot');
-	    
-      if (!empty($voorbehoudDate))
+
+      if (in_array(strtolower($state), array('verkocht onder voorbehoud', 'verhuurd onder voorbehoud')) && (empty($voorbehoudDate) || strtotime($voorbehoudDate) < date('U')))
       {
-        $voorbehoudDate = strtotime($voorbehoudDate);
-        
-        if (strtotime($voorbehoudDate) < date('U'))
-        {
-          $koopPrijs = $this->mcp3Project->getStringByPath('//project:Details/project:Koop/project:Prijs');
-          $huurPrijs = $this->mcp3Project->getStringByPath('//project:Details/project:Huur/project:Prijs');
-          
-	        if (!empty($koopPrijs))
-	          $state = 'Verkocht';
-	        else if (!empty($huurPrijs))
-	          $state = 'Verhuurd';
-        }
-        else
-        {
-          $state = 'verkocht onder voorbehoud';
-        }
+        $koopPrijs = $this->mcp3Project->getStringByPath('//project:Details/project:Koop/project:Prijs');
+        $huurPrijs = $this->mcp3Project->getStringByPath('//project:Details/project:Huur/project:Prijs');
+
+	      if (!empty($koopPrijs))
+          $state = 'Verkocht';
+	      else if (!empty($huurPrijs))
+          $state = 'Verhuurd';
       }
-      
+
       return $state;
     }
-    
+
     /**
     * @desc Handle price btw element
-    * 
+    *
     * @param string $xpath
     * @paran string $field
     * @return array

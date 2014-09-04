@@ -6,21 +6,21 @@
   class YogProjectWonenTranslation extends YogProjectTranslationAbstract
   {
     const POST_TYPE = 'huis';
-    
+
     /**
     * @desc Get post type
-    * 
+    *
     * @param void
     * @return string
     */
     public function getPostType()
     {
-      return POST_TYPE_WONEN; 
+      return POST_TYPE_WONEN;
     }
-    
+
     /**
     * @desc Get base name
-    * 
+    *
     * @param void
     * @return string
     */
@@ -28,21 +28,21 @@
     {
       return plugin_basename(__FILE__);
     }
-    
+
     /**
     * @desc Check if a parent uuid is set
-    * 
+    *
     * @param void
     * @return bool
     */
     public function hasParentUuid()
     {
-      return ($this->mcp3Project->getScenario() == 'NBvk' && $this->mcp3Project->hasNBtyUuid());
+      return $this->mcp3Project->hasParentUuid();
     }
-    
+
     /**
     * @desc Get the parent uuid
-    * 
+    *
     * @param void
     * @return string
     * @throws Exception
@@ -51,13 +51,13 @@
     {
       if (!$this->hasParentUuid())
         throw new Exception(__METHOD__ . '; Object does not have a parent object');
-      
-      return $this->mcp3Project->getNBtyUuid();
+
+      return $this->mcp3Project->getParentUuid();
     }
-    
+
     /**
     * @desc Get the title
-    * 
+    *
     * @param void
     * @return string
     */
@@ -72,13 +72,13 @@
       {
         $title    = $this->mcp3Project->getName();
       }
-      
+
       return $title;
     }
-    
+
     /**
     * @desc Get meta data
-    * 
+    *
     * @param void
     * @return array
     */
@@ -86,7 +86,7 @@
     {
       // General meta data
       $data = $this->getGeneralMetaData();
-      
+
       // Type specific meta data
       switch (strtolower($this->mcp3Project->getType()))
       {
@@ -112,48 +112,48 @@
 
       return $data;
     }
-    
+
     /**
     * @desc Get the categories to link project to
-    * 
+    *
     * @param void
     * @return array
     */
     public function getCategories()
     {
 	    $categories = array('consument');
-      
+
 		  if (in_array($this->mcp3Project->getScenario(), array('BBvk', 'BBvh', 'LIvk')))
 			  $categories[] = 'bestaand';
-		  elseif (in_array($this->mcp3Project->getScenario(), array('NBvk')))
+		  elseif (in_array($this->mcp3Project->getScenario(), array('NBvk', 'NBvh')))
 			  $categories[] = 'nieuwbouw';
-      
+
       switch (strtolower($this->mcp3Project->getType()))
       {
         // Woonruimte
         case 'woonruimte':
           $categories[] = 'woonruimte';
           $categories[] = strtolower($this->mcp3Project->getSubType());
-          
+
           // Check for open house
           $openHouseStart = $this->mcp3Project->getStringByPath('//project:Details/project:OpenHuis/project:Van');
           $openHouseEnd   = $this->mcp3Project->getStringByPath('//project:Details/project:OpenHuis/project:Tot');
-        
+
           if ((!empty($openHouseStart) && strtotime($openHouseStart) > time()) || (!empty($openHouseEnd) || strtotime($openHouseEnd) > time()))
             $categories[] = 'open-huis';
-          
+
           break;
         // Other
         default:
           $categories[] = strtolower($this->mcp3Project->getType());
           break;
       }
-      
+
       // Verkoop
       $koopPrijs = $this->mcp3Project->getStringByPath('//project:Details/project:Koop/project:Prijs');
       if (!empty($koopPrijs))
         $categories[] = 'verkoop';
-		    
+
       // Verhuur
       $koopPrijs = $this->mcp3Project->getStringByPath('//project:Details/project:Huur/project:Prijs');
       if (!empty($koopPrijs))
@@ -165,13 +165,13 @@
 
       // Allow the theme to add custom categories
       $this->getThemeCategories($this->mcp3Project, $categories);
-        
+
       return $categories;
     }
-    
+
     /**
     * @desc General meta data
-    * 
+    *
     * @param void
     * @return array
     */
@@ -225,32 +225,32 @@
       $serviceKosten            = $this->mcp3Project->getStringByPath('//project:Details/project:Koop/project:Servicekosten');
       $bijdrageVve              = $this->mcp3Project->getStringByPath('//project:Details/project:ZakelijkeLasten/project:BijdrageVve');
 	    $data['Servicekosten']    = empty($serviceKosten) ? $bijdrageVve : $serviceKosten;
-      
+
       // Housenumber
       $address                  = $this->mcp3Project->getAddress();
       $data['Huisnummer']       = $address->getHouseNumber() . $address->getHouseNumberAddition();
-      
+
       // Type
 		  $type                     = ($this->mcp3Project->hasSubType()) ? $this->mcp3Project->getSubType() : $this->mcp3Project->getType();
 	    $data['Type']             = $type;
-      
+
       // Aanvaarding
       $aanvaardingType          = $this->mcp3Project->getStringByPath('//project:Details/project:Aanvaarding/project:Type');
    	  if($aanvaardingType == 'per datum')
 		    $data['Aanvaarding'] = 'per ' . $this->mcp3Project->getStringByPath('//project:Details/project:Aanvaarding/project:Datum');
       else
 		    $data['Aanvaarding'] = $this->mcp3Project->getStringByPath('//project:Details/project:Aanvaarding/project:Type');
-      
+
       $toelichting              = $this->mcp3Project->getStringByPath('//project:Details/project:Aanvaarding/project:Toelichting');
 	    if (is_string($toelichting) && strlen(trim($toelichting)) > 0)
 		    $data['Aanvaarding'] .= ', ' .$toelichting;
-      
+
       return $data;
     }
-    
+
     /**
     * @desc Determine project state
-    * 
+    *
     * @param void
     * @return string
     */
@@ -258,24 +258,24 @@
     {
 	    $state          = $this->mcp3Project->getStringByPath('//project:General/project:ObjectStatus');
 	    $voorbehoudDate = $this->mcp3Project->getStringByPath('//project:General/project:Voorbehoud');
-	    
-	    if ($state == 'verkocht onder voorbehoud' && (empty($voorbehoudDate) || strtotime($voorbehoudDate) < date('U')))
+
+	    if (in_array(strtolower($state), array('verkocht onder voorbehoud', 'verhuurd onder voorbehoud')) && (empty($voorbehoudDate) || strtotime($voorbehoudDate) < date('U')))
 	    {
         $koopPrijs = $this->mcp3Project->getStringByPath('//project:Details/project:Koop/project:Prijs');
         $huurPrijs = $this->mcp3Project->getStringByPath('//project:Details/project:Huur/project:Prijs');
-        
+
 	      if (!empty($koopPrijs))
 	        $state = 'Verkocht';
 	      else if (!empty($huurPrijs))
 	        $state = 'Verhuurd';
 	    }
-      
+
       return $state;
     }
-    
+
     /**
     * @desc Get woonruimte meta data
-    * 
+    *
     * @param void
     * @return array
     */
@@ -323,12 +323,12 @@
         'OnderhoudVloer'              => $this->mcp3Project->getStringByPath('//project:Details/project:Woonruimte/project:Onderhoud/project:Vloer'),
         'OnderhoudDak'                => $this->mcp3Project->getStringByPath('//project:Details/project:Woonruimte/project:Onderhoud/project:Dak'),
       );
-      
+
 			// Bouwjaar
 			$bouwjaarPeriode  = $this->mcp3Project->getStringByPath('//project:Details/project:Woonruimte/project:Bouwjaar/project:Periode');
 			$bouwjaar         = $this->mcp3Project->getStringByPath('//project:Details/project:Woonruimte/project:Bouwjaar/project:BouwjaarOmschrijving/project:Jaar');
 			$data["Bouwjaar"] = empty($bouwjaarPeriode) ? $bouwjaar : $this->translateBouwjaarPeriode($bouwjaarPeriode);
-      
+
       // Voorzieningen
       $voorzieningen    = array();
       $names            = $this->mcp3Project->getStringByPath('//project:Details/project:Woonruimte/project:Voorzieningen/project:Voorziening/@naam');
@@ -340,7 +340,7 @@
 
       if (count($voorzieningen) > 0)
         $data['Voorzieningen'] = implode(', ', $voorzieningen);
-        
+
       // Subtype specific
       switch (strtolower($this->mcp3Project->getSubType()))
       {
@@ -352,15 +352,15 @@
         case 'appartement':
 				  $data["SoortWoning"]    = $this->mcp3Project->getStringByPath('//project:Details/project:Woonruimte/project:Appartement/project:SoortAppartement');
 				  $data["KenmerkWoning"]  = $this->mcp3Project->getStringByPath('//project:Details/project:Woonruimte/project:Appartement/project:Kenmerk');
-          break; 
+          break;
       }
-      
+
       return $data;
     }
-    
+
     /**
     * @desc Get bouwgrond meta data
-    * 
+    *
     * @param void
     * @return array
     */
@@ -371,10 +371,10 @@
 			  'Ligging'     => $this->mcp3Project->getStringByPath('//project:Details/project:Bouwgrond/project:Ligging')
       );
     }
-    
+
     /**
     * @desc Get Parkeergelegenheid meta data
-    * 
+    *
     * @param void
     * @return array
     */
@@ -384,10 +384,10 @@
 			  'Oppervlakte' => $this->mcp3Project->getIntByPath('//project:Details/project:Parkeergelegenheid/project:Oppervlakte')
       );
     }
-    
+
     /**
     * @desc Get Berging meta data
-    * 
+    *
     * @param void
     * @return array
     */
@@ -397,10 +397,10 @@
 			  'Oppervlakte' => $this->mcp3Project->getIntByPath('//project:Details/project:Berging/project:Oppervlakte')
       );
     }
-    
+
     /**
     * @desc Get Standplaats meta data
-    * 
+    *
     * @param void
     * @return array
     */
@@ -410,10 +410,10 @@
 			  'Oppervlakte' => $this->mcp3Project->getIntByPath('//project:Details/project:Standplaats/project:Oppervlakte')
       );
     }
-    
+
     /**
     * @desc Get Ligplaats meta data
-    * 
+    *
     * @param void
     * @return array
     */

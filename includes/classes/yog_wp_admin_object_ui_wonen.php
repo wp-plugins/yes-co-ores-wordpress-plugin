@@ -133,53 +133,32 @@
 	    $openhuisVan = get_post_meta($post->ID,'huis_OpenHuisVan',true);
 	    $openhuisTot = get_post_meta($post->ID,'huis_OpenHuisTot',true);
 
-	    $aanwezig = ($openhuisTot && $openhuisVan);
+	    $aanwezig = (!empty($openhuisTot) && !empty($openhuisVan));
+		  $van      = strtotime($openhuisVan);
+		  $tot      = strtotime($openhuisTot);
 
-	    echo '<div class="form-table" style="margin: 10px;">';
-		    echo '<b>Open huis actief: <input type="checkbox" ' .($aanwezig?'checked':'') .' name="yog_openhuis_actief" id="openhuischeck" onchange="if(jQuery(\'#openhuischeck:checked\').val() !== undefined) { jQuery(\'#datumselectie\').slideDown(); }else{ jQuery(\'#datumselectie\').slideUp(); }"><b>';
-	    echo '</div>';
-	    echo '<div id="datumselectie" style="margin: 10px; ' .($aanwezig?'':'display: none;') .'">';
-		    $van = strtotime($openhuisVan);
-		    $tot = strtotime($openhuisTot);
-		    echo '<b>Datum: <b>';
-		    $select = '<select name="yog_oh_van_dag">';
-		    for($dag = 1 ; $dag < 32 ; $dag++)
-			    $select.= '<option ' .(trim(strftime('%e',$van))==$dag?'selected':'') .' >' .(strlen($dag)==1?'0':'') .$dag .'</option>';
-		    $select.= '</select> - ';
-		    echo $select;
-		    $select = '<select name="yog_oh_van_maand">';
-		    for($maand = 1 ; $maand < 13 ; $maand++)
-			    $select.= '<option ' .(trim(strftime('%m',$van))==$maand?'selected':'') .' >' .(strlen($maand)==1?'0':'') .$maand .'</option>';
-		    $select.= '</select> - ';
-		    echo $select;
-		    $select = '<select name="yog_oh_van_jaar">';
-		    for($jaar = strftime("%Y",time()) ; $jaar < strftime("%Y",time())+10  ; $jaar++)
-			    $select.= '<option ' .(trim(strftime('%Y',$van))==$jaar?'selected':'') .' >' .$jaar .'</option>';
-		    $select.= '</select>';
-		    echo $select;
-		    echo '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;van ';
-		    $select = '<select name="yog_oh_van_uur">';
-		    for($uur = 0; $uur < 23  ; $uur++)
-			    $select.= '<option ' .(trim(strftime('%H',$van))==$uur?'selected':'') .' >' .(strlen($uur)==1?'0':'') .$uur .'</option>';
-		    $select.= '</select>';
-		    echo $select;
-		    $select = '<select name="yog_oh_van_minuut">';
-		    for($minuut = 0; $minuut < 59  ; $minuut++)
-			    $select.= '<option ' .(trim(strftime('%M',$van))==$minuut?'selected':'') .' >' .(strlen($minuut)==1?'0':'') .$minuut .'</option>';
-		    $select.= '</select>';
-		    echo $select;
-		    echo ' tot ';
-		    $select = '<select name="yog_oh_tot_uur">';
-		    for($uur = 0; $uur < 23  ; $uur++)
-			    $select.= '<option ' .(trim(strftime('%H',$tot))==$uur?'selected':'') .' >' .(strlen($uur)==1?'0':'') .$uur .'</option>';
-		    $select.= '</select>';
-		    echo $select;
-		    $select = '<select name="yog_oh_tot_minuut">';
-		    for($minuut = 0; $minuut < 59  ; $minuut++)
-			    $select.= '<option ' .(trim(strftime('%M',$tot))==$minuut?'selected':'') .' >' .(strlen($minuut)==1?'0':'') .$minuut .'</option>';
-		    $select.= '</select>';
-		    echo $select;
-	    echo '</div>';
+      echo '<table class="form-table">';
+        echo '<tr>';
+          echo '<th scope="row">Open huis actief:</th>';
+          echo '<td>';
+            echo '<input type="checkbox" ' .($aanwezig?'checked':'') .' name="yog_openhuis_actief" id="openhuischeck" onchange="if(jQuery(\'#openhuischeck:checked\').val() !== undefined) { jQuery(\'#datumselectie\').show(); }else{ jQuery(\'#datumselectie\').hide(); }">';
+          echo '</td>';
+        echo '</tr>';
+      echo '</table>';
+      echo '<table class="form-table" id="datumselectie"' . ($aanwezig ? '':' style="display: none;"') .'>';
+        echo '<tr>';
+          echo '<th scope="row">Datum:</th>';
+          echo '<td><input type="date" name="yog_openhuis_date" value="' . (empty($van) ? '' : date('Y-m-d', $van)) . '" class="yog-date" /></td>';
+        echo '</tr>';
+        echo '<tr>';
+          echo '<th scope="row">Van:</th>';
+          echo '<td><input type="time" name="yog_openhuis_van" value="' . (empty($van) ? '' : date('H:i', $van)) . '" class="yog-time" placeholder="00:00" /></td>';
+        echo '</tr>';
+        echo '<tr>';
+          echo '<th scope="row">Tot:</th>';
+          echo '<td><input type="time" name="yog_openhuis_tot" value="' . (empty($tot) ? '' : date('H:i', $tot)) . '" class="yog-time" placeholder="00:00" /></td>';
+        echo '</tr>';
+      echo '</table>';
     }
 
     /**
@@ -218,23 +197,43 @@
 			  else
 			    update_post_meta($postId, $fieldName, $_POST[$fieldName]);
 		  }
-
+      
 		  // Handle open huis
-		  if (!empty($_POST['yog_openhuis_actief']) && $_POST['yog_openhuis_actief'] == 'on')
+      $date     = null;
+      $timeFrom = null;
+      $timeTill = null;
+      $matches  = array();
+
+		  if (!empty($_POST['yog_openhuis_actief']) && $_POST['yog_openhuis_actief'] == 'on' && !empty($_POST['yog_openhuis_date']) && !empty($_POST['yog_openhuis_van']) && !empty($_POST['yog_openhuis_tot']))
       {
-			  $tijdVan = $_POST['yog_oh_van_jaar'] . '-' . $_POST['yog_oh_van_maand'] . '-' . $_POST['yog_oh_van_dag'] . ' ' . $_POST['yog_oh_van_uur'] . ':' . $_POST['yog_oh_van_minuut'];
-			  $tijdTot = $_POST['yog_oh_van_jaar'] ."-" .$_POST['yog_oh_van_maand'] ."-" .$_POST['yog_oh_van_dag'] ." " .$_POST['yog_oh_tot_uur'] .":" .$_POST['yog_oh_tot_minuut'];
+        if (preg_match('/^([0-9]{1,2})-([0-9]{1,2})-([0-9]{4})$/', $_POST['yog_openhuis_date'], $matches))
+          $date = sprintf('%04d-%02d-%02d', $matches[3], $matches[2], $matches[1]);
+        else if (preg_match('/^([0-9]{4})-([0-9]{1,2})-([0-9]{1,2})$/', $_POST['yog_openhuis_date'], $matches))
+          $date = sprintf('%04d-%02d-%02d', $matches[1], $matches[2], $matches[3]);
 
-			  update_post_meta($postId, POST_TYPE_WONEN . '_OpenHuisVan',$tijdVan);
-			  update_post_meta($postId, POST_TYPE_WONEN . '_OpenHuisTot',$tijdTot);
+        if (preg_match('/^([0-9]{1,2}):([0-9]{1,2})$/', $_POST['yog_openhuis_van'], $matches))
+          $timeFrom = sprintf('%02d:%02d', $matches[1], $matches[2]);
 
-			  if ((!empty($tijdVan) && strtotime($tijdVan) > time()) || (!empty($tijdTot) && strtotime($tijdTot) > time()))
-				  wp_set_object_terms( $postID, 'open-huis', 'category', true );
+        if (preg_match('/^([0-9]{1,2}):([0-9]{1,2})$/', $_POST['yog_openhuis_tot'], $matches))
+          $timeTill = sprintf('%02d:%02d', $matches[1], $matches[2]);
+
+        if (!is_null($date) && !is_null($timeFrom) && !is_null($timeTill))
+        {
+          $from = $date . ' ' . $timeFrom;
+          $till = $date . ' ' . $timeTill;
+
+          update_post_meta($postId, POST_TYPE_WONEN . '_OpenHuisVan', $from);
+          update_post_meta($postId, POST_TYPE_WONEN . '_OpenHuisTot', $till);
+
+          if (strtotime($till) > time())
+            wp_set_object_terms($postId, 'open-huis', 'category', true );
+        }
 		  }
-      else
+
+      if (is_null($date) || is_null($timeFrom) || is_null($timeTill))
       {
         delete_post_meta($postId, POST_TYPE_WONEN . '_OpenHuisVan');
-        delete_post_meta($postId, POST_TYPE_WONEN . 'huis_OpenHuisTot');
+        delete_post_meta($postId, POST_TYPE_WONEN . '_OpenHuisTot');
       }
     }
   }

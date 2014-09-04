@@ -4,7 +4,7 @@
   require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_project_wonen_translation.php');
   require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_relation_translation.php');
   require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_image_translation.php');
-  
+
   /**
   * @desc YogSynchronizationManager
   * @author Kees Brandenburg - Yes-co Nederland
@@ -16,17 +16,17 @@
     private $db;
     private $uploadDir;
     private $warnings = array();
-    
+
     /**
     * @desc Constructor
-    * 
+    *
     * @param YogSystemLink $systemLink
     * @return YogSynchronizationManager
     */
     public function __construct(YogSystemLink $systemLink)
     {
    		/*
-   		* Require needed wordpress files 
+   		* Require needed wordpress files
    		*/
     	// image.php is needed to use wp_generate_attachment_metadata()
    		if (file_exists(ABSPATH . 'wp-admin/includes/image.php'))
@@ -34,24 +34,24 @@
    		// pluggable.php is needed because image.php requires it, but doesn't include it (WP >= 3.6.1)
    		if (file_exists(ABSPATH . 'wp-includes/pluggable.php'))
    			require_once(ABSPATH . 'wp-includes/pluggable.php');
-    	
+
       $this->systemLink = $systemLink;
-      
+
       $this->feedReader = Yog3McpFeedReader::getInstance();
       $this->feedReader->read($systemLink->getCollectionUuid());
-      
+
       global $wpdb;
       $this->db = $wpdb;
-      
+
       // Determine upload directory
       $wpUploadDir = wp_upload_dir();
       if (!empty($wpUploadDir['basedir']) && is_writeable($wpUploadDir['basedir']))
         $this->uploadDir = $wpUploadDir['basedir'] . '/';
     }
-    
+
     /**
     * @desc Synchronize relations
-    * 
+    *
     * @param void
     * @return void
     */
@@ -60,7 +60,7 @@
       $existingRelationUuids  = $this->retrieveRelationUuidMapping();
       $relationEntityLinks    = $this->feedReader->getRelationEntityLinks();
       $processedRelationUuids = array();
-      
+
       foreach ($relationEntityLinks as $relationEntityLink)
       {
         $uuid                     = $relationEntityLink->getUuid();
@@ -107,10 +107,10 @@
         wp_delete_post($postId);
       }
     }
-    
+
     /**
     * @desc Synchronize projects
-    * 
+    *
     * @param void
     * @return void
     */
@@ -118,12 +118,12 @@
     {
       // Register categories if needed
       $this->registerCategories();
-      
+
       $existingProjectUuids       = $this->retrieveProjectUuidsMapping();
       $existingRelationUuids      = $this->retrieveRelationUuidMapping();
       $groupedProjectEntityLinks  = $this->feedReader->getProjectEntityLinks();
       $processedProjectUuids      = array();
-      
+
       // Set timezone to europe/amsterdam
       date_default_timezone_set('Europe/Amsterdam');
 
@@ -135,10 +135,10 @@
           {
             $processedProjectUuids[]  = $uuid;
             $publicationDlm           = strtotime(date('c', strtotime($projectEntityLink->getDlm())));
-          
+
             // Determine post type
             $postType                 = $this->determinePostTypeByScenario($scenario);
-          
+
             // Only process supported scenario's
             if (!is_null($postType))
             {
@@ -151,7 +151,7 @@
               {
                 $mcp3Project            = $this->feedReader->retrieveProjectByLink($projectEntityLink);
                 $translationProject     = YogProjectTranslationAbstract::create($mcp3Project, $projectEntityLink);
-                
+
                 // Determine post data
                 $postData = $translationProject->getPostData();
                 // Add parent post id to post data if needed
@@ -160,10 +160,10 @@
                   $parentUuid = $translationProject->getParentUuid();
                   if (!array_key_exists($parentUuid, $existingProjectUuids))
                     throw new YogException(__METHOD__ . '; Parent project with uuid ' . $parentUuid . ' not found', YogException::GLOBAL_ERROR);
-                    
+
                   $postData['post_parent'] = $existingProjectUuids[$parentUuid];
                 }
-                
+
                 // Insert / Update post
                 if ($existingProject)
                 {
@@ -175,10 +175,10 @@
                   // Add to extisting projects array
                   $existingProject[$postId] = $uuid;
                 }
-                  
+
                 // Store meta data
                 $this->handlePostMetaData($postId, $postType, $translationProject->getMetaData());
-                
+
                 // Handle linked relations
                 $existingLinkedRelations  = array_intersect_key($translationProject->getRelationLinks(), $existingRelationUuids);
                 $relations                = array();
@@ -187,16 +187,16 @@
                   $relations[$uuid] = array('rol' => $role, 'postId' => $existingRelationUuids[$uuid]);
                 }
                 update_post_meta($postId, $postType . '_Relaties', $relations);
-                
+
                 // Handle images
                 $this->handlePostImages($postId, $mcp3Project->getMediaImages());
-                
+
                 // Handle video
                 $this->handleMediaLink($postId, $postType, 'Videos', $translationProject->getVideos());
-                
+
                 // Handle external documents
                 $this->handleMediaLink($postId, $postType, 'Documenten', $translationProject->getExternalDocuments());
-                
+
                 // Handle links
                 $this->handleMediaLink($postId, $postType, 'Links', $translationProject->getLinks());
 
@@ -204,51 +204,55 @@
                 wp_set_object_terms($postId, $translationProject->getCategories(), 'category', false);
               }
             }
+            else
+            {
+              $this->warnings[] = 'Unsupported scenario ' . $scenario;
+            }
           }
           catch (Exception $e)
           {
-            $this->warnings[] = $e->getMessage(); 
+            $this->warnings[] = $e->getMessage();
           }
         }
       }
-      
+
       /* Cleanup old projects */
       $deleteProjectUuids = array_diff(array_flip($existingProjectUuids), $processedProjectUuids);
 
       foreach ($deleteProjectUuids as $uuid)
       {
         $postId = $existingProjectUuids[$uuid];
-        
+
         $this->deletePostImages($postId);
         wp_delete_post($postId);
       }
     }
-    
+
     /**
     * @desc Check if there are warnings
-    * 
+    *
     * @param void
     * @return bool
     */
     public function hasWarnings()
     {
-      return count($this->warnings) > 0; 
+      return count($this->warnings) > 0;
     }
-    
+
     /**
     * @desc Get the warnings
-    * 
+    *
     * @param void
     * @return array
     */
     public function getWarnings()
     {
-      return $this->warnings; 
+      return $this->warnings;
     }
-    
+
     /**
     * @desc Determine post type based on the scenario
-    * 
+    *
     * @param string $scenario
     * @return void (string or null)
     */
@@ -260,6 +264,7 @@
         case 'BBvk':
         case 'BBvh':
         case 'NBvk':
+        case 'NBvh':
         case 'LIvk':
           $postType = POST_TYPE_WONEN;
           break;
@@ -280,10 +285,10 @@
 
       return $postType;
     }
-    
+
     /**
     * @desc Store images for a post
-    * 
+    *
     * @param int $postId
     * @param array $mcp3Images
     * @return void
@@ -297,13 +302,13 @@
         {
 	        if (!is_dir($this->uploadDir .'projecten'))
 		        mkdir($this->uploadDir . 'projecten');
-          
-		      mkdir($this->uploadDir . 'projecten/' .$parentPostId);	
+
+		      mkdir($this->uploadDir . 'projecten/' .$parentPostId);
         }
-        
+
         $results              = $this->db->get_results("SELECT ID, post_content AS uuid FROM " . $this->db->prefix . "posts WHERE post_parent = " . $parentPostId . " AND post_type = '" . POST_TYPE_ATTACHMENT . "' AND post_content != ''");
         $existingMediaMapping = array();
-        
+
         if (is_array($results))
         {
           foreach ($results as $result)
@@ -311,7 +316,7 @@
             $existingMediaMapping[$result->uuid] = $result->ID;
           }
         }
-        
+
         $mainPhotoId          = get_post_meta($parentPostId, '_thumbnail_id', true);
         if (empty($mainPhotoId))
           $mainPhotoId        = null;
@@ -330,28 +335,28 @@
             $attachmentId           = ($existingMedia === true) ? $existingMediaMapping[$uuid] : null;
             $attachmenDlm           = $this->retrievePostDlm($attachmentId, POST_TYPE_ATTACHMENT);
 
-            if (!$existingMedia || ($publicationDlm > $attachmenDlm))
+            if (!$existingMedia || ($publicationDlm > $attachmenDlm) || (!empty($_GET['force']) && $_GET['force'] == $parentPostId))
             {
               $translationImage = YogImageTranslation::create($mcp3Image, $imageLink);
 
               $imageData = YogHttpManager::retrieveContent($imageLink->getUrl());
-              
+
               if ($imageData !== false)
               {
                 // Copy image
 	              $destination    = $this->uploadDir .'projecten/' . $parentPostId . '/' . $uuid . '.jpg';
                 file_put_contents($destination, $imageData);
-	              
+
                 // Determine image data
                 $imageData      = $translationImage->getPostData();
                 if (!is_null($attachmentId))
                   $imageData['ID'] = $attachmentId;
-                
+
                 // Update / insert attachment
 	              $attachmentId   = @wp_insert_attachment($imageData, $destination, $parentPostId);
 	              $attachmentMeta = wp_generate_attachment_metadata($attachmentId, $destination);
 	              wp_update_attachment_metadata($attachmentId, $attachmentMeta);
-                
+
                 // Set meta data
                 foreach ($translationImage->getMetaData() as $key => $value)
                 {
@@ -362,7 +367,7 @@
                 }
               }
             }
-            
+
             // Is image the main image?
             if ($mcp3Image->getOrder() == 1)
               $mainPhotoId = $attachmentId;
@@ -372,7 +377,7 @@
             $this->warnings[] = $e->getMessage();
           }
         }
-        
+
         // Set main photo
         if (!is_null($mainPhotoId))
         {
@@ -380,7 +385,7 @@
         		set_post_thumbnail($parentPostId, $mainPhotoId);
         	else
           	update_post_meta($parentPostId, '_thumbnail_id', $mainPhotoId);
-        }	
+        }
         else
         {
         	if (function_exists('delete_post_thumbnail'))
@@ -388,35 +393,52 @@
         	else
           	delete_post_meta($parentPostId, '_thumbnail_id');
         }
-          
+
         /* Cleanup old media */
         $deleteMediaUuids = array_diff(array_flip($existingMediaMapping), $processedMediaUuids);
 
         foreach ($deleteMediaUuids as $uuid)
         {
           $attachmentId = $existingMediaMapping[$uuid];
-          wp_delete_attachment($attachmentId, true); 
+          wp_delete_attachment($attachmentId, true);
+
+          // Remove files
+          if (!is_null($this->uploadDir) && is_dir($this->uploadDir .'projecten/' .$parentPostId))
+          {
+            $files = glob($this->uploadDir .'projecten/' .$parentPostId . '/' . $uuid . '*');
+            if (is_array($files))
+            {
+              foreach ($files as $file)
+              {
+                if (is_file($file))
+                {
+                  if (!@unlink($file))
+                    $this->warning[] = 'Unable to unlink ' . $file;
+                }
+              }
+            }
+          }
         }
       }
     }
-    
+
     /**
     * @desc Delete post images
-    * 
+    *
     * @param int $postId
     * @return void
     */
     private function deletePostImages($postId)
     {
       $postType = POST_TYPE_ATTACHMENT;
-      
+
 	    // Remove existing images
 	    $mediaPostIds = $this->db->get_col("SELECT ID FROM " . $this->db->prefix . "posts WHERE post_parent = " . $postId . " AND post_type = '" . $postType . "' AND post_content != ''");
 	    foreach ($mediaPostIds as $mediaPostId)
       {
-		    wp_delete_attachment($mediaPostId, true); 
+		    wp_delete_attachment($mediaPostId, true);
 	    }
-	    
+
 	    if (!is_null($this->uploadDir) && is_dir($this->uploadDir .'projecten/' .$postId))
 	    {
 	    	// Remove remaining files from projects/$postId folder
@@ -432,16 +454,16 @@
 	    			}
 	    		}
 	    	}
-	    	
+
 	    	// Unlink post directory
 	    	if (!@rmdir($this->uploadDir .'projecten/' .$postId))
 	    		$this->warning[] = 'Unable to rmdir ' . $this->uploadDir .'projecten/' .$postId;
 	    }
     }
-    
+
     /**
     * @desc Handle media links
-    * 
+    *
     * @param int $postId
     * @param string $postType
     * @param string $type
@@ -450,48 +472,48 @@
     private function handleMediaLink($postId, $postType, $type, $newMediaLinks)
     {
       $metaKey    = $postType . '_' . $type;
-      
+
       // Retrieve already set media links
       $mediaLinks = get_post_meta($postId, $metaKey, true);
       if (!is_array($mediaLinks))
         $mediaLinks = array();
-      
+
       // Remove all media links not added through WP admin
 		  foreach ($mediaLinks as $uuid => $mediaLink)
       {
 			  if (strpos($mediaLink['uuid'],'zelftoegevoegd') === false)
 				  unset($mediaLinks[$mediaLink['uuid']]);
 		  }
-      
+
       // Add new media links to array
       $mediaLinks = array_merge($mediaLinks, $newMediaLinks);
-      
+
       // Store media links
-      update_post_meta($postId, $metaKey, $mediaLinks);	
+      update_post_meta($postId, $metaKey, $mediaLinks);
     }
-    
+
     /**
     * @desc Retrieve post dlm
-    * 
+    *
     * @param mixed $postId
     * @return int
     */
     private function retrievePostDlm($postId, $postType)
     {
       $dlm = 0;
-      
+
       if (is_numeric($postId))
       {
         $dlm = get_post_meta($postId, $postType . '_dlm', true);
         $dlm = strtotime($dlm);
       }
-      
+
       return $dlm;
     }
-    
+
     /**
     * @desc Retrieve relation uuid mapping
-    * 
+    *
     * @param void
     * @return array
     */
@@ -500,20 +522,20 @@
       $postType   = YogRelationTranslationAbstract::POST_TYPE;
       $metaKey    = $postType . '_' . $this->systemLink->getCollectionUuid() . '_uuid';
       $tableName  = $this->db->prefix .'postmeta';
-      $results    = $this->db->get_results("SELECT post_id, meta_value AS uuid FROM " . $tableName . " WHERE meta_key = '" . $metaKey . "'"); 
+      $results    = $this->db->get_results("SELECT post_id, meta_value AS uuid FROM " . $tableName . " WHERE meta_key = '" . $metaKey . "'");
       $uuids      = array();
-      
+
       foreach ($results as $result)
       {
         $uuids[$result->uuid] = (int) $result->post_id;
       }
-      
+
       return $uuids;
     }
-    
+
     /**
     * @desc Retrieve project uuid mapping
-    * 
+    *
     * @param void
     * @return array
     */
@@ -525,22 +547,22 @@
       $metaKeyNBpr    = POST_TYPE_NBPR . '_' . $collectionUuid . '_uuid';
       $metaKeyNBty    = POST_TYPE_NBTY . '_' . $collectionUuid . '_uuid';
       $metaKeyNBbn    = POST_TYPE_NBBN . '_' . $collectionUuid . '_uuid';
-      
+
       $tableName    = $this->db->prefix .'postmeta';
-      $results      = $this->db->get_results("SELECT post_id, meta_value AS uuid FROM " . $tableName . " WHERE meta_key IN ('" . $metaKeyWonen . "', '" . $metaKeyBog . "', '" . $metaKeyNBpr . "', '" . $metaKeyNBty . "', '" . $metaKeyNBbn . "')"); 
+      $results      = $this->db->get_results("SELECT post_id, meta_value AS uuid FROM " . $tableName . " WHERE meta_key IN ('" . $metaKeyWonen . "', '" . $metaKeyBog . "', '" . $metaKeyNBpr . "', '" . $metaKeyNBty . "', '" . $metaKeyNBbn . "')");
       $uuids        = array();
-      
+
       foreach ($results as $result)
       {
         $uuids[$result->uuid] = (int) $result->post_id;
       }
-      
+
       return $uuids;
     }
-    
+
     /**
     * Store meta data for a specific post
-    * 
+    *
     * @param int $postId
     * @param string $postType
     * @param array $metaData
@@ -556,7 +578,7 @@
       $oldFields = get_post_custom_keys((int) $postId);
       if (empty($oldFields))
         $oldFields = array();
-      
+
       // Insert new meta data
       $updatedFields = array();
       if (count($metaData) > 0)
@@ -570,7 +592,7 @@
           }
 		    }
       }
-      
+
       /* Cleanup old meta data */
       // Do not delete media link / relation fields
       $deleteFields = array_diff($oldFields, array($postType . '_Relaties', $postType . '_Links', $postType . '_Documenten', $postType . '_Videos'));
@@ -589,10 +611,10 @@
         }
       }
     }
-    
+
     /**
     * @desc Register project categories if needed
-    * 
+    *
     * @param void
     * @return void
     */
@@ -614,7 +636,7 @@
         'nieuwbouw-type'        => $nbtyId,
         'nieuwbouw-bouwnummer'  => $nbbnId,
       );
-      
+
 	    // Subcategories
 	    $subcategories  = array($consumentId  => array( 'bestaand'            => 'Bestaand',
                                                       'nieuwbouw'           => 'Nieuwbouw',
@@ -702,7 +724,7 @@
 
     /**
     * @desc Create a term (if not existing
-    * 
+    *
     * @param string $name
     * @param int $parentTermId (optional)
     * @return int
@@ -713,7 +735,7 @@
 
 	    if (!$term)
 		    $term   = @wp_insert_term($name, 'category', array('description' => $name, 'parent' => $parentTermId, 'slug' => $slug));
-      
+
       if ($term instanceOf WP_Error)
       {
         return (int) $term->error_data['term_exists'];

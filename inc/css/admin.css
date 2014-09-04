@@ -132,6 +132,9 @@ background-image:url('../../img/no_image.png');
 background-position:center center;
 background-repeat:no-repeat;
 }
+input.error {
+background-color:#FFCCCC;
+}
 /* Custom styling of Child projects meta box */
 #yog-childprojects-meta {
 border:none;
