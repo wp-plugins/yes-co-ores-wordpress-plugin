@@ -1,12 +1,13 @@
 <?php
   define('MCP3_USERNAME',           'motivowpplugin');
   define('MCP3_PASSWORD',           'Piwr39qp3@');
-  define('MCP3_FEED_URL',           'https://webservice.yes-co.com/3mcp/collection/%s/1.3/feed/%s.xml');
+  define('MCP3_VERSIONS',           '1.4;1.3');
+  define('MCP3_FEED_URL',           'https://webservice.yes-co.com/3mcp/collection/%s/%s/feed/%s.xml');
 
   define('ATOM_NAMESPACE',          'http://www.w3.org/2005/Atom');
-  define('MCP_ATOM_NAMESPACE',      'http://webservice.yes-co.nl/3mcp/1.3/atom-extension');
-  define('PROJECT_NAMESPACE',       'http://webservice.yesco.nl/mcp/1.3/Project');
-  define('RELATION_NAMESPACE',      'http://webservice.yesco.nl/mcp/1.3/Relation');
+  define('MCP_ATOM_NAMESPACE',      'http://webservice.yes-co.nl/3mcp/%s/atom-extension');
+  define('PROJECT_NAMESPACE',       'http://webservice.yesco.nl/mcp/%s/Project');
+  define('RELATION_NAMESPACE',      'http://webservice.yesco.nl/mcp/%s/Relation');
 
   define('POST_TYPE_WONEN',         'huis');
   define('POST_TYPE_BOG',           'bedrijf');
