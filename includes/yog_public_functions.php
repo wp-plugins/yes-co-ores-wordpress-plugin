@@ -14,7 +14,7 @@
 
     $postType = get_post_type($postId);
 
-    return in_array($postType, array(POST_TYPE_WONEN, POST_TYPE_BOG, POST_TYPE_NBPR, POST_TYPE_NBTY, POST_TYPE_NBBN));
+    return in_array($postType, array(POST_TYPE_WONEN, POST_TYPE_BOG, POST_TYPE_NBPR, POST_TYPE_NBTY, POST_TYPE_NBBN, POST_TYPE_BBPR, POST_TYPE_BBTY));
   }
 
   /**
@@ -48,7 +48,7 @@
     $postType       = get_post_type($postId);
     $values         = array();
 
-    if (!empty($postType) && in_array($postType, array(POST_TYPE_WONEN, POST_TYPE_BOG, POST_TYPE_NBPR, POST_TYPE_NBTY, POST_TYPE_NBBN, POST_TYPE_RELATION)))
+    if (!empty($postType) && in_array($postType, array(POST_TYPE_WONEN, POST_TYPE_BOG, POST_TYPE_NBPR, POST_TYPE_NBTY, POST_TYPE_NBBN, POST_TYPE_BBPR, POST_TYPE_BBTY, POST_TYPE_RELATION)))
     {
       $fieldsSettings = YogFieldsSettingsAbstract::create($postType);
 
@@ -97,6 +97,24 @@
             }
 
             $values[$spec] = $value;
+          }
+        }
+        else if ($spec == 'ParentLink')
+        {
+          if (yog_hasParentObject($postId))
+          {
+            $parent = yog_retrieveParentObject($postId);
+            $url    = get_permalink($parent->ID);
+            $title  = get_the_title($parent->ID);
+
+            if ($fieldsSettings->containsField($postMetaName))
+            {
+              $settings = $fieldsSettings->getField($postMetaName);
+              if (!empty($settings['title']))
+                $spec = $settings['title'];
+            }
+
+            $values[$spec] = '<a href="' . $url . '" title="' . $title . '">' . $title . '</a>';
           }
         }
         else
@@ -188,6 +206,8 @@
         $priceMinMaxTypes = array('KoopAanneemSom' => 'Aanneemsom', 'HuurPrijs' => 'Huurprijs');
         break;
       case POST_TYPE_NBTY:
+      case POST_TYPE_BBPR:
+      case POST_TYPE_BBTY:
         $priceMinMaxTypes = array('KoopPrijs' => 'Koopprijs', 'HuurPrijs' => 'Huurprijs');
         break;
       default:
@@ -321,7 +341,7 @@
     $childs = get_posts(array('numberposts'     => 1,
                               'offset'          => 0,
                               'post_parent'     => $postId,
-                              'post_type'       => array(POST_TYPE_NBTY, POST_TYPE_NBBN, POST_TYPE_WONEN),
+                              'post_type'       => array(POST_TYPE_NBTY, POST_TYPE_BBTY, POST_TYPE_NBBN, POST_TYPE_WONEN),
                               'post_status'     => array('publish')));
 
     return (is_array($childs) && count($childs) > 0);
@@ -343,7 +363,7 @@
                             'orderby'         => 'title',
                             'order'           => 'ASC',
                             'post_parent'     => $postId,
-                            'post_type'       => array(POST_TYPE_NBTY, POST_TYPE_NBBN, POST_TYPE_WONEN),
+                            'post_type'       => array(POST_TYPE_NBTY, POST_TYPE_BBTY, POST_TYPE_NBBN, POST_TYPE_WONEN),
                             'post_status'     => array('publish')));
   }
 
@@ -1313,10 +1333,10 @@
       POST_TYPE_NBPR,
       POST_TYPE_NBTY,
       POST_TYPE_NBBN,
+      POST_TYPE_BBPR,
+      POST_TYPE_BBTY,
       POST_TYPE_RELATION
     );
 
     return $postTypes;
   }
-
-?>

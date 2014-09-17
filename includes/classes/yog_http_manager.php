@@ -6,7 +6,6 @@
   */
   class YogHttpManager
   {
-
     /**
      * @desc Method url
      *
@@ -17,15 +16,16 @@
     public static function retrieveContent($url, $authenticate = false)
     {
       // try and use callbacks in case it doesn't work
-      $content = self::retrieveContentByFileGetContents($url, $authenticate);
+      $manager  = new self();
+      $content  = $manager->retrieveContentByFileGetContents($url, $authenticate);
 
       if ($content === false)
       {
-        $content = self::retrieveContentByCurl($url);
+        $content = $manager->retrieveContentByCurl($url);
 
         if ($content === false)
         {
-          $content = self::retrieveContentByWordpress($url);
+          $content = $manager->retrieveContentByWordpress($url);
         }
       }
 
@@ -125,5 +125,3 @@
     }
 
   }
-
-?>

@@ -7,34 +7,34 @@
   {
     /**
     * @desc Get post type
-    * 
+    *
     * @param void
     * @return string
     */
     public function getPostType()
     {
-      return POST_TYPE_NBBN; 
+      return POST_TYPE_NBBN;
     }
-    
+
     /**
     * @desc Get the title
-    * 
+    *
     * @param void
     * @return string
     */
     public function determineTitle()
     {
       $title    = $this->mcp3Project->getName();
-      
+
       if (empty($title))
         $title = $this->mcp3Project->getStringByPath('//project:General/project:Name');
-      
+
       return $title;
     }
-    
+
     /**
     * @desc Check if a parent uuid is set
-    * 
+    *
     * @param void
     * @return bool
     */
@@ -42,10 +42,10 @@
     {
       return true;
     }
-    
+
     /**
     * @desc Get the parent uuid
-    * 
+    *
     * @param void
     * @return string
     * @throws Exception
@@ -54,10 +54,10 @@
     {
       return $this->mcp3Project->getNBtyUuid();
     }
-    
+
     /**
     * @desc Get meta data
-    * 
+    *
     * @param void
     * @return array
     */
@@ -90,48 +90,47 @@
         'AanneemSom'                  => $this->mcp3Project->getIntByPath('//project:Details/project:Koop/project:AanneemSom'),
         'KoopAanneemSom'              => $this->mcp3Project->getIntByPath('//project:Details/project:Koop/project:KoopaanneemSom'),
       );
-      
+
       // Housenumber
       if ($this->mcp3Project->hasAddress())
       {
         $address                  = $this->mcp3Project->getAddress();
         $data['Huisnummer']       = $address->getHouseNumber() . $address->getHouseNumberAddition();
       }
-      
+
       return $data;
     }
-    
+
     /**
     * @desc Get the categories to link project to
-    * 
+    *
     * @param void
     * @return array
     */
     public function getCategories()
     {
 	    $categories = array('nieuwbouw-projecten', 'nieuwbouw-bouwnummer');
-      
+
 		  // State
       if (in_array($this->determineState(), array('verkocht', 'verhuurd')))
 			  $categories[] = 'nieuwbouw-bouwnummer-verkochtverhuurd';
 
       // Allow the theme to add custom categories
       $this->getThemeCategories($this->mcp3Project, $categories);
-        
+
       return $categories;
     }
-    
+
     /**
     * @desc Determine project state
-    * 
+    *
     * @param void
     * @return string
     */
     private function determineState()
     {
 	    $state = $this->mcp3Project->getStringByPath('//project:Details/project:Ontwikkeling/project:Status');
-      
+
       return $state;
     }
   }
-?>

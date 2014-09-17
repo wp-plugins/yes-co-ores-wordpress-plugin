@@ -175,7 +175,7 @@
         return $postId;
 
       // Verify nonce
-	    if ( !wp_verify_nonce($_POST['yog_nonce'], plugin_basename(__FILE__) ))
+	    if (!isset($_POST['yog_nonce']) || !wp_verify_nonce($_POST['yog_nonce'], plugin_basename(__FILE__) ))
 		    return $postId;
 
 	    // verify if this is an auto save routine. If it is our form has not been submitted, so we dont want to do anything
@@ -197,7 +197,7 @@
 			  else
 			    update_post_meta($postId, $fieldName, $_POST[$fieldName]);
 		  }
-      
+
 		  // Handle open huis
       $date     = null;
       $timeFrom = null;
@@ -237,4 +237,3 @@
       }
     }
   }
-?>

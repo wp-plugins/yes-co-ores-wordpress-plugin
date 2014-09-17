@@ -10,10 +10,10 @@ class YogLinkedRelationsWidget extends WP_Widget
   const CLASSNAME               = 'yog-linked-relations';
   const DEFAULT_SPECS_BUSINESS  = 'Telefoonnummer,Faxnummer,Emailadres,Website,Hoofdadres';
   const DEFAULT_SPECS_PERSON    = 'Telefoonnummer,Faxnummer,Emailadres,Website';
-  
+
   /**
   * @desc Constructor
-  * 
+  *
   * @param void
   * @return YogObjectAttachmentsWidget
   */
@@ -23,7 +23,7 @@ class YogLinkedRelationsWidget extends WP_Widget
                       'description' => self::DESCRIPTION);
 
     parent::__construct(false, $name = self::NAME, $options);
-    
+
     // Add needed javascript/css to header of website (not admin)
     if (!is_admin())
       wp_enqueue_style('yog-widgets-css', YOG_PLUGIN_URL . '/inc/css/widgets.css', array(), YOG_PLUGIN_VERSION);
@@ -40,8 +40,8 @@ class YogLinkedRelationsWidget extends WP_Widget
   {
     if (!(is_single() && yog_isObject()))
       return;
-    
-    // Retrieve linked relations 
+
+    // Retrieve linked relations
     $relations = yog_retrieveRelations();
 
     if (!empty($relations))
@@ -54,14 +54,14 @@ class YogLinkedRelationsWidget extends WP_Widget
       $afterWidget      = isset($args['after_widget']) ? $args['after_widget'] : '';
       $beforeTitle      = isset($args['before_title']) ? $args['before_title'] : '';
       $afterTitle       = isset($args['after_title']) ? $args['after_title'] : '';
-      
+
       // Specs to show
       $usedSpecs  = array('Business' => $specsBusiness, 'Person' => $specsPerson);
-      
+
       // Show widget start
       echo $beforeWidget;
       echo $beforeTitle . $title . $afterTitle;
-      
+
       // Show relations
       if (!empty($relations))
       {
@@ -71,15 +71,15 @@ class YogLinkedRelationsWidget extends WP_Widget
           // Retrieve specs
           $type   = yog_retrieveSpec('type', $relation->ID);
           $specs  = yog_retrieveSpecs($usedSpecs[$type], $relation->ID);
-          
+
           echo '<div class="yog-relation yog-relation-' . strtolower($role) . ' yog-relation-' . strtolower($type) . '">';
             echo '<h5 class="yog-relation-role">' . $role . ':</h5>';
             echo '<div class="yog-relation-value yog-title">' . get_the_title($relation->ID) . '</div>';
-            
+
             foreach ($specs as $label => $value)
             {
               $label = strtolower($label);
-              
+
               switch ($label)
               {
                 case 'emailadres':
@@ -89,14 +89,14 @@ class YogLinkedRelationsWidget extends WP_Widget
                   $link = $value;
                   if (strpos($link, 'http://') === false && strpos($link, 'https://') === false)
                     $link = 'http://' . $link;
-                    
+
                   $value = '<a href="' . $link . '" rel="external">' . $value . '</a>';
                   break;
               }
-              
-              echo '<div class="yog-relation-value yog-' . $label . '" title="' . $label . '">' . $value . '</div>'; 
+
+              echo '<div class="yog-relation-value yog-' . $label . '" title="' . $label . '">' . $value . '</div>';
             }
-            
+
             // Handle addresses
             $addressTypes = array('Hoofdadres', 'Postadres');
             foreach ($addressTypes as $addressType)
@@ -107,19 +107,19 @@ class YogLinkedRelationsWidget extends WP_Widget
                 if (!empty($specs))
                 {
                   echo '<div class="yog-relation-value yog-relation-address yog-' . strtolower($addressType) . '" title="' . $addressType . '">';
-                  
+
                   if (!empty($specs['Straat']))
                     echo $specs['Straat'] . ' ';
                   if (!empty($specs['Huisnummer']))
                     echo $specs['Huisnummer'];
-                    
+
                   echo '<br />';
-                  
+
                   if (!empty($specs['Postcode']))
                     echo $specs['Postcode'] . '&nbsp;&nbsp;';
                   if (!empty($specs['Stad']))
                     echo $specs['Stad'];
-                  
+
                   echo '</div>';
                 }
 
@@ -128,7 +128,7 @@ class YogLinkedRelationsWidget extends WP_Widget
 
           echo '</div>';
         }
-        
+
         echo '</div>';
       }
 
@@ -153,10 +153,10 @@ class YogLinkedRelationsWidget extends WP_Widget
 
     return $instance;
   }
-  
+
   /**
   * @desc Display widget form
-  * 
+  *
   * @param array $instance
   * @return void
   */
@@ -165,14 +165,14 @@ class YogLinkedRelationsWidget extends WP_Widget
     $title              = empty($instance['title']) ? '' : esc_attr($instance['title']);
     $specsBusiness      = explode(',', empty($instance['specs_business']) ? self::DEFAULT_SPECS_BUSINESS : $instance['specs_business']);
     $specsPerson        = explode(',', empty($instance['specs_person']) ? self::DEFAULT_SPECS_PERSON : $instance['specs_person']);
-    
+
     $availableSpecs     = array('Telefoonnummer', 'Faxnummer', 'Emailadres', 'Website', 'Hoofdadres', 'Postadres');
-    
+
     echo '<p>';
       echo '<label for="' . $this->get_field_id('title') . '">' . __('Titel') . ': </label>';
       echo '<input class="widefat" id="' . $this->get_field_id('title') . '" name="' . $this->get_field_name('title') . '" type="text" value="' . $title . '" />';
     echo '</p>';
-    
+
     $name = $this->get_field_name('specs_business');
     $id   = $this->get_field_id('specs_business');
     echo '<p>';
@@ -182,7 +182,7 @@ class YogLinkedRelationsWidget extends WP_Widget
         echo '<input type="checkbox" name="' . $name . '[]" value="' . $availableSpec . '" id="' . $id . $availableSpec . '"' . (in_array($availableSpec, $specsBusiness) ? ' checked="checked"' : '') . '  /><label for="' . $id . $availableSpec . '">' . $availableSpec . '</label><br />';
       }
     echo '</p>';
-    
+
     $name = $this->get_field_name('specs_person');
     $id   = $this->get_field_id('specs_person') . 'Business';
     echo '<p>';
@@ -194,4 +194,3 @@ class YogLinkedRelationsWidget extends WP_Widget
     echo '</p>';
   }
 }
-?>

@@ -1,6 +1,6 @@
 <?php
   require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_translation.php');
-  
+
   /**
   * @desc YogRelationTranslationAbstract
   * @author Kees Brandenburg - Yes-co Nederland
@@ -8,13 +8,13 @@
   abstract class YogRelationTranslationAbstract extends YogTranslationAbstract
   {
     const POST_TYPE = 'relatie';
-    
+
     protected $mcp3Relation;
     protected $mcp3Link;
-    
+
     /**
     * @desc Constructor
-    * 
+    *
     * @param Yog3McpXmlRelationAbstract $mcp3Relation
     * @param Yog3McpRelationLink $mcp3Link
     * @return YogRelationTranslationAbstract
@@ -24,10 +24,10 @@
       $this->mcp3Relation = $mcp3Relation;
       $this->mcp3Link     = $mcp3Link;
     }
-    
+
     /**
     * @desc Create from Yog3McpProjectAbstract
-    * 
+    *
     * @param Yog3McpXmlRelationAbstract $mcp3Relation
     * @param Yog3McpRelationLink $mcp3Link
     * @return YogRelationTranslationAbstract
@@ -41,21 +41,21 @@
       else
         throw new Exception(__METHOD__ . '; Unsupported 3mcp relation');
     }
-    
+
     /**
     * @desc Get post type
-    * 
+    *
     * @param void
     * @return string
     */
     public function getPostType()
     {
-      return self::POST_TYPE; 
+      return self::POST_TYPE;
     }
-    
+
     /**
     * @desc Get the data for the post
-    * 
+    *
     * @param void
     * @return array
     */
@@ -71,13 +71,13 @@
 	    $data['post_date']          = $this->translateDate($this->mcp3Link->getDoc());
 	    $data['post_parent']        = 0;
 	    $data['post_type']          = $this->getPostType();
-      
+
       return $data;
     }
-    
+
     /**
     * @desc Get the address meta data
-    * 
+    *
     * @param Yog3McpXmlAddress $address
     * @param string $prefix
     * @return array
@@ -97,7 +97,7 @@
       );
     }
   }
-  
+
   /**
   * @desc YogRelationTranslationPerson
   * @author Kees Brandenburg - Yes-co Nederland
@@ -106,7 +106,7 @@
   {
     /**
     * @desc Determine relation title
-    * 
+    *
     * @param void
     * @return string
     */
@@ -116,19 +116,19 @@
       $initals    = $this->mcp3Relation->getStringByPath('//relation:Person/relation:Name/relation:Initials');
       $prefix     = $this->mcp3Relation->getStringByPath('//relation:Person/relation:Name/relation:LastnamePrefix');
       $lastname   = $this->mcp3Relation->getStringByPath('//relation:Person/relation:Name/relation:Lastname');
-      
+
       $title      = (empty($firstname) ? $initals : $firstname);
       if (!empty($prefix))
         $title .= ' ' . $prefix;
       if (!empty($lastname))
         $title .= ' ' . $lastname;
-      
+
       return $title;
     }
-    
+
     /**
     * @desc Get meta data
-    * 
+    *
     * @param void
     * @return array
     */
@@ -152,17 +152,17 @@
         'Functie'               => $this->mcp3Relation->getStringByPath('//relation:Person/relation:Position'),
         'Geslacht'              => str_replace(array('male', 'female'), array('man', 'vrouw'), $this->mcp3Relation->getStringByPath('//relation:Person/relation:Sex'))
       );
-      
+
       if ($this->mcp3Relation->hasMainAddress())
         $data = array_merge($data, $this->getAddressMetaData($this->mcp3Relation->getMainAddress(), 'Hoofdadres_'));
-        
+
       if ($this->mcp3Relation->hasPostalAddress())
         $data = array_merge($data, $this->getAddressMetaData($this->mcp3Relation->getPostalAddress(), 'Postadres_'));
 
       return $data;
     }
   }
-  
+
   /**
   * @desc YogRelationTranslationBusiness
   * @author Kees Brandenburg - Yes-co Nederland
@@ -171,7 +171,7 @@
   {
     /**
     * @desc Determine relation title
-    * 
+    *
     * @param void
     * @return string
     */
@@ -179,10 +179,10 @@
     {
       return $this->mcp3Relation->getStringByPath('//relation:Business/relation:Name');
     }
-    
+
     /**
     * @desc Get meta data
-    * 
+    *
     * @param void
     * @return array
     */
@@ -197,14 +197,13 @@
         'Telefoonnummer'  => $this->mcp3Relation->getStringByPath('//relation:Business/relation:PhoneNR'),
         'Faxnummer'       => $this->mcp3Relation->getStringByPath('//relation:Business/relation:FaxNR')
       );
-      
+
       if ($this->mcp3Relation->hasMainAddress())
         $data = array_merge($data, $this->getAddressMetaData($this->mcp3Relation->getMainAddress(), 'Hoofdadres_'));
-        
+
       if ($this->mcp3Relation->hasPostalAddress())
         $data = array_merge($data, $this->getAddressMetaData($this->mcp3Relation->getPostalAddress(), 'Postadres_'));
 
       return $data;
     }
   }
-?>

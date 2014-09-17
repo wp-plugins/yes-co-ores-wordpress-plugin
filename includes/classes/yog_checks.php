@@ -65,6 +65,18 @@ class YogChecks
 		if (!is_file(get_template_directory() .'/single-yog-nbty.php'))
 			$warnings[] = 'Het ingestelde thema heeft op dit moment geen \'single-yog-nbty.php\' template. Er zal een alternatieve methode gebruikt worden voor het tonen van de Nieuwbouw type details.';
 
+    $mcp3Version = get_option('yog_3mcp_version');
+    if (!empty($mcp3Version) && $mcp3Version != '1.3')
+    {
+      // Single BBpr template check
+      if (!is_file(get_template_directory() .'/single-yog-bbpr.php'))
+        $warnings[] = 'Het ingestelde thema heeft op dit moment geen \'single-yog-bbpr.php\' template. Er zal een alternatieve methode gebruikt worden voor het tonen van de Bestaande bouw complexen.';
+
+      // Single BBpr template check
+      if (!is_file(get_template_directory() .'/single-yog-bbty.php'))
+        $warnings[] = 'Het ingestelde thema heeft op dit moment geen \'single-yog-bbty.php\' template. Er zal een alternatieve methode gebruikt worden voor het tonen van de Bestaande bouw complex types.';
+    }
+
 		// Wordpress version
 		global $wp_version;
 		if ((float) $wp_version >= 3.0 && (float) $wp_version < 3.1)
@@ -106,4 +118,3 @@ class YogChecks
 		return $settings;
 	}
 }
-?>

@@ -14,8 +14,10 @@
   define('POST_TYPE_NBPR',          'yog-nbpr');
   define('POST_TYPE_NBTY',          'yog-nbty');
   define('POST_TYPE_NBBN',          'yog-nbbn');
+  define('POST_TYPE_BBPR',          'yog-bbpr');
+  define('POST_TYPE_BBTY',          'yog-bbty');
   define('POST_TYPE_RELATION',      'relatie');
   define('POST_TYPE_ATTACHMENT',    'attachment');
 
-  define('YOG_PLUGIN_VERSION',      '1.2.10');
+  define('YOG_PLUGIN_VERSION',      '1.4');
 ?>

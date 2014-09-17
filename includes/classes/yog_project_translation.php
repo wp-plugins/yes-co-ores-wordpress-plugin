@@ -1,6 +1,6 @@
 <?php
   require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_translation.php');
-  
+
   /**
   * @desc YogProjectTranslationAbstract
   * @author Kees Brandenburg - Yes-co Nederland
@@ -9,10 +9,10 @@
   {
     protected $mcp3Project;
     protected $mcp3Link;
-    
+
     /**
     * @desc Constructor
-    * 
+    *
     * @param Yog3McpXmlProjectAbstract $mcp3Project
     * @param Yog3McpProjectLink $mcp3Link
     * @return YogProjectTranslationAbstract
@@ -22,10 +22,10 @@
       $this->mcp3Project  = $mcp3Project;
       $this->mcp3Link     = $mcp3Link;
     }
-    
+
     /**
     * @desc Create from Yog3McpProjectAbstract
-    * 
+    *
     * @param Yog3McpXmlProjectAbstract $mcp3Project
     * @param Yog3McpProjectLink $mcp3Link
     * @return YogProjectTranslationAbstract
@@ -35,42 +35,54 @@
       if ($mcp3Project instanceOf Yog3McpXmlProjectWonen)
       {
         require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_project_wonen_translation.php');
-        
+
         return new YogProjectWonenTranslation($mcp3Project, $mcp3Link);
       }
       else if ($mcp3Project instanceOf Yog3McpXmlProjectBog)
       {
         require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_project_bog_translation.php');
-        
+
         return new YogProjectBogTranslation($mcp3Project, $mcp3Link);
       }
       else if ($mcp3Project instanceOf Yog3McpXmlProjectNBpr)
       {
         require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_project_nbpr_translation.php');
-        
+
         return new YogProjectNBprTranslation($mcp3Project, $mcp3Link);
       }
       else if ($mcp3Project instanceOf Yog3McpXmlProjectNBty)
       {
         require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_project_nbty_translation.php');
-        
+
         return new YogProjectNBtyTranslation($mcp3Project, $mcp3Link);
       }
       else if ($mcp3Project instanceOf Yog3McpXmlProjectNBbn)
       {
         require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_project_nbbn_translation.php');
-        
+
         return new YogProjectNBbnTranslation($mcp3Project, $mcp3Link);
+      }
+      else if ($mcp3Project instanceOf Yog3McpXmlProjectBBpr)
+      {
+        require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_project_bbpr_translation.php');
+
+        return new YogProjectBBprTranslation($mcp3Project, $mcp3Link);
+      }
+      else if ($mcp3Project instanceOf Yog3McpXmlProjectBBty)
+      {
+        require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_project_bbty_translation.php');
+
+        return new YogProjectBBtyTranslation($mcp3Project, $mcp3Link);
       }
       else
       {
         throw new YogException(__METHOD__ . '; Unsupported 3mcp project', YogException::GLOBAL_ERROR);
       }
     }
-    
+
     /**
     * @desc Get the data for the post
-    * 
+    *
     * @param void
     * @return array
     */
@@ -86,14 +98,14 @@
 	    $data['post_date']          = $this->translateDate($this->mcp3Link->getDoc());
 	    $data['post_parent']        = 0;
 	    $data['post_type']          = $this->getPostType();
-      
+
       return $data;
     }
-    
+
     /**
     * @desc Check if a parent project uuid is set
     * Can be overwritten by the extending translation class
-    * 
+    *
     * @param void
     * @return bool
     */
@@ -101,23 +113,23 @@
     {
       return false;
     }
-    
+
     /**
     * @desc Get the parent uuid
     * Can be overwritten by the extending translation class
-    * 
+    *
     * @param void
     * @return string
     * @throws Exception
     */
     public function getParentUuid()
     {
-      throw new YogException(__METHOD__ . '; No parent uuid', YogException::GLOBAL_ERROR); 
+      throw new YogException(__METHOD__ . '; No parent uuid', YogException::GLOBAL_ERROR);
     }
-    
+
     /**
     * @desc Get video data
-    * 
+    *
     * @param void
     * @return array
     */
@@ -125,14 +137,14 @@
     {
       $videoXmls  = $this->mcp3Project->getMediaVideos();
       $videos     = array();
-      
+
       foreach ($videoXmls as $videoXml)
       {
         $uuid         = $videoXml->getStringByPath('@uuid');
         $serviceUri   = $videoXml->getStringByPath('project:Video/project:VideoReference/project:ServiceUri');
         $referenceId  = $videoXml->getStringByPath('project:Video/project:VideoReference/project:Id');
         $websiteUrl   = $videoXml->getStringByPath('project:Video/project:WebsiteUrl');
-        
+
         // Determine service URI (if empty)
         if (empty($serviceUri) && !empty($websiteUrl))
         {
@@ -142,7 +154,7 @@
             $referenceId  = $matches[1];
           }
         }
-        
+
         // Determine stream url
         $streamUrl  = $videoXml->getStringByPath('project:Video/project:VideoStreamUrl');
 
@@ -158,7 +170,7 @@
               break;
           }
         }
-        
+
         $videos[$uuid] = array(
           'uuid'                        => $uuid,
           'order'                       => $videoXml->getStringByPath('project:Video/@order'),
@@ -169,13 +181,13 @@
           'videoereference_id'          => $referenceId
         );
       }
-      
+
       return $videos;
     }
-    
+
     /**
     * @desc Get external document data
-    * 
+    *
     * @param void
     * @return array
     */
@@ -183,11 +195,11 @@
     {
       $documentXmls = $this->mcp3Project->getMediaDocuments();
       $documents    = array();
-      
+
       foreach ($documentXmls as $documentXml)
       {
         $uuid = $documentXml->getStringByPath('@uuid');
-        
+
         $documents[$uuid] = array(
           'uuid'      => $uuid,
           'order'     => $documentXml->getStringByPath('project:Document/@order'),
@@ -196,13 +208,13 @@
           'url'       => $documentXml->getStringByPath('project:Document/project:SourceUrl')
         );
       }
-      
+
       return $documents;
     }
-    
+
     /**
     * @desc Get link data
-    * 
+    *
     * @param void
     * @return array
     */
@@ -210,11 +222,11 @@
     {
       $linkXmls = $this->mcp3Project->getLinks();
       $links    = array();
-      
+
       foreach ($linkXmls as $linkXml)
       {
         $uuid = $linkXml->getStringByPath('@uuid');
-        
+
         $links[$uuid] = array(
           'uuid'  => $uuid,
           'order' => $linkXml->getStringByPath('@order'),
@@ -223,13 +235,13 @@
           'url'   => $linkXml->getStringByPath('project:Url')
         );
       }
-      
+
       return $links;
     }
-    
+
     /**
     * @desc Get linked relations data
-    * 
+    *
     * @param void
     * @return array
     */
@@ -242,6 +254,17 @@
       }
 
       return $relations;
+    }
+
+    /**
+    * Get the project tags
+    *
+    * @param void
+    * @return array
+    */
+    public function getTags()
+    {
+      return $this->mcp3Project->getTags();
     }
 
     /**
@@ -281,7 +304,7 @@
 
     /**
     * @desc get the text content
-    * 
+    *
     * @param void
     * @return string
     */
@@ -289,23 +312,23 @@
     {
       $texts    = $this->mcp3Project->getTexts();
       $content  = '';
-      
+
       // Start with intro text
       if (array_key_exists('intro', $texts))
         $content = '<div class="yogcontent intro"><p>' .nl2br($texts['intro']) .'</p></div><!--more-->';
-        
+
       foreach ($texts as $type => $text)
       {
         if ($type != 'intro')
           $content .= '<div class="yogcontent ' . $type . '"><p>' .nl2br($text) .'</p></div>';
       }
-      
+
       return $content;
     }
-    
+
     /**
     * @desc Translate price condition
-    * 
+    *
     * @param string $condition
     * @return string
     */
@@ -315,10 +338,10 @@
                           array('k.k.', 'v.o.n.', 'p.m.', 'p.j.', 'per m2/jaar'),
                           $condition);
     }
-    
+
     /**
     * @desc Translate bouwjaar periode
-    * 
+    *
     * @param string $periode
     * @return string
     */
@@ -327,4 +350,3 @@
       return str_replace(array('2001-', '-1905'), array('na 2001', 'voor 1906'), $periode);
     }
   }
-?>

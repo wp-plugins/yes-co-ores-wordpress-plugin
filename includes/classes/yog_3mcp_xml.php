@@ -156,6 +156,12 @@
         case 'NBbn':
           return new Yog3McpXmlProjectNBbn($xml, $namespace);
           break;
+        case 'BBpr':
+          return new Yog3McpXmlProjectBBpr($xml, $namespace);
+          break;
+        case 'BBty':
+          return new Yog3McpXmlProjectBBty($xml, $namespace);
+          break;
         default:
           throw new YogException(__METHOD__ . '; Unsupported scenario', YogException::GLOBAL_ERROR);
           break;
@@ -258,7 +264,7 @@
       $references = array();
       foreach ($this->xml->Relation as $reference)
       {
-        $references[] = new Yog3McpXmlRelationReference($reference);
+        $references[] = new Yog3McpXmlRelationReference($reference, $this->ns);
       }
 
       return $references;
@@ -278,7 +284,7 @@
       foreach ($nodes as $node)
       {
         $node->registerXPathNamespace('project', $this->ns);
-        $images[] = new Yog3McpXmlMediaImage($node);
+        $images[] = new Yog3McpXmlMediaImage($node, $this->ns);
       }
 
       return $images;
@@ -298,7 +304,7 @@
       foreach ($nodes as $node)
       {
         $node->registerXPathNamespace('project', $this->ns);
-        $videos[] = new Yog3McpXmlMediaVideo($node);
+        $videos[] = new Yog3McpXmlMediaVideo($node, $this->ns);
       }
 
       return $videos;
@@ -318,7 +324,7 @@
       foreach ($nodes as $node)
       {
         $node->registerXPathNamespace('project', $this->ns);
-        $documents[] = new Yog3McpXmlMediaDocument($node);
+        $documents[] = new Yog3McpXmlMediaDocument($node, $this->ns);
       }
 
       return $documents;
@@ -338,10 +344,30 @@
       foreach ($nodes as $node)
       {
         $node->registerXPathNamespace('project', $this->ns);
-        $links[] = new Yog3McpXmlLink($node);
+        $links[] = new Yog3McpXmlLink($node, $this->ns);
       }
 
       return $links;
+    }
+
+    /**
+    * @desc Get project tags
+    *
+    * @param void
+    * @return array
+    */
+    public function getTags()
+    {
+      $references = array();
+      if (isset($this->xml->Tags))
+      {
+        foreach ($this->xml->Tags->Tag as $tag)
+        {
+          $references[] = (string) $tag;
+        }
+      }
+
+      return $references;
     }
   }
 
@@ -366,7 +392,7 @@
       $node = array_shift($nodes);
       $node->registerXPathNamespace('project', $this->ns);
 
-      return new Yog3McpXmlAddress($node);
+      return new Yog3McpXmlAddress($node, $this->ns);
     }
 
     /**
@@ -472,7 +498,7 @@
       $node = array_shift($nodes);
       $node->registerXPathNamespace('project', $this->ns);
 
-      return new Yog3McpXmlLocation($node);
+      return new Yog3McpXmlLocation($node, $this->ns);
     }
 
     /**
@@ -561,6 +587,66 @@
     {
       $nodes = $this->xml->xpath('//project:General/project:Address');
       return ($nodes !== false && count($nodes) > 0);
+    }
+  }
+
+  /**
+  * @desc Yog3McpXmlProjectBBpr
+  * @author Kees Brandenburg - Yes-co Nederland
+  */
+  class Yog3McpXmlProjectBBpr extends Yog3McpXmlProjectAbstract
+  {
+    /**
+    * @desc Get the location
+    *
+    * @param void
+    * @return Yog3McpXmlLocation
+    */
+    public function getLocation()
+    {
+      $nodes = $this->xml->xpath('//project:General/project:Location');
+      if ($nodes === false || count($nodes) == 0)
+        throw new YogException(__METHOD__ . '; No location found', YogException::GLOBAL_ERROR);
+
+      $node = array_shift($nodes);
+      $node->registerXPathNamespace('project', $this->ns);
+
+      return new Yog3McpXmlLocation($node, $this->ns);
+    }
+
+    /**
+    * @desc Check if location is set
+    *
+    * @param void
+    * @return bool
+    */
+    public function hasLocation()
+    {
+      $nodes = $this->xml->xpath('//project:General/project:Location');
+      return ($nodes !== false && count($nodes) > 0);
+    }
+  }
+
+  /**
+  * @desc Yog3McpXmlProjectBBty
+  * @author Kees Brandenburg - Yes-co Nederland
+  */
+  class Yog3McpXmlProjectBBty extends Yog3McpXmlProjectAbstract
+  {
+    /**
+    * @desc Get the parent BBpr uuid
+    *
+    * @param void
+    * @return string
+    */
+    public function getBBprUuid()
+    {
+      $nodes = $this->xml->xpath("//project:Project[project:Scenario = 'BBpr']/@uuid");
+      if ($nodes === false || count($nodes) == 0)
+        throw new YogException(__METHOD__ . '; No NBpr link found', YogException::GLOBAL_ERROR);
+
+      $node = array_shift($nodes);
+      return (string) $node;
     }
   }
 
@@ -939,7 +1025,7 @@
       $node = array_shift($nodes);
       $node->registerXPathNamespace('relation', $this->ns);
 
-      return new Yog3McpXmlAddress($node);
+      return new Yog3McpXmlAddress($node, $this->ns);
     }
 
     /**
@@ -969,7 +1055,7 @@
       $node = array_shift($nodes);
       $node->registerXPathNamespace('relation', $this->ns);
 
-      return new Yog3McpXmlAddress($node);
+      return new Yog3McpXmlAddress($node, $this->ns);
     }
 
     /**

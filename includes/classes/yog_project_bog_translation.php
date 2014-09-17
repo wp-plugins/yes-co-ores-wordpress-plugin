@@ -126,7 +126,7 @@
       }
 
 		  // State
-      if (in_array($this->determineState(), array('verkocht', 'verhuurd')))
+      if (in_array(strtolower($this->determineState()), array('verkocht', 'verhuurd')))
 			  $categories[] = 'bog-verkochtverhuurd';
 
       // Allow the theme to add custom categories
@@ -456,4 +456,3 @@
       );
     }
   }
-?>

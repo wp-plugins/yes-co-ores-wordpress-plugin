@@ -8,10 +8,10 @@
     const WRONG_REQUEST   = 1;
     const GLOBAL_ERROR    = 2;
     const NO_SYSYEM_LINK  = 3;
-    
+
     /**
     * @desc Determine human readable error
-    * 
+    *
     * @param void
     * @return string
     */
@@ -30,10 +30,10 @@
           break;
       }
     }
-    
+
     /**
     * @desc Get json object
-    * 
+    *
     * @param void
     * @return string
     */
@@ -44,8 +44,7 @@
                         'error'     => $this->determineError(),
                         'details'   => $this->getMessage()
                         );
-      
+
 	    return json_encode($response);
     }
   }
-?>

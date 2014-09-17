@@ -49,6 +49,26 @@
         $this->uploadDir = $wpUploadDir['basedir'] . '/';
     }
 
+    public function init()
+    {
+      add_action('init', array($this, 'doSync'));
+    }
+
+    public function doSync()
+    {
+      $this->syncRelations();
+      $this->syncProjects();
+
+      $response = array('status'   => 'ok',
+                        'message' => 'Synchronisatie voltooid');
+      if ($this->hasWarnings())
+        $response['warnings'] = $this->getWarnings();
+
+      echo json_encode($response);
+
+      exit;
+    }
+
     /**
     * @desc Synchronize relations
     *
@@ -202,6 +222,9 @@
 
                 // Handle categories
                 wp_set_object_terms($postId, $translationProject->getCategories(), 'category', false);
+
+                // Handle tags
+                wp_set_post_tags($postId, $translationProject->getTags(), false);
               }
             }
             else
@@ -226,6 +249,9 @@
         $this->deletePostImages($postId);
         wp_delete_post($postId);
       }
+
+      // Check if there are project's with open house category that shouldn't have it anymore
+      yog_cronUpdateOpenHouses();
     }
 
     /**
@@ -280,6 +306,12 @@
           break;
         case 'NBbn':
           $postType = POST_TYPE_NBBN;
+          break;
+        case 'BBpr':
+          $postType = POST_TYPE_BBPR;
+          break;
+        case 'BBty':
+          $postType = POST_TYPE_BBTY;
           break;
       }
 
@@ -353,7 +385,7 @@
                   $imageData['ID'] = $attachmentId;
 
                 // Update / insert attachment
-	              $attachmentId   = @wp_insert_attachment($imageData, $destination, $parentPostId);
+	              $attachmentId   = wp_insert_attachment($imageData, $destination, $parentPostId);
 	              $attachmentMeta = wp_generate_attachment_metadata($attachmentId, $destination);
 	              wp_update_attachment_metadata($attachmentId, $attachmentMeta);
 
@@ -365,6 +397,10 @@
                   else
                     delete_post_meta($attachmentId, POST_TYPE_ATTACHMENT . '_' . $key);
                 }
+              }
+              else
+              {
+                $this->warnings[] = 'Failed to retrieve image data';
               }
             }
 
@@ -547,9 +583,11 @@
       $metaKeyNBpr    = POST_TYPE_NBPR . '_' . $collectionUuid . '_uuid';
       $metaKeyNBty    = POST_TYPE_NBTY . '_' . $collectionUuid . '_uuid';
       $metaKeyNBbn    = POST_TYPE_NBBN . '_' . $collectionUuid . '_uuid';
+      $metaKeyBBpr    = POST_TYPE_BBPR . '_' . $collectionUuid . '_uuid';
+      $metaKeyBBty    = POST_TYPE_BBTY . '_' . $collectionUuid . '_uuid';
 
       $tableName    = $this->db->prefix .'postmeta';
-      $results      = $this->db->get_results("SELECT post_id, meta_value AS uuid FROM " . $tableName . " WHERE meta_key IN ('" . $metaKeyWonen . "', '" . $metaKeyBog . "', '" . $metaKeyNBpr . "', '" . $metaKeyNBty . "', '" . $metaKeyNBbn . "')");
+      $results      = $this->db->get_results("SELECT post_id, meta_value AS uuid FROM " . $tableName . " WHERE meta_key IN ('" . $metaKeyWonen . "', '" . $metaKeyBog . "', '" . $metaKeyNBpr . "', '" . $metaKeyNBty . "', '" . $metaKeyNBbn . "', '" . $metaKeyBBpr . "', '" . $metaKeyBBty . "')");
       $uuids        = array();
 
       foreach ($results as $result)
@@ -627,6 +665,9 @@
       $nbprId       = $this->createCategory('Nieuwbouw project',    'nieuwbouw-project',    $nbId);
       $nbtyId       = $this->createCategory('Nieuwbouw type',       'nieuwbouw-type',       $nbId);
       $nbbnId       = $this->createCategory('Nieuwbouw bouwnummer', 'nieuwbouw-bouwnummer', $nbId);
+      $complexId    = $this->createCategory('Complexen',            'complexen');
+      $bbprId       = $this->createCategory('Complex',              'complex',              $complexId);
+      $bbtyId       = $this->createCategory('Complex type',         'complex-type',         $complexId);
 
       $categoryIdMapping = array(
         'consument'             => $consumentId,
@@ -666,7 +707,11 @@
                                                       'nieuwbouw-project-verkochtverhuurd'    => 'Verkocht/verhuurd'),
                               $nbtyId       => array( 'nieuwbouw-type-verkoop'                => 'Verkoop',
                                                       'nieuwbouw-type-verhuur'                => 'Verhuur'),
-                              $nbbnId       => array( 'nieuwbouw-bouwnummer-verkochtverhuurd' => 'Verkocht/verhuurd')
+                              $nbbnId       => array( 'nieuwbouw-bouwnummer-verkochtverhuurd' => 'Verkocht/verhuurd'),
+                              $bbprId       => array( 'complex-verkoop'                       => 'Verkoop',
+                                                      'complex-verhuur'                       => 'Verhuur'),
+                              $bbtyId       => array( 'complex-type-verkoop'                  => 'Verkoop',
+                                                      'complex-type-verhuur'                  => 'Verhuur')
                               );
 
       $this->registerNewThemeCategories($categoryIdMapping, $subcategories);
@@ -746,4 +791,3 @@
       }
     }
   }
-?>

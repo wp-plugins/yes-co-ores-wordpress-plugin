@@ -7,18 +7,18 @@
   {
     /**
     * @desc Get the post type
-    * 
+    *
     * @param void
     * @return string
     */
     public function getPostType()
     {
-      return POST_TYPE_NBBN; 
+      return POST_TYPE_NBBN;
     }
-    
+
     /**
     * @desc Get base name
-    * 
+    *
     * @param void
     * @return string
     */
@@ -26,10 +26,10 @@
     {
       return plugin_basename(__FILE__);
     }
-    
+
     /**
     * @desc Determine columns used in overview
-    * 
+    *
     * @param array $columns
     * @return array
     */
@@ -44,10 +44,10 @@
         'dlm'           => 'Laatste wijziging'
 	    );
     }
-    
+
     /**
     * @desc Determine content of a single column in overview
-    * 
+    *
     * @param string $columnId
     * @return void
     */
@@ -62,7 +62,7 @@
           $content = get_the_excerpt();
           if (strlen($content) > 100)
             $content = htmlentities(substr($content, 0, 100)) . '...';
-            
+
           echo $content;
           break;
         case 'location':
@@ -74,10 +74,10 @@
           break;
       }
     }
-    
+
     /**
     * @desc Add javascript actions
-    * 
+    *
     * @param void
     * @return void
     */
@@ -88,17 +88,17 @@
       add_action('untrashed_post',  array($this, 'redirectToParent'));
       parent::addAjaxActions();
     }
-    
+
     public function addOnload()
     {
       echo '<script type="text/javascript">';
       echo 'jQuery(document).ready(yogActivateNbAdminMenu);';
-      echo '</script>'; 
+      echo '</script>';
     }
-    
+
     /**
     * @desc Add containers to project screen
-    * 
+    *
     * @param void
     * @return void
     */
@@ -108,16 +108,16 @@
       add_meta_box('yog-address-meta',      'Adres',                array($this, 'renderAddressMetaBox'),       $this->getPostType(), 'normal', 'low');
 	    add_meta_box('yog-price-meta',        'Prijs',                array($this, 'renderPriceMetaBox'),         $this->getPostType(), 'normal', 'low');
 	    add_meta_box('yog-object-meta',       'Object',               array($this, 'renderObjectDetailsMetaBox'), $this->getPostType(), 'normal', 'low');
-      
+
       add_meta_box('yog-parent-meta',       'Type',                 array($this, 'renderParentMetaBox') ,       $this->getPostType(), 'side', 'high');
       add_meta_box('yog-meta-sync',         'Synchronisatie',       array($this, 'renderSyncMetaBox') ,         $this->getPostType(), 'side', 'low');
       add_meta_box('yog-location',          'Locatie',              array($this, 'renderMapsMetaBox'),          $this->getPostType(), 'side', 'low');
       add_meta_box('yog-relations',         'Relaties',             array($this, 'renderRelationsMetaBox'),     $this->getPostType(), 'side', 'low');
     }
-    
+
     /**
     * @desc Render basic meta box
-    * 
+    *
     * @param object $post
     * @return void
     */
@@ -127,10 +127,10 @@
 	    echo $this->retrieveInputs($post->ID, array('Naam', 'Bouwnummer', 'Status'));
 	    echo '</table>';
     }
-    
+
     /**
     * @desc Render price meta box
-    * 
+    *
     * @param object $post
     * @return void
     */
@@ -140,10 +140,10 @@
 	    echo $this->retrieveInputs($post->ID, array('GrondPrijs', 'AanneemSom', 'KoopAanneemSom'));
 	    echo '</table>';
     }
-    
+
     /**
     * @desc Render object details meta box
-    * 
+    *
     * @param object $post
     * @return void
     */
@@ -153,10 +153,10 @@
 	    echo $this->retrieveInputs($post->ID, array('WoonOppervlakte', 'Inhoud', 'PerceelOppervlakte', 'AantalKamers'));
 	    echo '</table>';
     }
-    
+
     /**
       * @desc Extend saving of huis post type with storing of custom fields
-      * 
+      *
       * @param int $postId
       * @param StdClass $post
       * @return void
@@ -168,9 +168,9 @@
         return $postId;
 
       // Verify nonce
-	    if (!isset($_POST['yog_nonce']) || !wp_verify_nonce($_POST['yog_nonce'], plugin_basename(__FILE__) ))
+	    if (!isset($_POST['yog_nonce']) || !isset($_POST['yog_nonce']) || !wp_verify_nonce($_POST['yog_nonce'], plugin_basename(__FILE__) ))
 		    return $postId;
-        
+
 	    // verify if this is an auto save routine. If it is our form has not been submitted, so we dont want to do anything
 	    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE)
 	      return $postId;
@@ -178,7 +178,7 @@
 	    // Check permissions
 		  if (!current_user_can( 'edit_page', $postId ) )
 		    return $postId;
-      
+
 		  // Handle meta data
       $fieldsSettings = YogFieldsSettingsAbstract::create($post->post_type);
 
@@ -192,4 +192,3 @@
 		  }
     }
   }
-?>

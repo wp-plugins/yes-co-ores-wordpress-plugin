@@ -1,6 +1,6 @@
 <?php
   require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_translation.php');
-  
+
   /**
   * @desc YogImageTranslation
   * @author Kees Brandenburg - Yes-co Nederland
@@ -9,10 +9,10 @@
   {
     protected $mcp3Image;
     protected $mcp3Link;
-    
+
     /**
     * @desc Constructor
-    * 
+    *
     * @param Yog3McpXmlMediaImage $mcp3Image
     * @param Yog3McpMediaLink $mcp3Link
     * @return YogRelationTranslationAbstract
@@ -22,10 +22,10 @@
       $this->mcp3Image  = $mcp3Image;
       $this->mcp3Link   = $mcp3Link;
     }
-    
+
     /**
     * @desc Create from Yog3McpProjectAbstract
-    * 
+    *
     * @param Yog3McpXmlMediaImage $mcp3Image
     * @param Yog3McpMediaLink $mcp3Link
     * @return YogRelationTranslationAbstract
@@ -34,21 +34,21 @@
     {
       return new self($mcp3Image, $mcp3Link);
     }
-    
+
     /**
     * @desc Get post type
-    * 
+    *
     * @param void
     * @return string
     */
     public function getPostType()
     {
-      return POST_TYPE_ATTACHMENT; 
+      return POST_TYPE_ATTACHMENT;
     }
-    
+
     /**
     * @desc Get the data for the post
-    * 
+    *
     * @param void
     * @return array
     */
@@ -66,10 +66,10 @@
         'menu_order'        => $this->mcp3Image->getOrder()
       );
     }
-    
+
     /**
     * @desc Determine image title
-    * 
+    *
     * @param void
     * @return string
     */
@@ -77,10 +77,10 @@
     {
       return $this->mcp3Image->getTitle();
     }
-    
+
     /**
     * @desc Get image meta data
-    * 
+    *
     * @param void
     * @return array
     */
@@ -92,4 +92,3 @@
       );
     }
   }
-?>

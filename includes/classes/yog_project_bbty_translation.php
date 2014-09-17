@@ -1,9 +1,9 @@
 <?php
   /**
-  * @desc YogProjectNBtyTranslation
+  * @desc YogProjectBBtyTranslation
   * @author Kees Brandenburg - Yes-co Nederland
   */
-  class YogProjectNBtyTranslation extends YogProjectTranslationAbstract
+  class YogProjectBBtyTranslation extends YogProjectTranslationAbstract
   {
     /**
     * @desc Get post type
@@ -13,7 +13,7 @@
     */
     public function getPostType()
     {
-      return POST_TYPE_NBTY;
+      return POST_TYPE_BBTY;
     }
 
     /**
@@ -52,7 +52,7 @@
     */
     public function getParentUuid()
     {
-      return $this->mcp3Project->getNBprUuid();
+      return $this->mcp3Project->getBBprUuid();
     }
 
     /**
@@ -82,12 +82,6 @@
         'WoonOppervlakteMax'          => $this->mcp3Project->getIntByPath('//project:Details/project:Woonruimte/project:WoonOppervlakte/project:Max'),
         'InhoudMin'                   => $this->mcp3Project->getIntByPath('//project:Details/project:Woonruimte/project:Inhoud/project:Min'),
         'InhoudMax'                   => $this->mcp3Project->getIntByPath('//project:Details/project:Woonruimte/project:Inhoud/project:Max'),
-        'AantalEenheden'              => $this->mcp3Project->getIntByPath('//project:Details/project:Ontwikkeling/project:AantalEenheden'),
-        'AantalVrijeEenheden'         => $this->mcp3Project->getIntByPath('//project:Details/project:Ontwikkeling/project:AantalVrijeEenheden'),
-        'StartBouw'                   => $this->mcp3Project->getStringByPath('//project:Details/project:Ontwikkeling/project:StartBouw'),
-        'DatumStartBouw'              => $this->mcp3Project->getStringByPath('//project:Details/project:Ontwikkeling/project:DatumStartBouw'),
-        'Oplevering'                  => $this->mcp3Project->getStringByPath('//project:Details/project:Ontwikkeling/project:Oplevering'),
-        'DatumOplevering'             => $this->mcp3Project->getStringByPath('//project:Details/project:Ontwikkeling/project:DatumOplevering'),
         'PermanenteBewoning'          => $this->translateBool($this->mcp3Project->getBoolByPath('//project:Details/project:Woonruimte/project:Bestemming/project:PermanenteBewoning')),
         'Recreatiewoning'             => $this->translateBool($this->mcp3Project->getBoolByPath('//project:Details/project:Woonruimte/project:Bestemming/project:Recreatiewoning')),
         'Aantalkamers'                => $this->mcp3Project->getIntByPath('//project:Details/project:Woonruimte/project:Verdieping/project:AantalKamers'),
@@ -146,19 +140,19 @@
     */
     public function getCategories()
     {
-	    $categories = array('nieuwbouw-projecten', 'nieuwbouw-type');
+	    $categories = array('complexen', 'complex-type');
 
       // Verkoop
       $min = $this->mcp3Project->getIntByPath('//project:Details/project:Koop/project:PrijsMin');
       $max = $this->mcp3Project->getIntByPath('//project:Details/project:Koop/project:PrijsMax');
       if (!empty($min) || !empty($max))
-        $categories[] = 'nieuwbouw-type-verkoop';
+        $categories[] = 'complex-type-verkoop';
 
       // Verhuur
       $min = $this->mcp3Project->getIntByPath('//project:Details/project:Huur/project:Prijs/project:Min');
       $max = $this->mcp3Project->getIntByPath('//project:Details/project:Huur/project:Prijs/project:Max');
       if (!empty($min) || !empty($max))
-        $categories[] = 'nieuwbouw-type-verhuur';
+        $categories[] = 'complex-type-verhuur';
 
       // Allow the theme to add custom categories
       $this->getThemeCategories($this->mcp3Project, $categories);

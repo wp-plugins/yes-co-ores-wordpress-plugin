@@ -2,8 +2,8 @@
 Contributors: yesco
 Tags: yes-co, yesco, projecten, project, projects, huizen, huis, house, onroerend goed, real estate, makelaar, realtor, broker
 Requires at least: 3.0
-Tested up to: 3.9.2
-Stable tag: 1.2.11
+Tested up to: 4.0
+Stable tag: 1.3
 
 Directly post real estate objects from your Yes-co system to your wordpress blog with the Yes-co Open Real Estate System (Yes-co ORES) Plugin.
 
@@ -87,6 +87,11 @@ Publications from your Yes-co Open Real Estate System to your Wordpress blog are
 7. Project details on the Wordpress Admin
 
 == Changelog ==
+= 1.3 =
+* Fixed: support for wordpress version 4.0
+* Added: support for tags
+* Added: support for BBpr/BBty (when future upgrade to 3mcp 1.4 is done)
+* Changed: serveral code optimalizations
 = 1.2.11 =
 * Added: support for both Yes-co 3mcp 1.3 and 1.4 (for future upgrade to 3mcp 1.4)
 * Changed: BOG status determined based upon the General/ObjectStatus

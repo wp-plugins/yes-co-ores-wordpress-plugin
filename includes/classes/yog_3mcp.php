@@ -47,7 +47,8 @@
     */
     public function read($collectionUuid)
     {
-      $mcp3Versions = explode(';', MCP3_VERSIONS);
+      $mcp3Versions           = explode(';', MCP3_VERSIONS);
+      $registeredMcp3Version  = get_option('yog_3mcp_version');
 
       foreach ($mcp3Versions as $mcp3Version)
       {
@@ -60,6 +61,9 @@
           $this->xml->registerXpathNamespace('mcp', sprintf(MCP_ATOM_NAMESPACE, $mcp3Version));
 
           $this->mcp3Version = $mcp3Version;
+
+          if ($registeredMcp3Version != $mcp3Version)
+            update_option('yog_3mcp_version', $mcp3Version);
 
           break;
         }
@@ -85,7 +89,8 @@
       $entityLinks  = array('BBvk' => array(), 'BBvh' => array(), 'LIvk' => array(),
                             'BOvk' => array(), 'BOvh' => array(),
                             'NBpr' => array(), 'NBty' => array(), 'NBbn' => array(),
-                            'NBvk' => array(), 'NBvh' => array());
+                            'NBvk' => array(), 'NBvh' => array(),
+                            'BBpr' => array(), 'BBty' => array());
 
       if ($nodes !== false && count($nodes) > 0)
       {
@@ -95,9 +100,9 @@
           $url      = $this->determine3McpUrl((string) $node->link['href']);
           $doc      = (string) $node->published;
           $dlm      = (string) $node->updated;
-          $scenario = (string) array_shift($node->xpath('mcp:projectScenario'));
+          $scenario = (string) $node->xpath('mcp:projectScenario')[0];
 
-          if (in_array($scenario, array('BBvk', 'BBvh', 'NBvk', 'NBvh', 'LIvk', 'BOvk', 'BOvh', 'NBpr', 'NBty', 'NBbn')))
+          if (in_array($scenario, array('BBvk', 'BBvh', 'NBvk', 'NBvh', 'LIvk', 'BOvk', 'BOvh', 'NBpr', 'NBty', 'NBbn', 'BBpr', 'BBty')))
             $entityLinks[$scenario][$uuid] = new Yog3McpProjectLink($uuid, $url, $doc, $dlm, $scenario);
         }
       }
@@ -473,4 +478,3 @@
       return $content;
     }
   }
-?>

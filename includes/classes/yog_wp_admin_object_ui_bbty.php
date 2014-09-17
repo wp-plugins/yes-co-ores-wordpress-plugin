@@ -1,9 +1,9 @@
 <?php
   /**
-  * @desc YogWpAdminObjectUiNBpr
+  * @desc YogWpAdminObjectUiBBty
   * @author Kees Brandenburg - Yes-co Nederland
   */
-  class YogWpAdminObjectUiNBpr extends YogWpAdminObjectUiAbstract
+  class YogWpAdminObjectUiBBty extends YogWpAdminObjectUiAbstract
   {
     /**
     * @desc Get the post type
@@ -13,7 +13,7 @@
     */
     public function getPostType()
     {
-      return POST_TYPE_NBPR;
+      return POST_TYPE_BBTY;
     }
 
     /**
@@ -46,6 +46,57 @@
     }
 
     /**
+    * @desc Determine content of a single column in overview
+    *
+    * @param string $columnId
+    * @return void
+    */
+    public function generateColumnContent($columnId)
+    {
+      switch ($columnId)
+      {
+        case 'thumbnail':
+          echo get_the_post_thumbnail(null, 'thumbnail');
+          break;
+        case 'description':
+          $content = get_the_excerpt();
+          if (strlen($content) > 100)
+            $content = htmlentities(substr($content, 0, 100)) . '...';
+
+          echo $content;
+          break;
+        case 'location':
+          $specs = yog_retrieveSpecs(array('Postcode', 'Plaats', 'Land'));
+          echo implode(', ', $specs);
+          break;
+        case 'dlm':
+          echo get_the_modified_date() . ' ' . get_the_modified_time();
+          break;
+      }
+    }
+
+    /**
+    * @desc Add javascript actions
+    *
+    * @param void
+    * @return void
+    */
+    public function addAjaxActions()
+    {
+      add_action('admin_head',      array($this, 'addOnload'));
+      add_action('trashed_post',    array($this, 'redirectToParent'));
+      add_action('untrashed_post',  array($this, 'redirectToParent'));
+      parent::addAjaxActions();
+    }
+
+    public function addOnload()
+    {
+      echo '<script type="text/javascript">';
+      echo 'jQuery(document).ready(yogActivateComplexAdminMenu);';
+      echo '</script>';
+    }
+
+    /**
     * @desc Add containers to project screen
     *
     * @param void
@@ -53,17 +104,21 @@
     */
     public function addMetaBoxes()
     {
-      add_meta_box('yog-childprojects-meta','Types',                array($this, 'renderChildProjectsMetaBox'), $this->getPostType(), 'normal', 'high');
+      add_meta_box('yog-childprojects-meta','Objecten',             array($this, 'renderChildProjectsMetaBox'), $this->getPostType(), 'normal', 'high');
 	    add_meta_box('yog-standard-meta',     'Basis gegevens',       array($this, 'renderBasicMetaBox'),         $this->getPostType(), 'normal', 'low');
 	    add_meta_box('yog-price-meta',        'Prijs',                array($this, 'renderPriceMetaBox'),         $this->getPostType(), 'normal', 'low');
 	    add_meta_box('yog-measurements-meta', 'Maten',                array($this, 'renderMeasurementsMetaBox'),  $this->getPostType(), 'normal', 'low');
-      add_meta_box('yog-development-meta',  'Ontwikkeling',         array($this, 'renderDevelopmentMetaBox'),   $this->getPostType(), 'normal', 'low');
+      add_meta_box('yog-type-meta',         'Gegevens type',        array($this, 'renderTypeMetaBox'),          $this->getPostType(), 'normal', 'low');
+      add_meta_box('yog-cv-meta',           'C.V.',                 array($this, 'renderCvMetaBox'),            $this->getPostType(), 'normal', 'low');
+      add_meta_box('yog-garage-meta',       'Garage',               array($this, 'renderGarageMetaBox'),        $this->getPostType(), 'normal', 'low');
+      add_meta_box('yog-garden-meta',       'Tuin',                 array($this, 'renderGardenMetaBox'),        $this->getPostType(), 'normal', 'low');
+      add_meta_box('yog-berging-meta',      'Berging',              array($this, 'renderBergingMetaBox'),       $this->getPostType(), 'normal', 'low');
 	    add_meta_box('yog-movies',            'Video',                array($this, 'renderMoviesMetaBox'),        $this->getPostType(), 'normal', 'low');
 	    add_meta_box('yog-documents',         'Documenten',           array($this, 'renderDocumentsMetaBox'),     $this->getPostType(), 'normal', 'low');
 	    add_meta_box('yog-links',             'Externe koppelingen',  array($this, 'renderLinksMetaBox'),         $this->getPostType(), 'normal', 'low');
 
+      add_meta_box('yog-parent-meta',       'Complex',              array($this, 'renderParentMetaBox') ,       $this->getPostType(), 'side', 'high');
       add_meta_box('yog-meta-sync',         'Synchronisatie',       array($this, 'renderSyncMetaBox') ,         $this->getPostType(), 'side', 'low');
-      add_meta_box('yog-location',          'Locatie',              array($this, 'renderMapsMetaBox'),          $this->getPostType(), 'side', 'low');
       add_meta_box('yog-relations',         'Relaties',             array($this, 'renderRelationsMetaBox'),     $this->getPostType(), 'side', 'low');
       add_meta_box('yog-images',            'Afbeeldingen',         array($this, 'renderImagesMetaBox'),        $this->getPostType(), 'side', 'low');
     }
@@ -77,7 +132,7 @@
     public function renderBasicMetaBox($post)
     {
 	    echo '<table class="form-table">';
-	    echo $this->retrieveInputs($post->ID, array('Naam', 'Postcode', 'Wijk', 'Buurt', 'Plaats', 'Gemeente', 'Provincie', 'Land', 'Status'));
+	    echo $this->retrieveInputs($post->ID, array('Naam', 'Status'));
 	    echo '</table>';
     }
 
@@ -93,13 +148,13 @@
 
 	    // Koop
 	    echo '<tr>';
-	    echo '<th colspan="2"><b>Koopaanneemsom</b></th>';
+	    echo '<th colspan="2"><b>Koop prijs</b></th>';
 	    echo '</tr>';
-	    echo $this->retrieveInputs($post->ID, array('KoopAanneemSomMin', 'KoopAanneemSomMax'));
+	    echo $this->retrieveInputs($post->ID, array('KoopPrijsMin', 'KoopPrijsMax'));
 
 	    // Huur
 	    echo '<tr>';
-	    echo '<th colspan="2"><b>Huurprijs</b></th>';
+	    echo '<th colspan="2"><b>Huur prijs</b></th>';
 	    echo '</tr>';
 	    echo $this->retrieveInputs($post->ID, array('HuurPrijsMin', 'HuurPrijsMax', 'HuurPrijsConditie'));
 
@@ -138,15 +193,67 @@
     }
 
     /**
-    * @desc Render object development meta box
+    * @desc Render type meta box
     *
-    * @param object $post
+    * @param StdClass $post
     * @return void
     */
-    public function renderDevelopmentMetaBox($post)
+    public function renderTypeMetaBox($post)
     {
       echo '<table class="form-table">';
-      echo $this->retrieveInputs($post->ID, array('Fase', 'Status', 'ProjectSoort', 'AantalEenheden', 'StartBouw', 'DatumStartBouw', 'Oplevering', 'DatumOplevering'));
+      echo $this->retrieveInputs($post->ID, array('Type', 'SoortWoning', 'TypeWoning', 'KenmerkWoning', 'PermanenteBewoning', 'Recreatiewoning', 'Aantalkamers', 'Verwarming', 'WarmWater', 'Dak', 'DakMaterialen'));
+      echo '</table>';
+    }
+
+    /**
+    * @desc Render C.V. meta box
+    *
+    * @param StdClass $post
+    * @param void
+    */
+    public function renderCvMetaBox($post)
+    {
+      echo '<table class="form-table">';
+      echo $this->retrieveInputs($post->ID, array('CvKetel', 'CvKetelBouwjaar', 'CvKetelBrandstof', 'CvKetelEigendom', 'CvCombiketel'));
+      echo '</table>';
+    }
+
+    /**
+    * @desc Render garage meta box
+    *
+    * @param StdClass $post
+    * @param void
+    */
+    public function renderGarageMetaBox($post)
+    {
+      echo '<table class="form-table">';
+      echo $this->retrieveInputs($post->ID, array('GarageType', 'GarageCapaciteit', 'GarageVoorzieningen', 'GarageIsolatievormen'));
+      echo '</table>';
+    }
+
+    /**
+    * @desc Render garden meta box
+    *
+    * @param StdClass $post
+    * @param void
+    */
+    public function renderGardenMetaBox($post)
+    {
+      echo '<table class="form-table">';
+      echo $this->retrieveInputs($post->ID, array('TuinType', 'TuinTotaleOppervlakte', 'HoofdTuinType', 'HoofdTuinAchterom', 'HoofdTuinDiepte', 'HoofdTuinBreedte', 'HoofdTuinTotaleOppervlakte', 'TuinLigging'));
+      echo '</table>';
+    }
+
+    /**
+    * @desc Render berging meta box
+    *
+    * @param StdClass $post
+    * @param void
+    */
+    public function renderBergingMetaBox($post)
+    {
+      echo '<table class="form-table">';
+      echo $this->retrieveInputs($post->ID, array('BergingType', 'BergingVoorzieningen', 'BergingIsolatievormen'));
       echo '</table>';
     }
 

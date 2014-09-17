@@ -160,7 +160,7 @@
         $categories[] = 'verhuur';
 
 		  // State
-      if (in_array($this->determineState(), array('Verkocht', 'Verhuurd')))
+      if (in_array(strtolower($this->determineState()), array('verkocht', 'verhuurd')))
 			  $categories[] = 'verkochtverhuurd';
 
       // Allow the theme to add custom categories
@@ -424,4 +424,3 @@
       );
     }
   }
-?>

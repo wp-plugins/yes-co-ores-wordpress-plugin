@@ -4,6 +4,8 @@
 .icon32.icon32-posts-yog-nbpr,
 .icon32.icon32-posts-yog-nbty,
 .icon32.icon32-posts-yog-nbbn,
+.icon32.icon32-posts-yog-bbpr,
+.icon32.icon32-posts-yog-bbty,
 .icon32.icon32-posts-relatie,
 .icon32.icon32-config-yog {
 background: url('../../img/icon_yes-co_32.png') no-repeat transparent !important;
@@ -12,9 +14,15 @@ background: url('../../img/icon_yes-co_32.png') no-repeat transparent !important
 .yog-NBbn #message.updated a {
 display:none;
 }
-/* Remove NBty / NBbn links from admin menu */
+/* Remove NBty / NBbn / NBty links from admin menu */
 #menu-posts-yog-nbty,
-#menu-posts-yog-nbbn {
+#menu-posts-yog-nbbn,
+#menu-posts-yog-bbty{
+display:none;
+}
+/* Remove add NBty/BBty links */
+.yog-NBty .add-new-h2,
+.yog-BBty .add-new-h2 {
 display:none;
 }
 /* Media box */

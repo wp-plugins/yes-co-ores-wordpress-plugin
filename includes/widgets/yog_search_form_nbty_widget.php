@@ -13,10 +13,10 @@ class YogSearchFormNBtyWidget extends YogSearchFormWidgetAbstract
   const NAME        = 'Yes-co Nieuwbouw Types zoeken';
   const DESCRIPTION = 'Zoek formulier voor nieuwbouw types';
   const CLASSNAME   = 'yog-object-search';
-  
+
   /**
   * @desc Constructor
-  * 
+  *
   * @param void
   * @return YogRecentObjectsWidget
   */
@@ -24,9 +24,9 @@ class YogSearchFormNBtyWidget extends YogSearchFormWidgetAbstract
   {
     $options = array( 'classsname'  => self::CLASSNAME,
                       'description' => self::DESCRIPTION);
-    
+
     parent::__construct(false, self::NAME, $options);
-    
+
     if (!is_admin())
     {
       // Add needed javascript/css to header of website (not admin)
@@ -34,30 +34,30 @@ class YogSearchFormNBtyWidget extends YogSearchFormWidgetAbstract
       wp_enqueue_script('jquery-ui-widget', YOG_PLUGIN_URL .'/inc/js/jquery.ui.widget.js', array('jquery', 'jquery-ui-core'));
       wp_enqueue_script('jquery-ui-mouse', YOG_PLUGIN_URL .'/inc/js/jquery.ui.mouse.js', array('jquery', 'jquery-ui-core'));
       wp_enqueue_script('jquery-ui-slider', YOG_PLUGIN_URL .'/inc/js/jquery.ui.slider.js', array('jquery', 'jquery-ui-core', 'jquery-ui-widget', 'jquery-ui-mouse'));
-    
+
       wp_enqueue_script('yog-form-slider', YOG_PLUGIN_URL .'/inc/js/form-slider.js', array('jquery-ui-slider'), YOG_PLUGIN_VERSION);
       wp_enqueue_script('yog-search-form-widget', YOG_PLUGIN_URL .'/inc/js/yog_search_form_widget.js', array('jquery'), YOG_PLUGIN_VERSION);
       wp_enqueue_style('yog-widgets-css', YOG_PLUGIN_URL . '/inc/css/widgets.css', array(), YOG_PLUGIN_VERSION);
-      
+
       // Do ajax search when needed
       add_action('get_header', array($this, 'retrieveNumberOfPosts'));
     }
   }
-  
+
   /**
   * @desc Get the widget classname
-  * 
+  *
   * @param void
   * @return string
   */
   protected function getClassName()
   {
-    return self::CLASSNAME; 
+    return self::CLASSNAME;
   }
-  
+
   /**
   * @desc Get the post type
-  * 
+  *
   * @param void
   * @return string
   */
@@ -65,10 +65,10 @@ class YogSearchFormNBtyWidget extends YogSearchFormWidgetAbstract
   {
     return POST_TYPE_NBTY;
   }
-  
+
   /**
   * @desc Display widget
-  * 
+  *
   * @param array $args
   * @param array $instance
   * @return void
@@ -77,13 +77,13 @@ class YogSearchFormNBtyWidget extends YogSearchFormWidgetAbstract
   {
     // Retrieve managers
     $searchManager    = YogObjectSearchManager::getInstance();
-    
+
     // Retrieve arguments
     $beforeWidget     = isset($args['before_widget']) ? $args['before_widget'] : '';
     $afterWidget      = isset($args['after_widget']) ? $args['after_widget'] : '';
     $beforeTitle      = isset($args['before_title']) ? $args['before_title'] : '';
     $afterTitle       = isset($args['after_title']) ? $args['after_title'] : '';
-    
+
     // Retrieve settings
     $title            = empty($instance['title']) ? '' : esc_attr($instance['title']);
     $useCurrentCat    = empty($instance['use_cur_cat']) ? false : true;
@@ -94,7 +94,7 @@ class YogSearchFormNBtyWidget extends YogSearchFormWidgetAbstract
     $showLivingSpace  = empty($instance['show_living_space']) ? false : true;
     $showVolume       = empty($instance['show_volume']) ? false : true;
     $params           = array();
-    
+
     // Use current category name in widget title?
     if (is_category())
     {
@@ -108,36 +108,36 @@ class YogSearchFormNBtyWidget extends YogSearchFormWidgetAbstract
     echo '<div style="display:none;">';
       echo '<input type="hidden" name="s" value=" " />';
       echo '<input type="hidden" name="object_type" value="' . $this->getPostType() . '" />';
-    
+
     // Only use object specs of current category?
     if (is_category() && $useCurrentCat)
     {
       echo '<input type="hidden" name="cat" value="' . get_query_var('cat') . '" />';
       $params['cat'] = get_query_var('cat');
     }
-    
+
     echo '</div>';
-    
+
     // Prijs
     if ($showPrice === true)
       echo $this->renderElement('Prijs', $this->renderSlider('Prijs', $searchManager->retrieveMinMetaValue(array('yog-nbty_KoopPrijsMin', 'yog-nbty_HuurPrijsMin'), $params), $searchManager->retrieveMaxMetaValue(array('yog-nbty_KoopPrijsMax', 'yog-nbty_HuurPrijsMax'), $params)));
-    
+
     // Plaats (display cities of NBpr's, cause NBty doesn't contain city)
     if ($showCity === true)
       echo $this->renderElement('yog-nbpr_Plaats', $this->renderMultiSelect('Plaats', $searchManager->retrieveMetaList('yog-nbpr_Plaats', $params)));
-      
+
     // Soort Woning
     if ($showObjectKind === true)
       echo $this->renderElement('yog-nbty_SoortWoning', $this->renderCheckBoxes('SoortWoning', $searchManager->retrieveMetaList('yog-nbty_SoortWoning', $params)));
-    
+
     // Type woning
     if ($showObjectType === true)
       echo $this->renderElement('yog-nbty_TypeWoning', $this->renderCheckBoxes('TypeWoning', $searchManager->retrieveMetaList('yog-nbty_TypeWoning', $params)));
-      
+
     // Oppervlakte
     if ($showLivingSpace === true)
       echo $this->renderElement('Woon oppervlakte', $this->renderSlider('WoonOppervlakte', $searchManager->retrieveMinMetaValue('yog-nbty_WoonOppervlakteMin', $params), $searchManager->retrieveMaxMetaValue('yog-nbty_WoonOppervlakteMax', $params)));
-    
+
     // Inhoud
     if ($showVolume === true)
       echo $this->renderElement('Inhoud', $this->renderSlider('Inhoud', $searchManager->retrieveMinMetaValue('yog-nbty_InhoudMin', $params), $searchManager->retrieveMaxMetaValue('yog-nbty_InhoudMax', $params)));
@@ -147,10 +147,10 @@ class YogSearchFormNBtyWidget extends YogSearchFormWidgetAbstract
     echo '</form>';
     echo $afterWidget;
   }
-  
+
   /**
   * @desc Update widget settings
-  * 
+  *
   * @param array $new_instance
   * @param array $old_instance
   * @return array
@@ -166,13 +166,13 @@ class YogSearchFormNBtyWidget extends YogSearchFormWidgetAbstract
     $instance['show_object_type']   = empty($new_instance['show_object_type']) ? 0 : 1;
     $instance['show_living_space']  = empty($new_instance['show_living_space']) ? 0 : 1;
     $instance['show_volume']        = empty($new_instance['show_volume']) ? 0 : 1;
-    
+
     return $instance;
   }
-  
+
   /**
   * @desc Display widget form
-  * 
+  *
   * @param array $instance
   * @return void
   */
@@ -186,7 +186,7 @@ class YogSearchFormNBtyWidget extends YogSearchFormWidgetAbstract
     $showObjectType   = empty($instance['show_object_type']) ? false : true;
     $showLivingSpace  = empty($instance['show_living_space']) ? false : true;
     $showVolume       = empty($instance['show_volume']) ? false : true;
-    
+
     // Title
     echo '<p>';
       echo '<label for="' . $this->get_field_id('title') . '">' . _e('Titel') . ': </label>';
@@ -233,4 +233,3 @@ class YogSearchFormNBtyWidget extends YogSearchFormWidgetAbstract
     echo '</table>';
   }
 }
-?>

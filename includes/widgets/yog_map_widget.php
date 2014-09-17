@@ -440,5 +440,3 @@ class YogMapWidget extends WP_Widget
     echo '<p>Gebruik de <a href="' . get_admin_url() . 'options-general.php?page=yesco_OG&shortcode=' . esc_attr(urlencode($shortcode)) . '">shortcode generator</a> op de Instellingen pagina om snel een shortcode te genereren.</p>';
   }
 }
-
-?>

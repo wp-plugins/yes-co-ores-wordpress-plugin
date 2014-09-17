@@ -3,7 +3,7 @@
   Plugin Name: Yes-co ORES
   Plugin URI: http://makelaars-crm.nl/wordpress/
   Description: Publiceert uw onroerend goed op uw Wordpress Blog
-  Version: 1.2.11
+  Version: 1.4
   Author: Yes-co
   Author URI: http://yes-co.nl
   License: GPL2
@@ -46,6 +46,7 @@
         require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_system_link_manager.php');
         require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_http_manager.php');
         require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_synchronization_manager.php');
+        require_once(YOG_PLUGIN_DIR . '/includes/yog_cron.php');
 
         set_time_limit(180);
 
@@ -53,17 +54,7 @@
         $yogSystemLink              = $yogSystemLinkManager->retrieveByRequest($_REQUEST);
 
         $yogSynchronizationManager  = new YogSynchronizationManager($yogSystemLink);
-        $yogSynchronizationManager->syncRelations();
-        $yogSynchronizationManager->syncProjects();
-
-        $response = array('status'   => 'ok',
-                          'message' => 'Synchronisatie voltooid');
-        if ($yogSynchronizationManager->hasWarnings())
-          $response['warnings'] = $yogSynchronizationManager->getWarnings();
-
-        echo json_encode($response);
-
-        exit;
+        $yogSynchronizationManager->init();
 
         break;
       // Remote checks
@@ -85,6 +76,7 @@
       // Initialize plugin
       default:
         require_once(YOG_PLUGIN_DIR . '/includes/yog_public_functions.php');
+        require_once(YOG_PLUGIN_DIR . '/includes/yog_cron.php');
         require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_plugin.php');
 
         $yogPlugin = YogPlugin::getInstance();
@@ -98,4 +90,3 @@
     echo $e->toJson();
     exit;
   }
-?>

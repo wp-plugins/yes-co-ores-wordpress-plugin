@@ -26,6 +26,7 @@
       require_once(YOG_PLUGIN_DIR . '/includes/widgets/yog_search_form_bog_widget.php');
       require_once(YOG_PLUGIN_DIR . '/includes/widgets/yog_search_form_nbpr_widget.php');
       require_once(YOG_PLUGIN_DIR . '/includes/widgets/yog_search_form_nbty_widget.php');
+      require_once(YOG_PLUGIN_DIR . '/includes/widgets/yog_search_form_bbpr_widget.php');
       require_once(YOG_PLUGIN_DIR . '/includes/widgets/yog_recent_objects_widget.php');
       require_once(YOG_PLUGIN_DIR . '/includes/widgets/yog_linked_objects_widget.php');
       require_once(YOG_PLUGIN_DIR . '/includes/widgets/yog_linked_relations_widget.php');
@@ -72,14 +73,15 @@
       add_theme_support('post-thumbnails');
       add_action('init', array($this, 'registerPostTypes'));
 
-
       add_action('widgets_init', array($this, 'registerWidgets'));
-      add_filter('rewrite_rules_array', array($this, 'insertCustomRewriteRules'));
+      add_filter('post_rewrite_rules', array($this, 'insertCustomRewriteRules'));
       add_filter('post_type_link', array($this, 'fixPermalinks'), 1, 3);
+
+      register_deactivation_hook(YOG_PLUGIN_DIR . '/yesco-og.php', array($this, 'onDeactivation'));
     }
 
     /**
-    * @desc Fix NBty permalinks
+    * @desc Fix NBty/BBty permalinks
     *
     * @param string $permalink
     * @param StdClass $post
@@ -88,20 +90,35 @@
     */
     public function fixPermalinks($permalink, $post, $leavename)
     {
-	    if  ($post->post_type == POST_TYPE_NBTY)
+      switch ($post->post_type)
       {
-        $permalink = str_replace( array('/nieuwbouw-type/', '/' . $post->post_name),
-                                  array('/nieuwbouw/', '/type/' . $post->post_name),
-                                  $permalink);
+        case POST_TYPE_NBTY:
 
-        if (strpos($permalink, '%' . POST_TYPE_NBTY . '%') !== false && !empty($post->post_parent))
-        {
+          if (!empty($post->post_parent))
+          {
+            $parent = get_post($post->post_parent);
 
+            $permalink = str_replace('/nieuwbouw-type/', '/nieuwbouw/' . $parent->post_name . '/type/', $permalink);
 
-          $permalink = str_replace('%' . POST_TYPE_NBTY . '%', '%pagename%', $permalink);
-        }
+            if (strpos($permalink, '%' . POST_TYPE_NBTY . '%') !== false && !empty($post->post_parent))
+              $permalink = str_replace('%' . POST_TYPE_NBTY . '%', '%pagename%', $permalink);
+          }
 
-	    }
+          break;
+        case POST_TYPE_BBTY:
+
+          if (!empty($post->post_parent))
+          {
+            $parent = get_post($post->post_parent);
+
+            $permalink = str_replace('/yog-bbty/', '/complex/' . $parent->post_name . '/type/', $permalink);
+
+            if (strpos($permalink, '%' . POST_TYPE_BBTY . '%') !== false && !empty($post->post_parent))
+              $permalink = str_replace('%' . POST_TYPE_BBTY . '%', '%pagename%', $permalink);
+          }
+
+          break;
+      }
 
 	    return $permalink;
     }
@@ -115,24 +132,11 @@
     public function insertCustomRewriteRules($rules)
     {
 	    $newrules = array();
-	    $newrules['nieuwbouw/(.+?)/type/(.+?)$'] = 'index.php?' . POST_TYPE_NBTY . '=$matches[2]';
+	    $newrules['nieuwbouw/(.+?)/type/(.+?)$']  = 'index.php?' . POST_TYPE_NBTY . '=$matches[2]';
+      $newrules['complex/(.+?)/type/(.+?)$']    = 'index.php?' . POST_TYPE_BBTY . '=$matches[2]';
 
 	    return $newrules + $rules;
     }
-
-    /*
-    add_action('wp_loaded', array($this, 'my_flush_rules'));
-    function my_flush_rules()
-    {
-	    $rules = get_option( 'rewrite_rules' );
-
-	    if ( ! isset( $rules['nieuwbouw/(.+?)/type/(.+?)$'] ) )
-      {
-		    global $wp_rewrite;
-	   	  $wp_rewrite->flush_rules();
-	    }
-    }
-    */
 
     /**
      * @desc Method preScript
@@ -142,24 +146,13 @@
      */
     public function preScript()
     {
-      //echo '<script data-dojo-config="async: true" src="http://ajax.googleapis.com/ajax/libs/dojo/1.9.3/dojo/dojo.js"></script>';
-
-      //function print_my_inline_script2() {
-        echo '<script type="text/javascript">
-              // <![CDATA[
-                var djConfig = {
-                cacheBust: "' . YOG_PLUGIN_VERSION . '"
-                };
-              // ]]>
-              </script>';
-
-        //echo '<script data-dojo-config="async: true" src="http://ajax.googleapis.com/ajax/libs/dojo/1.9.3/dojo/dojo.js"></script>';
-      //}
-
-
-
-      //add_action( 'wp_footer', 'print_my_inline_script2' );
-      //add_action( 'admin_footer', 'print_my_inline_script2' );
+      echo '<script type="text/javascript">
+            // <![CDATA[
+              var djConfig = {
+              cacheBust: "' . YOG_PLUGIN_VERSION . '"
+              };
+            // ]]>
+            </script>';
 
       // Fix for jquery being loaded crashing whole interface
       wp_enqueue_script('dojo', 'http://ajax.googleapis.com/ajax/libs/dojo/1.9.3/dojo/dojo.js', false, '1.9.3');
@@ -173,11 +166,8 @@
     */
     public function enqueueFiles()
     {
-      //$this->preScript();
-
       add_action('wp_head', array($this, 'preScript'));
       add_action('admin_head', array($this, 'preScript'));
-      // add_action('wp_head', array($this, 'preScript'));
 
       wp_enqueue_script('jquery', YOG_PLUGIN_URL . '/javascript/' .'jquery-1.4.1' .'.js');
     }
@@ -279,7 +269,7 @@
 	                        'show_in_nav_menus' => true,
 	                        'capability_type'   => 'post',
                           'menu_icon'         => YOG_PLUGIN_URL . '/img/icon_yes-co.gif',
-	                        'hierarchical'      => true,
+	                        'hierarchical'      => false,
 	                        'rewrite'           => array('slug' => 'nieuwbouw-type', 'with_front' => false), // Permalinks format
 	                        'supports'          => array('title','editor', 'thumbnail'),
 	                        'taxonomies'        => array('category', 'post_tag')
@@ -305,6 +295,54 @@
 	                        'hierarchical'      => true,
 	                        'rewrite'           => array('slug' => 'nieuwbouw-bouwnummer'), // Permalinks format
 	                        'supports'          => array('title')
+	                        )
+	    );
+
+	    register_post_type(POST_TYPE_BBPR,
+	                  array('labels'    => array('name'               => 'Complex',
+	                                            'singular_name'       => 'Complex (bestaande bouw project)',
+                                              'add_new'             => 'Complex toevoegen',
+                                              'add_new_item'        => 'Complex toevoegen',
+                                              'search_items'        => 'Complexen zoeken',
+                                              'not_found'           => 'Geen complexen (bestaande bouw projecten) gevonden',
+                                              'not_found_in_trash'  => 'Geen complexen (bestaande bouw projecten) gevonden in de prullenbak',
+                                              'edit_item'           => 'Project bewerken',
+                                              'view_item'           => __('View')
+                                              ),
+                          'public'            => true,
+	                        'show_ui'           => true, // UI in admin panel
+                          'show_in_menu'      => 'yog_posts_menu',
+	                        'show_in_nav_menus' => true,
+	                        'capability_type'   => 'post',
+                          'menu_icon'         => YOG_PLUGIN_URL . '/img/icon_yes-co.gif',
+	                        'hierarchical'      => false,
+	                        'rewrite'           => array('slug' => 'complex'), // Permalinks format
+	                        'supports'          => array('title','editor', 'thumbnail'),
+	                        'taxonomies'        => array('category', 'post_tag')
+	                        )
+	    );
+
+	    register_post_type(POST_TYPE_BBTY,
+	                  array('labels'    => array('name'               => 'Complex types',
+	                                            'singular_name'       => 'Complex type',
+                                              'add_new'             => 'Complex type toevoegen',
+                                              'add_new_item'        => 'Type toevoegen',
+                                              'search_items'        => 'Types zoeken',
+                                              'not_found'           => 'Geen complex (bestaande bouw) types gevonden',
+                                              'not_found_in_trash'  => 'Geen complex (bestaande bouw) types gevonden in de prullenbak',
+                                              'edit_item'           => 'Type bewerken',
+                                              'view_item'           => __('View')
+                                              ),
+                          'public'            => true,
+	                        'show_ui'           => true, // UI in admin panel
+                          'show_in_menu'      => 'yog_posts_menu',
+	                        'show_in_nav_menus' => true,
+	                        'capability_type'   => 'post',
+                          'menu_icon'         => YOG_PLUGIN_URL . '/img/icon_yes-co.gif',
+	                        'hierarchical'      => false,
+	                        //'rewrite'           => array('slug' => 'complex-type', 'with_front' => false), // Permalinks format
+	                        'supports'          => array('title','editor', 'thumbnail'),
+	                        'taxonomies'        => array('category', 'post_tag')
 	                        )
 	    );
 
@@ -348,6 +386,21 @@
       register_widget('YogObjectAttachmentsWidget');
       register_widget('YogLinkedObjectsWidget');
       register_widget('YogLinkedRelationsWidget');
+
+      $mcp3Version = get_option('yog_3mcp_version');
+      if ($mcp3Version == '1.4')
+      {
+        register_widget('YogSearchFormBBprWidget');
+      }
+    }
+
+    /**
+    * Cleanup some things on deactivation
+    */
+    public function onDeactivation()
+    {
+      if (wp_next_scheduled('yog_cron_open_houses'))
+        wp_clear_scheduled_hook('yog_cron_open_houses');
     }
   }
 
@@ -370,7 +423,6 @@
       add_filter('pre_get_posts',           array($this, 'extendPostQuery'));
       add_filter('the_content',             array($this, 'extendTheContent'));
       add_action('init',                    array($this, 'enqueueFiles'));
-      add_action('init',                    array($this, 'updateOpenhuizen'));
 
       $searchManager = YogObjectSearchManager::getInstance();
      	$searchManager->extendSearch();
@@ -405,19 +457,19 @@
       $prefix   = '';
       $suffix   = '';
 
-      if (is_single() && !is_file(get_template_directory() .'/single-' . $postType . '.php'))
+      if (is_single() && in_array($postType, yog_getAllPostTypes()) && !is_file(get_template_directory() .'/single-' . $postType . '.php'))
       {
+        // Add photo slider
+        $prefix .= yog_retrievePhotoSlider();
+
+        // Add prices
+        $prices = yog_retrievePrices();
+        if (count($prices) > 0)
+          $prefix .= '<div class="yog-prices">' . implode('<br />', $prices) . '</div>';
+
         switch ($postType)
         {
           case POST_TYPE_WONEN:
-            // Add photo slider
-            $prefix .= yog_retrievePhotoSlider();
-
-            // Add prices
-            $prices = yog_retrievePrices();
-            if (count($prices) > 0)
-              $prefix .= '<div class="yog-prices">' . implode('<br />', $prices) . '</div>';
-
             // Add open house
             if (yog_hasOpenHouse())
               $prefix .= '<div class="yog-open-house">' . yog_getOpenHouse() . '</div>';
@@ -426,27 +478,36 @@
             $suffix = yog_retrieveDynamicMap();
             break;
           case POST_TYPE_BOG:
-          case POST_TYPE_NBPR:
-            // Add photo slider
-            $prefix .= yog_retrievePhotoSlider();
-
-            // Add prices
-            $prices = yog_retrievePrices();
-            if (count($prices) > 0)
-              $prefix .= '<div class="yog-prices">' . implode('<br />', $prices) . '</div>';
-
             // Add location
-            $suffix = yog_retrieveDynamicMap();
+            $suffix .= yog_retrieveDynamicMap();
+            break;
+          case POST_TYPE_NBPR:
+          case POST_TYPE_BBPR:
+            // Add location
+            $suffix .= yog_retrieveDynamicMap();
+
+            // Add types
+            $childs = yog_retrieveChildObjects();
+            if (is_array($childs) && count($childs) > 0)
+            {
+              $suffix .= '<h2>Types</h2>';
+
+              foreach ($childs as $child)
+              {
+                $name   = $child->post_title;
+                $image  = get_the_post_thumbnail($child->ID, 'thumbnail', array('alt' => $name, 'title' => $name));
+                $url    = get_permalink($child->ID);
+
+                $suffix .= '<div class="yog-post-child">';
+                if (!empty($image))
+                  $suffix .= '<a href="' . $url . '" title="' . $name . '">' . $image . '</a> ';
+
+                  $suffix .= '<a href="' . $url . '" title="' . $name . '">' . $name . '</a>';
+                $suffix .= '</div>';
+              }
+            }
             break;
           case POST_TYPE_NBTY:
-            // Add photo slider
-            $prefix .= yog_retrievePhotoSlider();
-
-            // Add prices
-            $prices = yog_retrievePrices();
-            if (count($prices) > 0)
-              $prefix .= '<div class="yog-prices">' . implode('<br />', $prices) . '</div>';
-
             // Add NBbn
             $table = yog_retrieveNbbnTable();
             if (!empty($table))
@@ -454,7 +515,30 @@
               $suffix .= '<h2>Bouwnummers</h2>';
               $suffix .= $table;
             }
+            break;
+          case POST_TYPE_BBTY:
 
+            // Add child objects
+            $childs = yog_retrieveChildObjects();
+
+            if (is_array($childs) && count($childs) > 0)
+            {
+              $suffix .= '<h2>Objecten</h2>';
+
+              foreach ($childs as $child)
+              {
+                $name   = $child->post_title;
+                $image  = get_the_post_thumbnail($child->ID, 'thumbnail', array('alt' => $name, 'title' => $name));
+                $url    = get_permalink($child->ID);
+
+                $suffix .= '<div class="yog-post-child">';
+                if (!empty($image))
+                  $suffix .= '<a href="' . $url . '" title="' . $name . '">' . $image . '</a> ';
+
+                  $suffix .= '<a href="' . $url . '" title="' . $name . '">' . $name . '</a>';
+                $suffix .= '</div>';
+              }
+            }
             break;
         }
       }
@@ -476,7 +560,7 @@
         $extendQuery = false;
       else if (!($query->is_archive || $query->is_category || $query->is_feed || $query->is_home))
         $extendQuery = false;
-      else if ($query->is_archive && !$query->is_category && !get_option('yog_objectsinarchief'))
+      else if ($query->is_archive && !$query->is_category && !$query->is_tag && !get_option('yog_objectsinarchief'))
         $extendQuery = false;
       else if ($query->is_home && !get_option('yog_huizenophome'))
         $extendQuery = false;
@@ -501,43 +585,14 @@
         if (!in_array(POST_TYPE_NBTY, $postTypes))
           $postTypes[] = POST_TYPE_NBTY;
 
+        if (!in_array(POST_TYPE_BBPR, $postTypes))
+          $postTypes[] = POST_TYPE_BBPR;
+
+        if (!in_array(POST_TYPE_BBTY, $postTypes))
+          $postTypes[] = POST_TYPE_BBTY;
+
 		    $query->set('post_type', $postTypes);
       }
-    }
-
-    /**
-    * @desc Update open house categories for open house dates in the past
-    *
-    * @param void
-    * @return void
-    */
-    public function updateOpenhuizen()
-    {
-	    // Retrieve all objects with open house category
-	    $objecten = get_posts(array('post_type'   => POST_TYPE_WONEN,
-                                  'category'    => 'open-huis',
-                                  'numberposts' => -1));
-
-	    foreach ($objecten as $object)
-      {
-        $openHouseStart = get_post_meta($object->ID,'huis_OpenHuisTot', true);
-        $openHouseEnd   = get_post_meta($object->ID,'huis_OpenHuisTot',true);
-
-        // Update categories if open house date is old
-        if ((empty($openHouseStart) || strtotime($openHouseStart) < time()) && (empty($openHouseEnd) || strtotime($openHouseEnd) < time()))
-        {
-          $categories     = wp_get_object_terms( $object->ID, 'category' );
-          $categorySlugs  = array();
-
-          foreach ($categories as $category)
-          {
-            if ($category->slug != 'open-huis')
-              $categorySlugs[] = $category->slug;
-          }
-
-          wp_set_object_terms( $object->ID, $categorySlugs, 'category', false);
-        }
-	    }
     }
   }
 
@@ -557,8 +612,6 @@
     */
     public function init()
     {
-      require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_wp_admin_object_ui.php');
-
       parent::init();
 
       add_action('admin_menu',              array($this, 'createAdminMenu'));
@@ -574,6 +627,8 @@
       // Init custom post type admin pages
       if (!empty($_REQUEST['post_type']) || !empty($_REQUEST['post']))
       {
+        require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_wp_admin_object_ui.php');
+
         $postType  = empty($_REQUEST['post_type']) ? get_post_type((int) $_REQUEST['post']) : $_REQUEST['post_type'];
         $wpAdminUi = YogWpAdminUiAbstract::create($postType);
         if (!is_null($wpAdminUi))
@@ -591,18 +646,24 @@
     {
       // Check plugin version
       $currentVersion = get_option('yog_plugin_version');
+      if (empty($currentVersion))
+        $currentVersion = '0';
+
       if ($currentVersion != YOG_PLUGIN_VERSION)
       {
         // Make sure rewrite rules are up-to-date
         $this->registerPostTypes();
         flush_rewrite_rules();
 
-        // Run fixes for specific plugin version
-        switch (YOG_PLUGIN_VERSION)
+        // Remove unused project images when updated from version 1.2.5 or smaller
+        if (version_compare($currentVersion, '1.2.5', '<='))
+          $this->removeUnusedProjectImages();
+
+        // Register update open houses cron when updated from version 1.2.11 or smaller
+        if (version_compare($currentVersion, '1.2.11', '<='))
         {
-        	case '1.2.5':
-        		$this->removeUnusedProjectImages();
-        		break;
+          if (!wp_next_scheduled('yog_cron_open_houses'))
+            wp_schedule_event(time(), 'hourly', 'yog_cron_open_houses');
         }
 
         // Update plugin version
@@ -611,7 +672,7 @@
     }
 
     /**
-    * @desc Fix editable permalink slug for NBty
+    * @desc Fix editable permalink slug for NBty/BBty
     *
     * @param string $slug
     * @return string
@@ -628,7 +689,7 @@
         $post     = get_post($postId);
       }
 
-      if (isset($post) && $post->post_type == POST_TYPE_NBTY && $slug != $post->post_name && (empty($_POST['new_slug']) || $_POST['new_slug'] != $slug))
+      if (isset($post) && in_array($post->post_type, array(POST_TYPE_NBTY, POST_TYPE_BBTY)) && $slug != $post->post_name && (empty($_POST['new_slug']) || $_POST['new_slug'] != $slug))
         $slug = $slug . '/type';
 
       return $slug;
@@ -697,9 +758,6 @@
       {
         echo '<p>Er zijn nog geen objecten gepubliceerd</p>';
       }
-
-
-
     }
 
     /**
@@ -714,6 +772,11 @@
 
       wp_enqueue_script('yog-admin-js',   YOG_PLUGIN_URL .'/inc/js/admin.js', array('jquery'), YOG_PLUGIN_VERSION);
       wp_enqueue_style('yog-admin-css',   YOG_PLUGIN_URL . '/inc/css/admin.css', array(), YOG_PLUGIN_VERSION);
+
+      $mcp3Version = get_option('yog_3mcp_version');
+
+      if (empty($mcp3Version) || $mcp3Version == '1.3')
+        wp_enqueue_script('yog-admin-hide-bbpr',     YOG_PLUGIN_URL .'/inc/js/admin_hide_bbpr.js', array('jquery'));
     }
 
     /**
@@ -1152,4 +1215,3 @@
 	  	}
 	  }
   }
-?>

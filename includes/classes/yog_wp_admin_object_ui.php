@@ -37,6 +37,14 @@
           require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_wp_admin_object_ui_nbbn.php');
           return new YogWpAdminObjectUiNbbn();
           break;
+        case POST_TYPE_BBPR:
+          require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_wp_admin_object_ui_bbpr.php');
+          return new YogWpAdminObjectUiBbpr();
+          break;
+        case POST_TYPE_BBTY:
+          require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_wp_admin_object_ui_bbty.php');
+          return new YogWpAdminObjectUiBbty();
+          break;
         case POST_TYPE_RELATION:
           require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_wp_admin_ui_relation.php');
           return new YogWpAdminUiRelation();
@@ -551,8 +559,10 @@
         if (empty($thumbnail))
           $thumbnail = '<div class="no-image" style="width:100%;"></div>';
 
-        echo $thumbnail;
-        echo '<strong><a href="' . get_edit_post_link($parent->ID) . '">' . $parent->post_title . '</a></strong>';
+        echo '<div id="yog-parent-post">';
+          echo $thumbnail;
+          echo '<strong><a href="' . get_edit_post_link($parent->ID) . '">' . $parent->post_title . '</a></strong>';
+        echo '</div>';
       }
     }
 
@@ -569,7 +579,7 @@
                                 'orderby'         => 'title',
                                 'order'           => 'ASC',
                                 'post_parent'     => $post->ID,
-                                'post_type'       => array(POST_TYPE_NBTY, POST_TYPE_NBBN, POST_TYPE_WONEN),
+                                'post_type'       => array(POST_TYPE_NBTY, POST_TYPE_BBTY, POST_TYPE_NBBN, POST_TYPE_WONEN),
                                 'post_status'     => array('publish', 'pending', 'trash', 'draft', 'auto-draft', 'future', 'private')));
 
       $thumbnailWidth   = get_option('thumbnail_size_w', 0);
@@ -918,4 +928,3 @@
 		  exit();
 	  }
   }
-?>

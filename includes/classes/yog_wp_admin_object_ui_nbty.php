@@ -7,18 +7,18 @@
   {
     /**
     * @desc Get the post type
-    * 
+    *
     * @param void
     * @return string
     */
     public function getPostType()
     {
-      return POST_TYPE_NBTY; 
+      return POST_TYPE_NBTY;
     }
-    
+
     /**
     * @desc Get base name
-    * 
+    *
     * @param void
     * @return string
     */
@@ -26,10 +26,10 @@
     {
       return plugin_basename(__FILE__);
     }
-    
+
     /**
     * @desc Determine columns used in overview
-    * 
+    *
     * @param array $columns
     * @return array
     */
@@ -44,10 +44,10 @@
         'dlm'           => 'Laatste wijziging'
 	    );
     }
-    
+
     /**
     * @desc Determine content of a single column in overview
-    * 
+    *
     * @param string $columnId
     * @return void
     */
@@ -62,7 +62,7 @@
           $content = get_the_excerpt();
           if (strlen($content) > 100)
             $content = htmlentities(substr($content, 0, 100)) . '...';
-            
+
           echo $content;
           break;
         case 'location':
@@ -74,10 +74,10 @@
           break;
       }
     }
-    
+
     /**
     * @desc Add javascript actions
-    * 
+    *
     * @param void
     * @return void
     */
@@ -88,17 +88,17 @@
       add_action('untrashed_post',  array($this, 'redirectToParent'));
       parent::addAjaxActions();
     }
-    
+
     public function addOnload()
     {
       echo '<script type="text/javascript">';
       echo 'jQuery(document).ready(yogActivateNbAdminMenu);';
-      echo '</script>'; 
+      echo '</script>';
     }
-    
+
     /**
     * @desc Add containers to project screen
-    * 
+    *
     * @param void
     * @return void
     */
@@ -117,16 +117,16 @@
 	    add_meta_box('yog-movies',            'Video',                array($this, 'renderMoviesMetaBox'),        $this->getPostType(), 'normal', 'low');
 	    add_meta_box('yog-documents',         'Documenten',           array($this, 'renderDocumentsMetaBox'),     $this->getPostType(), 'normal', 'low');
 	    add_meta_box('yog-links',             'Externe koppelingen',  array($this, 'renderLinksMetaBox'),         $this->getPostType(), 'normal', 'low');
-      
+
       add_meta_box('yog-parent-meta',       'Project',              array($this, 'renderParentMetaBox') ,       $this->getPostType(), 'side', 'high');
       add_meta_box('yog-meta-sync',         'Synchronisatie',       array($this, 'renderSyncMetaBox') ,         $this->getPostType(), 'side', 'low');
       add_meta_box('yog-relations',         'Relaties',             array($this, 'renderRelationsMetaBox'),     $this->getPostType(), 'side', 'low');
       add_meta_box('yog-images',            'Afbeeldingen',         array($this, 'renderImagesMetaBox'),        $this->getPostType(), 'side', 'low');
     }
-    
+
     /**
     * @desc Render basic meta box
-    * 
+    *
     * @param object $post
     * @return void
     */
@@ -136,10 +136,10 @@
 	    echo $this->retrieveInputs($post->ID, array('Naam', 'Status'));
 	    echo '</table>';
     }
-    
+
     /**
     * @desc Render price meta box
-    * 
+    *
     * @param object $post
     * @return void
     */
@@ -161,41 +161,41 @@
 
 	    echo '</table>';
     }
-    
+
     /**
     * @desc Render object measurements meta box
-    * 
+    *
     * @param object $post
     * @return void
     */
     public function renderMeasurementsMetaBox($post)
     {
 	    echo '<table class="form-table">';
-      
+
       // Perceel oppervlakte
 	    echo '<tr>';
 	    echo '<th colspan="2"><b>Perceel oppervlakte</b></th>';
 	    echo '</tr>';
 	    echo $this->retrieveInputs($post->ID, array('PerceelOppervlakteMin', 'PerceelOppervlakteMax'));
-      
+
       // Woon oppervlakte
 	    echo '<tr>';
 	    echo '<th colspan="2"><b>Woon oppervlakte</b></th>';
 	    echo '</tr>';
 	    echo $this->retrieveInputs($post->ID, array('WoonOppervlakteMin', 'WoonOppervlakteMax'));
-      
+
       // Inhoud
 	    echo '<tr>';
 	    echo '<th colspan="2"><b>Inhoud</b></th>';
 	    echo '</tr>';
 	    echo $this->retrieveInputs($post->ID, array('InhoudMin', 'InhoudMax'));
-      
+
 	    echo '</table>';
     }
-    
+
     /**
     * @desc Render type meta box
-    * 
+    *
     * @param StdClass $post
     * @return void
     */
@@ -205,10 +205,10 @@
       echo $this->retrieveInputs($post->ID, array('Type', 'SoortWoning', 'TypeWoning', 'KenmerkWoning', 'PermanenteBewoning', 'Recreatiewoning', 'Aantalkamers', 'Verwarming', 'WarmWater', 'Dak', 'DakMaterialen'));
       echo '</table>';
     }
-    
+
     /**
     * @desc Render C.V. meta box
-    * 
+    *
     * @param StdClass $post
     * @param void
     */
@@ -218,10 +218,10 @@
       echo $this->retrieveInputs($post->ID, array('CvKetel', 'CvKetelBouwjaar', 'CvKetelBrandstof', 'CvKetelEigendom', 'CvCombiketel'));
       echo '</table>';
     }
-    
+
     /**
     * @desc Render garage meta box
-    * 
+    *
     * @param StdClass $post
     * @param void
     */
@@ -231,10 +231,10 @@
       echo $this->retrieveInputs($post->ID, array('GarageType', 'GarageCapaciteit', 'GarageVoorzieningen', 'GarageIsolatievormen'));
       echo '</table>';
     }
-    
+
     /**
     * @desc Render garden meta box
-    * 
+    *
     * @param StdClass $post
     * @param void
     */
@@ -244,10 +244,10 @@
       echo $this->retrieveInputs($post->ID, array('TuinType', 'TuinTotaleOppervlakte', 'HoofdTuinType', 'HoofdTuinAchterom', 'HoofdTuinDiepte', 'HoofdTuinBreedte', 'HoofdTuinTotaleOppervlakte', 'TuinLigging'));
       echo '</table>';
     }
-    
+
     /**
     * @desc Render berging meta box
-    * 
+    *
     * @param StdClass $post
     * @param void
     */
@@ -257,10 +257,10 @@
       echo $this->retrieveInputs($post->ID, array('BergingType', 'BergingVoorzieningen', 'BergingIsolatievormen'));
       echo '</table>';
     }
-    
+
     /**
     * @desc Render object development meta box
-    * 
+    *
     * @param object $post
     * @return void
     */
@@ -270,10 +270,10 @@
       echo $this->retrieveInputs($post->ID, array('AantalEenheden', 'AantalVrijeEenheden', 'StartBouw', 'DatumStartBouw', 'Oplevering', 'DatumOplevering'));
       echo '</table>';
     }
-    
+
     /**
       * @desc Extend saving of huis post type with storing of custom fields
-      * 
+      *
       * @param int $postId
       * @param StdClass $post
       * @return void
@@ -285,9 +285,9 @@
         return $postId;
 
       // Verify nonce
-	    if ( !wp_verify_nonce($_POST['yog_nonce'], plugin_basename(__FILE__) ))
+	    if (!isset($_POST['yog_nonce']) || !wp_verify_nonce($_POST['yog_nonce'], plugin_basename(__FILE__) ))
 		    return $postId;
-        
+
 	    // verify if this is an auto save routine. If it is our form has not been submitted, so we dont want to do anything
 	    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE)
 	      return $postId;
@@ -295,7 +295,7 @@
 	    // Check permissions
 		  if (!current_user_can( 'edit_page', $postId ) )
 		    return $postId;
-      
+
 		  // Handle meta data
       $fieldsSettings = YogFieldsSettingsAbstract::create($post->post_type);
 
@@ -309,4 +309,3 @@
 		  }
     }
   }
-?>

@@ -8,10 +8,10 @@ class YogObjectAttachmentsWidget extends WP_Widget
   const NAME                = 'Yes-co Object Koppelingen';
   const DESCRIPTION         = 'Toont o.a. de website en brochure links die meegegeven zijn bij een object.';
   const CLASSNAME           = 'yog-contact-form';
-  
+
   /**
   * @desc Constructor
-  * 
+  *
   * @param void
   * @return YogObjectAttachmentsWidget
   */
@@ -37,20 +37,20 @@ class YogObjectAttachmentsWidget extends WP_Widget
     $showDocuments      = !isset($instance['show_documents']) ? true : ($instance['show_documents'] == 1 ? true : false);
     $showEmbededMovies  = !isset($instance['show_embeded_movies']) ? false : ($instance['show_embeded_movies'] == 1 ? true : false);
     $showMovieLinks     = !isset($instance['show_movie_links']) ? true : ($instance['show_movie_links'] == 1 ? true : false);
-    
+
     $links              = array();
     $documents          = array();
     $movies             = array();
-    
+
     if (!(is_single() && yog_isObject()))
       return;
 
     if ($showLinks === true)
       $links      = yog_retrieveLinks();
-    
+
     if ($showDocuments === true)
       $documents  = yog_retrieveDocuments();
-      
+
     if ($showEmbededMovies === true && $showMovieLinks === true)
       $movies     = yog_retrieveMovies();
     else if ($showEmbededMovies === true)
@@ -101,7 +101,7 @@ class YogObjectAttachmentsWidget extends WP_Widget
             echo '<li><div class="link"><a href="' . $document['url'] . '" class="link-default link-' . $document['type'] . '" target="_blank">' . $document['title'] . '</a></div></li>';
         }
       }
-      
+
       // External movies
       if (!empty($movies) && is_array($movies))
       {
@@ -111,7 +111,7 @@ class YogObjectAttachmentsWidget extends WP_Widget
             echo '<li><div class="link"><a href="' . $movie['websiteurl'] . '" class="link-default link-' . $movie['type'] . '" target="_blank">' . $movie['title'] . '</a></div></li>';
         }
       }
-      
+
       echo '</ul>';
 
       echo $args['after_widget'];
@@ -138,10 +138,10 @@ class YogObjectAttachmentsWidget extends WP_Widget
 
     return $instance;
   }
-  
+
   /**
   * @desc Display widget form
-  * 
+  *
   * @param array $instance
   * @return void
   */
@@ -157,25 +157,25 @@ class YogObjectAttachmentsWidget extends WP_Widget
       echo '<label for="' . $this->get_field_id('title') . '">' . __('Titel') . ': </label>';
       echo '<input class="widefat" id="' . $this->get_field_id('title') . '" name="' . $this->get_field_name('title') . '" type="text" value="' . $title . '" />';
     echo '</p>';
-    
+
     $id = $this->get_field_id('show_links');
 		echo '<p>';
       echo '<input type="checkbox" name="' . $this->get_field_name('show_links') . '" value="1" id="' . $id . '"' . ($showLinks == true ? ' checked="checked"' : '') . ' />';
       echo '<label for="' . $id . '">' . __('Toon links') . ': </label>';
     echo '</p>';
-    
+
     $id = $this->get_field_id('show_documents');
 		echo '<p>';
       echo '<input type="checkbox" name="' . $this->get_field_name('show_documents') . '" value="1" id="' . $id . '"' . ($showDocuments == true ? ' checked="checked"' : '') . ' />';
       echo '<label for="' . $id . '">' . __('Toon documenten') . ': </label>';
     echo '</p>';
-    
+
     $id = $this->get_field_id('show_embeded_movies');
 		echo '<p>';
       echo '<input type="checkbox" name="' . $this->get_field_name('show_embeded_movies') . '" value="1" id="' . $id . '"' . ($showEmbededMovies == true ? ' checked="checked"' : '') . ' />';
       echo '<label for="' . $id . '">' . __('Toon youtube / vimeo videos') . ': </label>';
     echo '</p>';
-    
+
     $id = $this->get_field_id('show_movie_links');
 		echo '<p>';
       echo '<input type="checkbox" name="' . $this->get_field_name('show_movie_links') . '" value="1" id="' . $id . '"' . ($showMovieLinks == true ? ' checked="checked"' : '') . ' />';
@@ -183,4 +183,3 @@ class YogObjectAttachmentsWidget extends WP_Widget
     echo '</p>';
   }
 }
-?>

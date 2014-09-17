@@ -197,13 +197,13 @@ class YogContactFormWidget extends WP_Widget
     $instance['show_address']     = empty($new_instance['show_address']) ? 0 : 1;
     $instance['show_remarks']     = empty($new_instance['show_remarks']) ? 0 : 1;
     $instance['show_newsletter']  = empty($new_instance['show_newsletter']) ? 0 : 1;
-    
+
     return $instance;
   }
-  
+
   /**
   * @desc Display widget form
-  * 
+  *
   * @param array $instance
   * @return void
   */
@@ -214,7 +214,7 @@ class YogContactFormWidget extends WP_Widget
     $actions        = empty($instance['actions']) ? '' : esc_attr($instance['actions']);
     $thanksMsg      = empty($instance['thanks_msg']) ? self::DEFAULT_THANKS_MSG : esc_attr($instance['thanks_msg']);
     $showFirstname  = empty($instance['show_firstname']) ? false : true;
-    
+
     $showFields = array('show_firstname'  => 'Voornaam',
                         'show_lastname'   => 'Achternaam',
                         'show_email'      => 'E-mail',
@@ -222,18 +222,18 @@ class YogContactFormWidget extends WP_Widget
                         'show_address'    => 'Adres',
                         'show_remarks'    => 'Opmerkingen',
                         'show_newsletter' => 'Inschrijven nieuwsbrief');
-    
+
     echo '<p>';
       echo '<label for="' . $this->get_field_id('title') . '">' . __('Titel') . ': </label>';
       echo '<input class="widefat" id="' . $this->get_field_id('title') . '" name="' . $this->get_field_name('title') . '" type="text" value="' . $title . '" />';
     echo '</p>';
-    
+
     echo '<p>';
       echo '<label for="' . $this->get_field_id('yesco_key') . '">' . __('Yes-co key') . ': </label>';
       echo '<input class="widefat" id="' . $this->get_field_id('yesco_key') . '" name="' . $this->get_field_name('yesco_key') . '" type="text" value="' . $yescoKey . '" />';
       echo '<small>' . __('Te achterhalen in Yes-co App Market') . '</small>';
     echo '</p>';
-    
+
     echo '<strong>Tonen</strong>';
     echo '<table>';
     foreach ($showFields as $field => $label)
@@ -245,19 +245,17 @@ class YogContactFormWidget extends WP_Widget
       echo '</tr>';
     }
     echo '</table><br />';
-    
+
     echo '<p>';
       echo '<label for="' . $this->get_field_id('actions') . '"><strong>' . __('Acties') . '</strong></label>';
       echo '<textarea name="' . $this->get_field_name('actions') . '" id="' . $this->get_field_id('actions') . '" class="widefat">' . $actions . '</textarea>';
       echo '<small>' . __('1 actie per regel') . '</small>';
     echo '</p>';
-    
+
     echo '<p>';
       echo '<label for="' . $this->get_field_id('thanks_msg') . '"><strong>' . __('Formulier verstuurd boodschap') . '</strong></label>';
       echo '<textarea name="' . $this->get_field_name('thanks_msg') . '" id="' . $this->get_field_id('thanks_msg') . '" class="widefat">' . $thanksMsg . '</textarea>';
     echo '</p>';
-    
+
   }
 }
-
-?>

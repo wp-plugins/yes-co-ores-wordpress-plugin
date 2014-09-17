@@ -1,9 +1,9 @@
 <?php
   /**
-  * @desc YogWpAdminObjectUiNBpr
+  * @desc YogWpAdminObjectUiBBpr
   * @author Kees Brandenburg - Yes-co Nederland
   */
-  class YogWpAdminObjectUiNBpr extends YogWpAdminObjectUiAbstract
+  class YogWpAdminObjectUiBBpr extends YogWpAdminObjectUiAbstract
   {
     /**
     * @desc Get the post type
@@ -13,7 +13,7 @@
     */
     public function getPostType()
     {
-      return POST_TYPE_NBPR;
+      return POST_TYPE_BBPR;
     }
 
     /**
@@ -57,7 +57,6 @@
 	    add_meta_box('yog-standard-meta',     'Basis gegevens',       array($this, 'renderBasicMetaBox'),         $this->getPostType(), 'normal', 'low');
 	    add_meta_box('yog-price-meta',        'Prijs',                array($this, 'renderPriceMetaBox'),         $this->getPostType(), 'normal', 'low');
 	    add_meta_box('yog-measurements-meta', 'Maten',                array($this, 'renderMeasurementsMetaBox'),  $this->getPostType(), 'normal', 'low');
-      add_meta_box('yog-development-meta',  'Ontwikkeling',         array($this, 'renderDevelopmentMetaBox'),   $this->getPostType(), 'normal', 'low');
 	    add_meta_box('yog-movies',            'Video',                array($this, 'renderMoviesMetaBox'),        $this->getPostType(), 'normal', 'low');
 	    add_meta_box('yog-documents',         'Documenten',           array($this, 'renderDocumentsMetaBox'),     $this->getPostType(), 'normal', 'low');
 	    add_meta_box('yog-links',             'Externe koppelingen',  array($this, 'renderLinksMetaBox'),         $this->getPostType(), 'normal', 'low');
@@ -93,9 +92,9 @@
 
 	    // Koop
 	    echo '<tr>';
-	    echo '<th colspan="2"><b>Koopaanneemsom</b></th>';
+	    echo '<th colspan="2"><b>Koopprijs</b></th>';
 	    echo '</tr>';
-	    echo $this->retrieveInputs($post->ID, array('KoopAanneemSomMin', 'KoopAanneemSomMax'));
+	    echo $this->retrieveInputs($post->ID, array('KoopPrijsMin', 'KoopPrijsMax'));
 
 	    // Huur
 	    echo '<tr>';
@@ -135,19 +134,6 @@
 	    echo $this->retrieveInputs($post->ID, array('InhoudMin', 'InhoudMax'));
 
 	    echo '</table>';
-    }
-
-    /**
-    * @desc Render object development meta box
-    *
-    * @param object $post
-    * @return void
-    */
-    public function renderDevelopmentMetaBox($post)
-    {
-      echo '<table class="form-table">';
-      echo $this->retrieveInputs($post->ID, array('Fase', 'Status', 'ProjectSoort', 'AantalEenheden', 'StartBouw', 'DatumStartBouw', 'Oplevering', 'DatumOplevering'));
-      echo '</table>';
     }
 
     /**

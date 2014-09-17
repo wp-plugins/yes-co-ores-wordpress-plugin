@@ -7,18 +7,18 @@
   {
     /**
     * @desc Get the post type
-    * 
+    *
     * @param void
     * @return string
     */
     public function getPostType()
     {
-      return POST_TYPE_BOG; 
+      return POST_TYPE_BOG;
     }
-    
+
     /**
     * @desc Get base name
-    * 
+    *
     * @param void
     * @return string
     */
@@ -26,10 +26,10 @@
     {
       return plugin_basename(__FILE__);
     }
-    
+
     /**
     * @desc Determine columns used in overview
-    * 
+    *
     * @param array $columns
     * @return array
     */
@@ -44,10 +44,10 @@
         'dlm'           => 'Laatste wijziging'
 	    );
     }
-    
+
     /**
     * @desc Add containers to project screen
-    * 
+    *
     * @param void
     * @return void
     */
@@ -56,7 +56,7 @@
 	    add_meta_box('yog-standard-meta',       'Basis gegevens',       array($this, 'renderBasicMetaBox'),           POST_TYPE_BOG, 'normal', 'low');
 	    add_meta_box('yog-price-meta',          'Prijs',                array($this, 'renderPriceMetaBox'),           POST_TYPE_BOG, 'normal', 'low');
       add_meta_box('yog-belegging-meta',      'Belegging',            array($this, 'renderBeleggingMetaBox'),       POST_TYPE_BOG, 'normal', 'low');
-      
+
       add_meta_box('yog-bouwgrond-meta',      'Bouwgrond',            array($this, 'renderBouwgrondMetaBox'),       POST_TYPE_BOG, 'normal', 'low');
       add_meta_box('yog-gebouw-meta',         'Gebouw',               array($this, 'renderGebouwMetaBox'),          POST_TYPE_BOG, 'normal', 'low');
       add_meta_box('yog-bedrijfsruimte-meta', 'Bedrijfsruimte',       array($this, 'renderBedrijfsruimteMetaBox'),  POST_TYPE_BOG, 'normal', 'low');
@@ -67,16 +67,16 @@
 	    add_meta_box('yog-movies',              'Video',                array($this, 'renderMoviesMetaBox'),          POST_TYPE_BOG, 'normal', 'low');
 	    add_meta_box('yog-documents',           'Documenten',           array($this, 'renderDocumentsMetaBox'),       POST_TYPE_BOG, 'normal', 'low');
 	    add_meta_box('yog-links',               'Externe koppelingen',  array($this, 'renderLinksMetaBox'),           POST_TYPE_BOG, 'normal', 'low');
-      
-      add_meta_box('yog-meta-sync',           'Synchronisatie',       array($this, 'renderSyncMetaBox') ,         POST_TYPE_BOG, 'side', 'low'); 
+
+      add_meta_box('yog-meta-sync',           'Synchronisatie',       array($this, 'renderSyncMetaBox') ,         POST_TYPE_BOG, 'side', 'low');
       add_meta_box('yog-location',            'Locatie',              array($this, 'renderMapsMetaBox'),          POST_TYPE_BOG, 'side', 'low');
       add_meta_box('yog-relations',           'Relaties',             array($this, 'renderRelationsMetaBox'),     POST_TYPE_BOG, 'side', 'low');
       add_meta_box('yog-images',              'Afbeeldingen',         array($this, 'renderImagesMetaBox'),        POST_TYPE_BOG, 'side', 'low');
     }
-    
+
     /**
     * @desc Render basic meta box
-    * 
+    *
     * @param object $post
     * @return void
     */
@@ -86,10 +86,10 @@
 	    echo $this->retrieveInputs($post->ID, array('Naam', 'Straat', 'Huisnummer', 'NummerreeksStart', 'NummerreeksEind', 'Postcode', 'Wijk', 'Buurt', 'Plaats', 'Gemeente', 'Provincie', 'Land', 'Status', 'Aanmelding', 'Aanvaarding', 'PerceelOppervlakte', 'Hoofdbestemming', 'Nevenbestemming', 'WoonruimteSituatie', 'WoonruimteStatus', 'Type'));
 	    echo '</table>';
     }
-    
+
     /**
     * @desc Render price meta box
-    * 
+    *
     * @param object $post
     * @return void
     */
@@ -111,10 +111,10 @@
 
 	    echo '</table>';
     }
-    
+
     /**
     * @desc Render belegging meta box
-    * 
+    *
     * @param object $post
     * @return void
     */
@@ -124,10 +124,10 @@
 	    echo $this->retrieveInputs($post->ID, array('AantalHuurders', 'BeleggingExpiratieDatum', 'Huuropbrengst'));
 	    echo '</table>';
     }
-    
+
     /**
     * @desc Render bouwgrond meta box
-    * 
+    *
     * @param object $post
     * @return void
     */
@@ -137,10 +137,10 @@
 	    echo $this->retrieveInputs($post->ID, array('BouwgrondBebouwingsmogelijkheid', 'BouwgrondBouwhoogte', 'BouwgrondInUnitsVanaf', 'BouwgrondVloerOppervlakte', 'BouwgrondVloerOppervlakteProcentueel'));
 	    echo '</table>';
     }
-    
+
     /**
     * @desc Render gebouw meta box
-    * 
+    *
     * @param object $post
     * @return void
     */
@@ -156,10 +156,10 @@
       echo $this->retrieveInputs($post->ID, array('ParkerenOmschrijving', 'AantalParkeerplaatsen', 'AantalParkeerplaatsenOverdekt', 'AantalParkeerplaatsenNietOverdekt'));
 	    echo '</table>';
     }
-    
+
     /**
     * @desc Render bedrijfsruimte meta box
-    * 
+    *
     * @param object $post
     * @return void
     */
@@ -174,10 +174,10 @@
       echo $this->retrieveInputs($post->ID, array('TerreinOppervlakte', 'TerreinBouwvolumeBouwhoogte', 'TerreinBouwvolumeVloerOppervlakte', 'TerreinPrijs'));
       echo '</table>';
     }
-    
+
     /**
     * @desc Render kantoorruimte meta box
-    * 
+    *
     * @param object $post
     * @return void
     */
@@ -187,10 +187,10 @@
       echo $this->retrieveInputs($post->ID, array('KantoorruimteOppervlakte', 'KantoorruimteAantalVerdiepingen', 'KantoorruimteVoorzieningen', 'KantoorruimteInUnitsVanaf', 'KantoorruimteTurnKey'));
       echo '</table>';
     }
-    
+
     /**
     * @desc Render winkelruimte meta box
-    * 
+    *
     * @param object $post
     * @return void
     */
@@ -200,10 +200,10 @@
       echo $this->retrieveInputs($post->ID, array('WinkelruimteOppervlakte', 'WinkelruimteVerkoopVloerOppervlakte', 'WinkelruimteInUnitsVanaf', 'WinkelruimteFrontBreedte', 'WinkelruimteAantalVerdiepingen', 'WinkelruimteWelstandsklasse', 'WinkelruimteBrancheBeperking', 'WinkelruimteHorecaToegestaan', 'WinkelruimteBijdrageWinkeliersvereniging', 'WinkelruimtePersoneelTerOvername', 'WinkelruimtePrijsInventarisGoodwill'));
       echo '</table>';
     }
-    
+
     /**
     * @desc Render horeca meta box
-    * 
+    *
     * @param object $post
     * @return void
     */
@@ -213,10 +213,10 @@
       echo $this->retrieveInputs($post->ID, array('HorecaType', 'HorecaOppervlakte', 'HorecaVerkoopVloerOppervlakte', 'HorecaAantalVerdiepingen', 'HorecaWelstandsklasse', 'HorecaConcentratieGebied', 'HorecaRegio', 'HorecaPersoneelTerOvername', 'HorecaPrijsInventarisGoodwill'));
       echo '</table>';
     }
-    
+
     /**
       * @desc Extend saving of bog post type with storing of custom fields
-      * 
+      *
       * @param int $postId
       * @param StdClass $post
       * @return void
@@ -228,9 +228,9 @@
         return $postId;
 
       // Verify nonce
-	    if ( !wp_verify_nonce($_POST['yog_nonce'], $this->getBaseName()))
+	    if (!isset($_POST['yog_nonce']) || !wp_verify_nonce($_POST['yog_nonce'], $this->getBaseName()))
 		    return $postId;
-        
+
 	    // verify if this is an auto save routine. If it is our form has not been submitted, so we dont want to do anything
 	    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE)
 	      return $postId;
@@ -238,7 +238,7 @@
 	    // Check permissions
 		  if (!current_user_can( 'edit_page', $postId ) )
 		    return $postId;
-      
+
 		  // Handle meta data
       $fieldsSettings = YogFieldsSettingsAbstract::create($post->post_type);
       $objectType     = !empty($_POST['bedrijf_Type']) ? $_POST['bedrijf_Type'] : '';
@@ -257,4 +257,3 @@
 		  }
     }
   }
-?>

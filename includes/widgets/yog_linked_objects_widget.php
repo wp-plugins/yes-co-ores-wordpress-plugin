@@ -9,10 +9,10 @@ class YogLinkedObjectsWidget extends WP_Widget
   const DESCRIPTION       = 'Toont de gelinkte objecten. Bijvoorbeeld om nieuwbouw types bij een project te tonen.';
   const CLASSNAME         = 'yog-linked-objects';
   const DEFAULT_IMG_SIZE  = 'thumbnail';
-  
+
   /**
   * @desc Constructor
-  * 
+  *
   * @param void
   * @return YogObjectAttachmentsWidget
   */
@@ -22,7 +22,7 @@ class YogLinkedObjectsWidget extends WP_Widget
                       'description' => self::DESCRIPTION);
 
     parent::__construct(false, $name = self::NAME, $options);
-    
+
     // Add needed javascript/css to header of website (not admin)
     if (!is_admin())
       wp_enqueue_style('yog-widgets-css', YOG_PLUGIN_URL . '/inc/css/widgets.css', array(), YOG_PLUGIN_VERSION);
@@ -39,11 +39,11 @@ class YogLinkedObjectsWidget extends WP_Widget
   {
     if (!(is_single() && yog_isObject()))
       return;
-    
-    // Retrieve parent object 
+
+    // Retrieve parent object
     if (yog_hasParentObject())
       $parentObject = yog_retrieveParentObject();
-    
+
     // Retrieve child objects
     $childObjects = yog_retrieveChildObjects();
 
@@ -56,11 +56,11 @@ class YogLinkedObjectsWidget extends WP_Widget
       $afterWidget      = isset($args['after_widget']) ? $args['after_widget'] : '';
       $beforeTitle      = isset($args['before_title']) ? $args['before_title'] : '';
       $afterTitle       = isset($args['after_title']) ? $args['after_title'] : '';
-      
+
       // Show widget start
       echo $beforeWidget;
       echo $beforeTitle . $title . $afterTitle;
-      
+
       // Show parent object
       if (!empty($parentObject))
       {
@@ -68,7 +68,7 @@ class YogLinkedObjectsWidget extends WP_Widget
         echo $this->renderObject($parentObject, $imgSize);
         echo '</div>';
       }
-      
+
       // Show child objects
       if (!empty($childObjects))
       {
@@ -78,7 +78,7 @@ class YogLinkedObjectsWidget extends WP_Widget
           if (in_array($childObject->post_type, array(POST_TYPE_NBTY, POST_TYPE_WONEN)))
             echo $this->renderObject($childObject, $imgSize);
         }
-        
+
         echo '</div>';
       }
 
@@ -86,10 +86,10 @@ class YogLinkedObjectsWidget extends WP_Widget
       echo $afterWidget;
     }
   }
-  
+
   /**
   * @desc Render object
-  * 
+  *
   * @param StdClass $object
   * @param string $imgSize
   * @return void
@@ -101,7 +101,7 @@ class YogLinkedObjectsWidget extends WP_Widget
     $thumbnail  = get_the_post_thumbnail($object->ID, $imgSize);
     $prices     = yog_retrievePrices('priceType', 'priceCondition', $object->ID);
     $scenario   = yog_retrieveSpec('scenario', $object->ID);
-    
+
     echo '<div class="yog-linked-object yog-object-' . strtolower($scenario) . '">';
       if (!empty($thumbnail))
         echo '<a href="' . $url . '" title="' . $title . '">' . $thumbnail . '</a>';
@@ -126,10 +126,10 @@ class YogLinkedObjectsWidget extends WP_Widget
 
     return $instance;
   }
-  
+
   /**
   * @desc Display widget form
-  * 
+  *
   * @param array $instance
   * @return void
   */
@@ -137,21 +137,20 @@ class YogLinkedObjectsWidget extends WP_Widget
   {
     $title              = empty($instance['title']) ? '' : esc_attr($instance['title']);
     $imgSize            = empty($instance['img_size']) ? self::DEFAULT_IMG_SIZE : $instance['img_size'];
-    
+
     echo '<p>';
       echo '<label for="' . $this->get_field_id('title') . '">' . __('Titel') . ': </label>';
       echo '<input class="widefat" id="' . $this->get_field_id('title') . '" name="' . $this->get_field_name('title') . '" type="text" value="' . $title . '" />';
     echo '</p>';
-    
+
     echo '<p>';
       echo '<label for="' . $this->get_field_id('img_size') . '">' . __('Formaat afbeeldingen') . ': </label>';
       echo '<select id="' . $this->get_field_id('img_size') . '" name="' . $this->get_field_name('img_size') . '">';
       foreach (get_intermediate_image_sizes() as $size)
       {
-        echo '<option value="' . $size . '"' . (($size == $imgSize) ? ' selected="selected"' : '') . '>' . __(ucfirst($size)) . '</option>'; 
+        echo '<option value="' . $size . '"' . (($size == $imgSize) ? ' selected="selected"' : '') . '>' . __(ucfirst($size)) . '</option>';
       }
       echo '</select>';
     echo '</p>';
   }
 }
-?>
