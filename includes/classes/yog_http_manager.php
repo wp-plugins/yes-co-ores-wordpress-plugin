@@ -52,8 +52,10 @@
 	        ini_set('user_agent','MSIE 4\.0b2;');
         }
 
-        $content = file_get_contents($url);
+        $content = @file_get_contents($url);
 
+        if ($content === false)
+          return false;
       }
       catch (Exception $e)
       {
@@ -92,9 +94,13 @@
         if (!empty($userPwd))
           curl_setopt($ch, CURLOPT_USERPWD, $userPwd);
 
-        $content = curl_exec($ch);
+        $content  = curl_exec($ch);
+        $info     = curl_getinfo($ch);
 
         curl_close($ch);
+
+        if (!empty($info['http_code']) && !in_array($info['http_code'], array(200, 304)))
+          return false;
       }
       catch (Exception $e)
       {

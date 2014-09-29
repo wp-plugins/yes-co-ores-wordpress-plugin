@@ -100,7 +100,8 @@
           $url      = $this->determine3McpUrl((string) $node->link['href']);
           $doc      = (string) $node->published;
           $dlm      = (string) $node->updated;
-          $scenario = (string) $node->xpath('mcp:projectScenario')[0];
+          $scenario = $node->xpath('mcp:projectScenario');
+          $scenario = (string) $scenario[0];
 
           if (in_array($scenario, array('BBvk', 'BBvh', 'NBvk', 'NBvh', 'LIvk', 'BOvk', 'BOvh', 'NBpr', 'NBty', 'NBbn', 'BBpr', 'BBty')))
             $entityLinks[$scenario][$uuid] = new Yog3McpProjectLink($uuid, $url, $doc, $dlm, $scenario);
