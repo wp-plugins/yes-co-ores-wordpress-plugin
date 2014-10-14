@@ -574,7 +574,7 @@
     */
     public function renderChildProjectsMetaBox($post)
     {
-      $childs = get_posts(array( 'numberposts'     => 0,
+      $childs = get_posts(array( 'numberposts'     => -1,
                                 'offset'          => 0,
                                 'orderby'         => 'title',
                                 'order'           => 'ASC',

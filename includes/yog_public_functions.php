@@ -358,7 +358,7 @@
 	  if (is_null($postId))
 		  $postId = get_the_ID();
 
-    return get_posts(array( 'numberposts'     => 0,
+    return get_posts(array( 'numberposts'     => -1,
                             'offset'          => 0,
                             'orderby'         => 'title',
                             'order'           => 'ASC',
@@ -378,7 +378,7 @@
 	  if (is_null($postId))
 		  $postId = get_the_ID();
 
-    return get_posts(array( 'numberposts'     => 0,
+    return get_posts(array( 'numberposts'     => -1,
                             'offset'          => 0,
                             'orderby'         => 'title',
                             'order'           => 'ASC',
