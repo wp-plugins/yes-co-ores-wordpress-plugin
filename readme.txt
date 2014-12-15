@@ -3,7 +3,7 @@ Contributors: yesco
 Tags: yes-co, yesco, projecten, project, projects, huizen, huis, house, onroerend goed, real estate, makelaar, realtor, broker
 Requires at least: 3.0
 Tested up to: 4.0
-Stable tag: 1.3.2
+Stable tag: 1.3.3
 
 Directly post real estate objects from your Yes-co system to your wordpress blog with the Yes-co Open Real Estate System (Yes-co ORES) Plugin.
 
@@ -87,6 +87,9 @@ Publications from your Yes-co Open Real Estate System to your Wordpress blog are
 7. Project details on the Wordpress Admin
 
 == Changelog ==
+= 1.3.3 =
+* Added: Support for inline labels in Yes-co Contact Forms;
+* Added: Support for embedding a Yes-co Contact Form in pages or posts using a shortcode;
 = 1.3.2 =
 * Fixed: number of child objects shown
 = 1.3.1 =

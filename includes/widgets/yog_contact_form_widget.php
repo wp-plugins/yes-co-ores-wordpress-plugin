@@ -10,6 +10,7 @@ class YogContactFormWidget extends WP_Widget
   const CLASSNAME           = 'yog-contact-form';
   const FORM_ACTION         = 'http://api.yes-co.com/1.0/response';
   const JS_LOCATION         = 'http://api.yes-co.com/1.0/embed/js/response-forms.js';
+
   const DEFAULT_THANKS_MSG  = 'Het formulier is verzonden, we nemen zo spoedig mogelijk contact met u op.';
   const WIDGET_ID_PREFIX    = 'yogcontactformwidget-';
 
@@ -28,6 +29,21 @@ class YogContactFormWidget extends WP_Widget
   }
 
   /**
+   * @desc Method shortcodeAttributesToSettings
+   *
+   * @param {Array} $atts
+   * @return {
+   */
+  public function shortcodeAttributesToSettings($atts)
+  {
+    $settings               = array();
+
+
+
+    return $settings;
+  }
+
+  /**
   * @desc Display widget
   *
   * @param array $args
@@ -38,6 +54,7 @@ class YogContactFormWidget extends WP_Widget
   {
     $title          = apply_filters('widget_title', $instance['title']);
     $yescoKey       = empty($instance['yesco_key']) ? '' : $instance['yesco_key'];
+    $placeholder    = (!empty($instance['placeholder']) && $instance['placeholder'] == '1') ? true : false;
     $actions        = empty($instance['actions']) ? '' : $instance['actions'];
     $thanksMsg      = empty($instance['thanks_msg']) ? self::DEFAULT_THANKS_MSG : $instance['thanks_msg'];
     $showFirstname  = empty($instance['show_firstname']) ? false : true;
@@ -97,48 +114,121 @@ class YogContactFormWidget extends WP_Widget
         if ($showFirstname)
         {
           echo '<p>';
-            echo '<label for="person[firstname]">Voornaam:</label>';
-            echo '<input type="text" name="person[firstname]" id="person[firstname]" value="" />';
+
+          $label = 'Voornaam';
+
+          $extraParams = '';
+
+            if ($placeholder)
+              $extraParams = 'placeholder="' . $label . '" ';
+            else
+              echo '<label for="person[firstname]">' . $label . ':</label>';
+
+            echo '<input type="text" name="person[firstname]" id="person[firstname]" value="" ' . $extraParams . '/>';
           echo '</p>';
         }
         // Achternaam
         if ($showLastname)
         {
           echo '<p>';
-            echo '<label for="person[lastname]">Achternaam:</label>';
-            echo '<input type="text" name="person[lastname]" id="person[lastname]" value="" class="required" />';
+
+          $label = 'Achternaam';
+
+          $extraParams = '';
+
+          if ($placeholder)
+            $extraParams = 'placeholder="' . $label . '" ';
+          else
+            echo '<label for="person[lastname]">' . $label . ':</label>';
+
+            echo '<input type="text" name="person[lastname]" id="person[lastname]" value="" class="required" ' . $extraParams . '/>';
           echo '</p>';
         }
         // E-mail
         if ($showEmail)
         {
           echo '<p>';
-            echo '<label for="person[email]">E-mail:</label>';
-            echo '<input type="text" name="person[email]" id="person[email]" value="" class="required" />';
+
+          $label = 'E-mail';
+
+          $extraParams = '';
+
+          if ($placeholder)
+            $extraParams = 'placeholder="' . $label . '" ';
+          else
+            echo '<label for="person[email]">' . $label . ':</label>';
+
+            echo '<input type="text" name="person[email]" id="person[email]" value="" class="required" ' . $extraParams . '/>';
           echo '</p>';
         }
         // Telephone
         if ($showPhone)
         {
           echo '<p>';
-            echo '<label for="person[phone]">Telefoon:</label>';
-            echo '<input type="text" name="person[phone]" id="person[phone]" value="" />';
+
+          $label = 'Telefoon';
+
+          $extraParams = '';
+
+          if ($placeholder)
+            $extraParams = 'placeholder="' . $label . '" ';
+          else
+            echo '<label for="person[phone]">' . $label . ':</label>';
+
+            echo '<input type="text" name="person[phone]" id="person[phone]" value="" ' . $extraParams . '/>';
           echo '</p>';
         }
         // Address
         if ($showAddress)
         {
           echo '<p>';
-            echo '<label for="person[street]">Straat:</label>';
-            echo '<input type="text" name="person[street]" id="person[street]" value="" />';
+
+          $label = 'Straat';
+
+          $extraParams = '';
+
+          if ($placeholder)
+            $extraParams = 'placeholder="' . $label . '" ';
+          else
+            echo '<label for="person[street]">' . $label . ':</label>';
+
+            echo '<input type="text" name="person[street]" id="person[street]" value="" ' . $extraParams . '/>';
+          echo '</p>';
+
+
+          echo '<p>';
+
+          $label = 'Huisnummer';
+
+          $extraParams = '';
+          $extraParams2 = '';
+
+          if ($placeholder)
+          {
+            $extraParams = 'placeholder="Huisnr" ';
+            $extraParams2 = 'placeholder="Postcode" ';
+          }
+          else
+          {
+            echo '<label for="personHousenumber" class="label-housenumber">' . $label . ':</label><label for="personZipcode" class="label-zipcode"> / Postcode:</label><br />';
+          }
+
+            //echo '<label for="personHousenumber" class="label-housenumber">Huisnummer</label><label for="personZipcode" class="label-zipcode"> / Postcode:</label><br />';
+
+            echo '<input type="text" name="person[housenumber]" id="personHousenumber" value="" ' . $extraParams . '/><input type="text" name="person[zipcode]" id="personZipcode" value="" ' . $extraParams2 . '/>';
           echo '</p>';
           echo '<p>';
-            echo '<label for="personHousenumber" class="label-housenumber">Huisnummer</label><label for="personZipcode" class="label-zipcode"> / Postcode:</label><br />';
-            echo '<input type="text" name="person[housenumber]" id="personHousenumber" value="" /><input type="text" name="person[zipcode]" id="personZipcode" value="" />';
-          echo '</p>';
-          echo '<p>';
-            echo '<label for="person[city]">Plaats:</label>';
-            echo '<input type="text" name="person[city]" id="person[city]" value="" />';
+
+            $label = 'Plaats';
+
+            $extraParams = '';
+
+            if ($placeholder)
+              $extraParams = 'placeholder="' . $label . '" ';
+            else
+              echo '<label for="person[city]">' . $label . ':</label>';
+
+            echo '<input type="text" name="person[city]" id="person[city]" value="" ' . $extraParams . '/>';
           echo '</p>';
         }
         // Actions
@@ -158,8 +248,17 @@ class YogContactFormWidget extends WP_Widget
         if ($showRemarks)
         {
           echo '<p>';
-            echo '<label for="comments">Opmerkingen:</label>';
-            echo '<textarea name="comments" id="comments"></textarea>';
+
+          $label = 'Opmerkingen';
+
+          $extraParams = '';
+
+          if ($placeholder)
+            $extraParams = 'placeholder="' . $label . '" ';
+          else
+            echo '<label for="comments">' . $label . ':</label>';
+
+            echo '<textarea name="comments" id="comments" ' . $extraParams . '></textarea>';
           echo '</p>';
         }
         // Newsletter
@@ -188,6 +287,7 @@ class YogContactFormWidget extends WP_Widget
     $instance                     = $old_instance;
     $instance['title']            = empty($new_instance['title']) ? '' : $new_instance['title'];
     $instance['yesco_key']        = empty($new_instance['yesco_key']) ? '' : $new_instance['yesco_key'];
+    $instance['placeholder']      = empty($new_instance['placeholder']) ? '' : $new_instance['placeholder'];
     $instance['actions']          = empty($new_instance['actions']) ? '' : $new_instance['actions'];
     $instance['thanks_msg']       = empty($new_instance['thanks_msg']) ? '' : $new_instance['thanks_msg'];
     $instance['show_firstname']   = empty($new_instance['show_firstname']) ? 0 : 1;
@@ -211,6 +311,7 @@ class YogContactFormWidget extends WP_Widget
   {
     $title          = empty($instance['title']) ? '' : esc_attr($instance['title']);
     $yescoKey       = empty($instance['yesco_key']) ? '' : $instance['yesco_key'];
+    $placeholder    = empty($instance['placeholder']) ? '' : $instance['placeholder'];
     $actions        = empty($instance['actions']) ? '' : esc_attr($instance['actions']);
     $thanksMsg      = empty($instance['thanks_msg']) ? self::DEFAULT_THANKS_MSG : esc_attr($instance['thanks_msg']);
     $showFirstname  = empty($instance['show_firstname']) ? false : true;
@@ -234,6 +335,7 @@ class YogContactFormWidget extends WP_Widget
       echo '<small>' . __('Te achterhalen in Yes-co App Market') . '</small>';
     echo '</p>';
 
+
     echo '<strong>Tonen</strong>';
     echo '<table>';
     foreach ($showFields as $field => $label)
@@ -256,6 +358,25 @@ class YogContactFormWidget extends WP_Widget
       echo '<label for="' . $this->get_field_id('thanks_msg') . '"><strong>' . __('Formulier verstuurd boodschap') . '</strong></label>';
       echo '<textarea name="' . $this->get_field_name('thanks_msg') . '" id="' . $this->get_field_id('thanks_msg') . '" class="widefat">' . $thanksMsg . '</textarea>';
     echo '</p>';
+
+
+    $show = empty($placeholder) ? false : true;
+
+    echo '<p>';
+    echo '<label for="' . $this->get_field_id('placeholder') . '">' . __('Toon labels in velden') . ': </label>';
+    //echo '<input class="widefat" id="' . $this->get_field_id('placeholder') . '" name="' . $this->get_field_name('placeholder') . '" type="text" value="' . $placeholder . '" />';
+    echo '<input id="' . $this->get_field_id('placeholder') . '" name="' . $this->get_field_name('placeholder') . '" type="checkbox" value="1" ' . ($show === true ? 'checked="checked" ' : '') . '/>';
+    echo '</p>';
+
+    $widgetId = $this->number;
+
+    /*echo '<pre>';
+    print_r($instance);
+    print_r($this);
+    echo '</pre>';*/
+
+    echo 'Shortcode: [yog-contact-widget id="' . $widgetId . '"]<br /><br />';
+
 
   }
 }
