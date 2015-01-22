@@ -111,6 +111,9 @@ class YogChecks
 
 		// allow_url_fopen
 		$settings['allow_url_fopen'] = (ini_get('allow_url_fopen')) ? 'enabled' : 'disabled';
+    
+    if (function_exists('mysql_get_client_info'))
+      $settings['mysql_version'] = mysql_get_client_info();
 
 		// CURL
 		$settings['CURL'] = function_exists('curl_init') ? 'enabled' : 'disabled';

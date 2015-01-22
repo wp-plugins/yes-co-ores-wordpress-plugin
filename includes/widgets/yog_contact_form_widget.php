@@ -18,7 +18,7 @@ class YogContactFormWidget extends WP_Widget
   * @desc Constructor
   *
   * @param void
-  * @return YogRecentObjectsWidget
+  * @return YogContactFormWidget
   */
   public function __construct()
   {
@@ -56,6 +56,9 @@ class YogContactFormWidget extends WP_Widget
     $yescoKey       = empty($instance['yesco_key']) ? '' : $instance['yesco_key'];
     $placeholder    = (!empty($instance['placeholder']) && $instance['placeholder'] == '1') ? true : false;
     $actions        = empty($instance['actions']) ? '' : $instance['actions'];
+    $tagObject      = empty($instance['tag_object']) ? '' : $instance['tag_object'];
+    $tagRelation    = empty($instance['tag_relation']) ? '' : $instance['tag_relation'];
+    $roleRelation   = empty($instance['role_relation']) ? '' : esc_attr($instance['role_relation']);
     $thanksMsg      = empty($instance['thanks_msg']) ? self::DEFAULT_THANKS_MSG : $instance['thanks_msg'];
     $showFirstname  = empty($instance['show_firstname']) ? false : true;
     $showLastname   = empty($instance['show_lastname']) ? false : true;
@@ -65,6 +68,8 @@ class YogContactFormWidget extends WP_Widget
     $showRemarks    = empty($instance['show_remarks']) ? false : true;
     $showNewsletter = empty($instance['show_newsletter']) ? false : true;
     $widgetId       = empty($args['widget_id']) ? 0 : str_replace(self::WIDGET_ID_PREFIX, '', $args['widget_id']);
+    $jsShow         = empty($instance['js_show']) ? '' : esc_attr($instance['js_show']);
+    $jsSend         = empty($instance['js_send']) ? '' : esc_attr($instance['js_send']);
 
     if (!empty($_GET['send']) && $_GET['send'] == $widgetId)
     {
@@ -76,9 +81,15 @@ class YogContactFormWidget extends WP_Widget
       echo '<p>' . $thanksMsg . '</p>';
 
       echo $args['after_widget'];
+
+      if (!empty($jsSend))
+        wp_enqueue_script('widget-' . $widgetId . '-send-js', $jsSend);
     }
     else if (!empty($yescoKey))
     {
+      if (!empty($jsShow))
+        wp_enqueue_script('widget-' . $widgetId . '-show-js', $jsShow);
+
       // Show form
       if (!empty($_SERVER['HTTP_HOST']))
       {
@@ -95,6 +106,15 @@ class YogContactFormWidget extends WP_Widget
 
         echo '<input type="hidden" name="title" value="' . $title . '" />';
         echo '<input type="hidden" name="source" value="' . get_bloginfo('name') . '" />';
+
+        if (!empty($tagObject))
+          echo '<input type="hidden" name="project_tags[]" value="' . $tagObject . '" />';
+
+        if (!empty($tagRelation))
+          echo '<input type="hidden" name="person_tags[]" value="' . $tagRelation . '" />';
+
+        if (!empty($roleRelation))
+          echo '<input type="hidden" name="project_role" value="' . $roleRelation . '" />';
 
         if (!empty($thankYouPage))
           echo '<input type="hidden" name="thank_you_page" value="' . $thankYouPage . '" />';
@@ -239,7 +259,7 @@ class YogContactFormWidget extends WP_Widget
             echo '<label>Acties:</label><br />';
             foreach ($actions as $key => $action)
             {
-              echo '<input type="checkbox" name="actions[]" id="actions_' . $key . '" value="' . $action . '" />';
+              echo '<input type="checkbox" name="actions[]" id="actions_' . $key . '" value="' . $action . '" /> ';
               echo '<label for="actions_' . $key . '">' . $action . '</label><br />';
             }
           echo '</p>';
@@ -290,6 +310,9 @@ class YogContactFormWidget extends WP_Widget
     $instance['placeholder']      = empty($new_instance['placeholder']) ? '' : $new_instance['placeholder'];
     $instance['actions']          = empty($new_instance['actions']) ? '' : $new_instance['actions'];
     $instance['thanks_msg']       = empty($new_instance['thanks_msg']) ? '' : $new_instance['thanks_msg'];
+    $instance['tag_object']       = empty($new_instance['tag_object']) ? '' : trim($new_instance['tag_object']);
+    $instance['tag_relation']     = empty($new_instance['tag_relation']) ? '' : trim($new_instance['tag_relation']);
+    $instance['role_relation']    = empty($new_instance['role_relation']) ? '' : trim($new_instance['role_relation']);
     $instance['show_firstname']   = empty($new_instance['show_firstname']) ? 0 : 1;
     $instance['show_lastname']    = empty($new_instance['show_lastname']) ? 0 : 1;
     $instance['show_email']       = empty($new_instance['show_email']) ? 0 : 1;
@@ -297,6 +320,12 @@ class YogContactFormWidget extends WP_Widget
     $instance['show_address']     = empty($new_instance['show_address']) ? 0 : 1;
     $instance['show_remarks']     = empty($new_instance['show_remarks']) ? 0 : 1;
     $instance['show_newsletter']  = empty($new_instance['show_newsletter']) ? 0 : 1;
+
+    $filterJsShow = filter_var($new_instance['js_show'], FILTER_VALIDATE_URL);
+    $filterJsSend = filter_var($new_instance['js_send'], FILTER_VALIDATE_URL);
+
+    $instance['js_show']          = ($filterJsShow === false) ? '' : $filterJsShow;
+    $instance['js_send']          = ($filterJsSend === false) ? '' : $filterJsSend;
 
     return $instance;
   }
@@ -314,7 +343,11 @@ class YogContactFormWidget extends WP_Widget
     $placeholder    = empty($instance['placeholder']) ? '' : $instance['placeholder'];
     $actions        = empty($instance['actions']) ? '' : esc_attr($instance['actions']);
     $thanksMsg      = empty($instance['thanks_msg']) ? self::DEFAULT_THANKS_MSG : esc_attr($instance['thanks_msg']);
-    $showFirstname  = empty($instance['show_firstname']) ? false : true;
+    $tagObject      = empty($instance['tag_object']) ? '' : esc_attr($instance['tag_object']);
+    $tagRelation    = empty($instance['tag_relation']) ? '' : esc_attr($instance['tag_relation']);
+    $roleRelation   = empty($instance['role_relation']) ? '' : esc_attr($instance['role_relation']);
+    $jsShow         = empty($instance['js_show']) ? '' : esc_attr($instance['js_show']);
+    $jsSend         = empty($instance['js_send']) ? '' : esc_attr($instance['js_send']);
 
     $showFields = array('show_firstname'  => 'Voornaam',
                         'show_lastname'   => 'Achternaam',
@@ -324,18 +357,30 @@ class YogContactFormWidget extends WP_Widget
                         'show_remarks'    => 'Opmerkingen',
                         'show_newsletter' => 'Inschrijven nieuwsbrief');
 
+    $roles  = array('Geïnteresseerde',
+                    'Reserve optant');
+
+    // Widhet title
     echo '<p>';
       echo '<label for="' . $this->get_field_id('title') . '">' . __('Titel') . ': </label>';
       echo '<input class="widefat" id="' . $this->get_field_id('title') . '" name="' . $this->get_field_name('title') . '" type="text" value="' . $title . '" />';
     echo '</p>';
 
+    // Yes-co Key
     echo '<p>';
       echo '<label for="' . $this->get_field_id('yesco_key') . '">' . __('Yes-co key') . ': </label>';
       echo '<input class="widefat" id="' . $this->get_field_id('yesco_key') . '" name="' . $this->get_field_name('yesco_key') . '" type="text" value="' . $yescoKey . '" />';
       echo '<small>' . __('Te achterhalen in Yes-co App Market') . '</small>';
     echo '</p>';
 
+    // Placeholder?
+    $show = empty($placeholder) ? false : true;
+    echo '<p>';
+      echo '<label for="' . $this->get_field_id('placeholder') . '">' . __('Toon labels in velden') . ': </label>';
+      echo '<input id="' . $this->get_field_id('placeholder') . '" name="' . $this->get_field_name('placeholder') . '" type="checkbox" value="1" ' . ($show === true ? 'checked="checked" ' : '') . '/>';
+    echo '</p>';
 
+    // Fields to show
     echo '<strong>Tonen</strong>';
     echo '<table>';
     foreach ($showFields as $field => $label)
@@ -346,37 +391,48 @@ class YogContactFormWidget extends WP_Widget
         echo '<td><input id="' . $this->get_field_id($field) . '" name="' . $this->get_field_name($field) . '" type="checkbox" value="1" ' . ($show === true ? 'checked="checked" ' : '') . '/></td>';
       echo '</tr>';
     }
-    echo '</table><br />';
+    echo '</table>';
 
+    // Actions to use
     echo '<p>';
-      echo '<label for="' . $this->get_field_id('actions') . '"><strong>' . __('Acties') . '</strong></label>';
+      echo '<label for="' . $this->get_field_id('actions') . '"><strong>' . __('Acties') . '</strong>&nbsp;<small>(1 actie per regel)</small></label>';
       echo '<textarea name="' . $this->get_field_name('actions') . '" id="' . $this->get_field_id('actions') . '" class="widefat">' . $actions . '</textarea>';
-      echo '<small>' . __('1 actie per regel') . '</small>';
     echo '</p>';
 
+    // Thank you message to show
     echo '<p>';
       echo '<label for="' . $this->get_field_id('thanks_msg') . '"><strong>' . __('Formulier verstuurd boodschap') . '</strong></label>';
       echo '<textarea name="' . $this->get_field_name('thanks_msg') . '" id="' . $this->get_field_id('thanks_msg') . '" class="widefat">' . $thanksMsg . '</textarea>';
     echo '</p>';
 
-
-    $show = empty($placeholder) ? false : true;
-
+    // Tags / role
     echo '<p>';
-    echo '<label for="' . $this->get_field_id('placeholder') . '">' . __('Toon labels in velden') . ': </label>';
-    //echo '<input class="widefat" id="' . $this->get_field_id('placeholder') . '" name="' . $this->get_field_name('placeholder') . '" type="text" value="' . $placeholder . '" />';
-    echo '<input id="' . $this->get_field_id('placeholder') . '" name="' . $this->get_field_name('placeholder') . '" type="checkbox" value="1" ' . ($show === true ? 'checked="checked" ' : '') . '/>';
+      echo '<strong>Koppelen</strong>&nbsp;<small>(in Yes-co systeem)</small><br />';
+      echo '<label for="' . $this->get_field_id('tag_object') . '">Tag aan object: </label>';
+      echo '<input class="widefat" id="' . $this->get_field_id('tag_object') . '" name="' . $this->get_field_name('tag_object') . '" type="text" value="' . $tagObject . '" />';
+      echo '<label for="' . $this->get_field_id('tag_relation') . '">Tag aan relatie: </label>';
+      echo '<input class="widefat" id="' . $this->get_field_id('tag_relation') . '" name="' . $this->get_field_name('tag_relation') . '" type="text" value="' . $tagRelation . '" />';
+      echo '<label for="' . $this->get_field_id('role_relation') . '">Relatie aan object als rol: </label><br />';
+      echo '<select name="' . $this->get_field_name('role_relation') . '" id="' . $this->get_field_id('role_relation') . '">';
+        echo '<option value=""></option>';
+        foreach ($roles as $role)
+        {
+          echo '<option value="' . $role . '"' . ($roleRelation == $role ? ' selected="selected"' : '') . '>' . $role . '</option>';
+        }
+      echo '</select>';
+    echo '</p>';
+
+    // Javascript
+    echo '<p>';
+      echo '<strong>Javascript</strong>&nbsp;<small>(URL inladen)</small><br />';
+      echo '<label for="' . $this->get_field_id('js_show') . '">Bij tonen formulier: </label>';
+      echo '<input class="widefat" id="' . $this->get_field_id('js_show') . '" name="' . $this->get_field_name('js_show') . '" type="text" value="' . $jsShow . '" />';
+      echo '<label for="' . $this->get_field_id('js_send') . '">Bij versturen van formulier: </label>';
+      echo '<input class="widefat" id="' . $this->get_field_id('js_send') . '" name="' . $this->get_field_name('js_send') . '" type="text" value="' . $jsSend . '" />';
     echo '</p>';
 
     $widgetId = $this->number;
 
-    /*echo '<pre>';
-    print_r($instance);
-    print_r($this);
-    echo '</pre>';*/
-
     echo 'Shortcode: [yog-contact-widget id="' . $widgetId . '"]<br /><br />';
-
-
   }
 }

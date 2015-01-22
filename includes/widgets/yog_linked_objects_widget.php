@@ -90,12 +90,15 @@ class YogLinkedObjectsWidget extends WP_Widget
   /**
   * @desc Render object
   *
-  * @param StdClass $object
+  * @param WP_Post $object
   * @param string $imgSize
   * @return void
   */
-  private function renderObject(StdClass $object, $imgSize)
+  private function renderObject($object, $imgSize)
   {
+    if (!is_object($object))
+      throw new Exception(__METHOD__ . '; No object provided');
+    
     $title      = esc_attr($object->post_title);
     $url        = get_permalink($object->ID);
     $thumbnail  = get_the_post_thumbnail($object->ID, $imgSize);

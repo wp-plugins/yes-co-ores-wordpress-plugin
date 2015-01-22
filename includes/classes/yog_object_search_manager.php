@@ -198,10 +198,8 @@ class YogObjectSearchManager
             $sqlMin   = "SELECT " . $tbl . ".meta_value FROM " . $tbl . " WHERE " . $tbl . ".meta_key = '" . $minField . "' AND " . $tbl . ".post_id = " . $this->db->posts . ".ID";
             $sqlMax   = "SELECT " . $tbl . ".meta_value FROM " . $tbl . " WHERE " . $tbl . ".meta_key = '" . $maxField . "' AND " . $tbl . ".post_id = " . $this->db->posts . ".ID";
 
-            if ($min > 0)
-              $query[] = "(" . $min . " BETWEEN (" . $sqlMin . ") AND (" . $sqlMax . "))";
-            if ($max > 0)
-              $query[] = "(" . $max . " BETWEEN (" . $sqlMin . ") AND (" . $sqlMax . "))";
+            if ($min > 0 || $max > 0)
+              $query[] = "(((" . $sqlMin . ") BETWEEN " . $min . " AND " . $max . ") OR ((" . $sqlMax . ") BETWEEN " . $min . " AND " . $max . "))";
 
             break;
         }
@@ -229,13 +227,15 @@ class YogObjectSearchManager
         if ($min > 0 && $max > 0)
         {
           $sql  = '(';
-          $sql .= '((' . $koopSqlMin . ') BETWEEN ' . $min . ' AND ' . $max . ') OR ';
-          $sql .= '((' . $koopSqlMin . ') <= ' . $min . ' AND (' . $koopSqlMax . ') >= ' . $max . ')';
+            $sql .= '((' . $koopSqlMin . ') BETWEEN ' . $min . ' AND ' . $max . ')';
+              $sql .= ' OR ';
+            $sql .= '((' . $koopSqlMax . ') BETWEEN ' . $min . ' AND ' . $max . ')';
           $sql .= ')';
           $sql .= ' OR ';
-          $sql = '(';
-          $sql .= '((' . $huurSqlMin . ') BETWEEN ' . $min . ' AND ' . $max . ') OR ';
-          $sql .= '((' . $huurSqlMin . ') <= ' . $min . ' AND (' . $huurSqlMax . ') >= ' . $max . ')';
+          $sql .= '(';
+            $sql .= '((' . $huurSqlMin . ') BETWEEN ' . $min . ' AND ' . $max . ')';
+              $sql .= ' OR ';
+            $sql .= '((' . $huurSqlMax . ') BETWEEN ' . $min . ' AND ' . $max . ')';
           $sql .= ')';
         }
         else if ($min > 0)
@@ -267,6 +267,10 @@ class YogObjectSearchManager
           $query[] = "((" . $koopSql . ") <= " . $max . " OR (" . $huurSql . ") <= " . $max . " OR ((" . $koopSql . ") IS NULL AND (" . $huurSql . ") IS NULL))";
       }
     }
+    
+    //echo '<pre>';
+    //print_r($query);
+    //echo '</pre>';
 
     // Update where query
     if (!empty($query))

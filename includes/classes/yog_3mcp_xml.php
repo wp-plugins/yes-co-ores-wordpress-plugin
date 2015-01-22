@@ -461,7 +461,7 @@
       $node = array_shift($nodes);
       $node->registerXPathNamespace('project', $this->ns);
 
-      return new Yog3McpXmlAddress($node);
+      return new Yog3McpXmlAddress($node, $this->ns);
     }
 
     /**
