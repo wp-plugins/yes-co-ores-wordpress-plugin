@@ -88,12 +88,15 @@ class YogSearchFormWonenWidget extends YogSearchFormWidgetAbstract
     $title            = empty($instance['title']) ? '' : esc_attr($instance['title']);
     $useCurrentCat    = empty($instance['use_cur_cat']) ? false : true;
     $showPrice        = empty($instance['show_price']) ? false : true;
+    $showKoopPrice    = empty($instance['show_koop_price']) ? false : true;
+    $showRentalPrice  = empty($instance['show_rental_price']) ? false : true;
     $showCity         = empty($instance['show_city']) ? false : true;
     $showObjectKind   = empty($instance['show_object_kind']) ? false : true;
     $showObjectType   = empty($instance['show_object_type']) ? false : true;
     $showRooms        = empty($instance['show_rooms']) ? false : true;
     $showLivingSpace  = empty($instance['show_living_space']) ? false : true;
     $showVolume       = empty($instance['show_volume']) ? false : true;
+    $useSelect        = empty($instance['use_select']) ? false : true;
     $params           = array();
 
     // Use current category name in widget title?
@@ -119,9 +122,88 @@ class YogSearchFormWonenWidget extends YogSearchFormWidgetAbstract
 
     echo '</div>';
 
-    // Prijs
+    // Prijs (koop + huur)
     if ($showPrice === true)
-      echo $this->renderElement('Prijs', $this->renderSlider('Prijs', $searchManager->retrieveMinMetaValue(array('huis_KoopPrijs', 'huis_HuurPrijs'), $params), $searchManager->retrieveMaxMetaValue(array('huis_KoopPrijs', 'huis_HuurPrijs'), $params)));
+    {
+      $maxOption  = $searchManager->retrieveMaxMetaValue(array('huis_KoopPrijs', 'huis_HuurPrijs'), $params);
+      
+      if ($useSelect)
+      {
+        $availableOptions = array(0 => '&euro; 0', 100 => '&euro; 100', 200 => '&euro; 200', 300 => '&euro; 300', 400 => '&euro; 400', 500 => '&euro; 500', 600 => '&euro; 600', 700 => '&euro; 700', 800 => '&euro; 800', 900 => '&euro; 900', 1000 => '&euro; 1.000', 1250 => '&euro; 1.250', 1500 => '&euro; 1.500', 1750 => '&euro; 1.750', 2000 => '&euro; 2.000', 2500 => '&euro; 2.500', 3000 => '&euro; 3.000', 4000 => '&euro; 4.000', 5000 => '&euro; 5.000', 6000 => '&euro; 6.000',
+                                  50000 => '&euro; 50.000', 75000 => '&euro; 75.000', 100000 => '&euro; 100.000', 125000 => '&euro; 125.000', 150000 => '&euro; 150.000', 175000 => '&euro; 175.000', 200000 => '&euro; 200.000', 225000 => '&euro; 225.000', 250000 => '&euro; 250.000', 275000 => '&euro; 275.000', 300000 => '&euro; 300.000', 325000 => '&euro; 325.000', 350000 => '&euro; 350.000', 375000 => '&euro; 375.000', 400000 => '&euro; 400.000', 450000 => '&euro; 450.000', 
+                                  500000 => '&euro; 500.000', 550000 => '&euro; 550.000', 600000 => '&euro; 600.000', 650000 => '&euro; 650.000', 700000 => '&euro; 700.000', 750000 => '&euro; 750.000', 800000 => '&euro; 800.000', 900000 => '&euro; 900.000', 1000000 => '&euro; 1.000.000', 1250000 => '&euro; 1.250.000', 1500000 => '&euro; 1.500.000', 20000000 => '&euro; 2.000.000');
+        $minOptions       = $this->filterIntMaxOptions($availableOptions, $maxOption);
+        
+        if (count($minOptions) > 1)
+        {
+          $maxOptions       = $minOptions;
+          unset($maxOptions[0]);
+          $maxOptions[0]    = 'Geen maximum';
+
+          echo $this->renderElement('Prijs', $this->renderSelect('Prijs_min', $minOptions, 0, 'price-min') . 
+                                            '<span class="' . $this->getClassName() . '-sep"> t/m </span>' . 
+                                            $this->renderSelect('Prijs_max', $maxOptions, 0, 'price-max'), 'price-holder');
+        }
+      }
+      else
+      {
+        echo $this->renderElement('Prijs', $this->renderSlider('Prijs', $searchManager->retrieveMinMetaValue(array('huis_KoopPrijs', 'huis_HuurPrijs'), $params), $maxOption));
+      }
+    }
+    
+    // Koop Prijs
+    if ($showKoopPrice === true)
+    {
+      $maxOption  = $searchManager->retrieveMaxMetaValue('huis_KoopPrijs', $params);
+      
+      if ($useSelect)
+      {
+        $availableOptions = array(0 => '&euro; 0', 50000 => '&euro; 50.000', 75000 => '&euro; 75.000', 100000 => '&euro; 100.000', 125000 => '&euro; 125.000', 150000 => '&euro; 150.000', 175000 => '&euro; 175.000', 200000 => '&euro; 200.000', 225000 => '&euro; 225.000', 250000 => '&euro; 250.000', 275000 => '&euro; 275.000', 300000 => '&euro; 300.000', 325000 => '&euro; 325.000', 350000 => '&euro; 350.000', 375000 => '&euro; 375.000', 400000 => '&euro; 400.000', 450000 => '&euro; 450.000', 500000 => '&euro; 500.000', 550000 => '&euro; 550.000', 600000 => '&euro; 600.000', 650000 => '&euro; 650.000', 700000 => '&euro; 700.000', 750000 => '&euro; 750.000', 800000 => '&euro; 800.000', 900000 => '&euro; 900.000', 1000000 => '&euro; 1.000.000', 1250000 => '&euro; 1.250.000', 1500000 => '&euro; 1.500.000', 20000000 => '&euro; 2.000.000');
+        $minOptions       = $this->filterIntMaxOptions($availableOptions, $maxOption);
+        
+        if (count($minOptions) > 1)
+        {
+          $maxOptions       = $minOptions;
+          unset($maxOptions[0]);
+          $maxOptions[0]    = 'Geen maximum';
+
+          echo $this->renderElement('Koopprijs', $this->renderSelect('KoopPrijs_min', $minOptions, 0, 'price-min') . 
+                                            '<span class="' . $this->getClassName() . '-sep"> t/m </span>' . 
+                                            $this->renderSelect('KoopPrijs_max', $maxOptions, 0, 'price-max'), 'price-holder');
+        }
+      }
+      else
+      {
+        echo $this->renderElement('Koopprijs', $this->renderSlider('KoopPrijs', $searchManager->retrieveMinMetaValue('huis_KoopPrijs', $params), $maxOption));
+      }
+    }
+    
+    // Huur Prijs
+    if ($showRentalPrice === true)
+    {
+      $maxOption  = $searchManager->retrieveMaxMetaValue('huis_HuurPrijs', $params);
+      
+      if ($useSelect)
+      {
+        $availableOptions = array(0 => '&euro; 0', 100 => '&euro; 100', 200 => '&euro; 200', 300 => '&euro; 300', 400 => '&euro; 400', 500 => '&euro; 500', 600 => '&euro; 600', 700 => '&euro; 700', 800 => '&euro; 800', 900 => '&euro; 900', 1000 => '&euro; 1.000', 1250 => '&euro; 1.250', 1500 => '&euro; 1.500', 1750 => '&euro; 1.750', 2000 => '&euro; 2.000', 2500 => '&euro; 2.500', 3000 => '&euro; 3.000', 4000 => '&euro; 4.000', 5000 => '&euro; 5.000', 6000 => '&euro; 6.000');
+        $minOptions       = $this->filterIntMaxOptions($availableOptions, $maxOption);
+        
+        if (count($minOptions) > 1)
+        {
+          $maxOptions       = $minOptions;
+          unset($maxOptions[0]);
+          $maxOptions[0]    = 'Geen maximum';
+
+          echo $this->renderElement('Huurprijs', $this->renderSelect('HuurPrijs_min', $minOptions, 0, 'price-min') . 
+                                            '<span class="' . $this->getClassName() . '-sep"> t/m </span>' . 
+                                            $this->renderSelect('HuurPrijs_max', $maxOptions, 0, 'price-max'), 'price-holder');
+        }
+      }
+      else
+      {
+        echo $this->renderElement('Huurprijs', $this->renderSlider('HuurPrijs', $searchManager->retrieveMinMetaValue('huis_HuurPrijs', $params), $maxOption));
+      }
+    }
 
     // Plaats
     if ($showCity === true)
@@ -138,19 +220,52 @@ class YogSearchFormWonenWidget extends YogSearchFormWidgetAbstract
     // Aantal kamers
     if ($showRooms === true)
     {
-      echo $this->renderElement('huis_Aantalkamers', $this->renderSlider('Aantalkamers', $searchManager->retrieveMinMetaValue('huis_Aantalkamers', $params), $searchManager->retrieveMaxMetaValue('huis_Aantalkamers', $params)));
+      $maxOption  = $searchManager->retrieveMaxMetaValue('huis_Aantalkamers', $params);
+      
+      if ($useSelect)
+      {
+        $options = $this->filterIntMaxOptions(array(0 => 'Geen voorkeur', 1 => '1 kamer', 2 => '2 kamers', 3 => '3 kamers', 4 => '4 kamers', 5 => '5 kamers', 6 => '6 kamers', 7 => '7 kamers', 8 => '8 kamers', 9 => '9 kamers'), $maxOption);
+        if (count($options) > 1)
+          echo $this->renderElement('huis_Aantalkamers', $this->renderSelect('Aantalkamers_min', $options));
+      }
+      else
+      {
+        echo $this->renderElement('huis_Aantalkamers', $this->renderSlider('Aantalkamers', $searchManager->retrieveMinMetaValue('huis_Aantalkamers', $params), $maxOption));
+      }
     }
 
     // Oppervlakte
     if ($showLivingSpace === true)
     {
-      echo $this->renderElement('huis_Oppervlakte', $this->renderSlider('Oppervlakte', $searchManager->retrieveMinMetaValue('huis_Oppervlakte', $params), $searchManager->retrieveMaxMetaValue('huis_Oppervlakte', $params)));
+      $maxOption  = $searchManager->retrieveMaxMetaValue('huis_Oppervlakte', $params);
+      
+      if ($useSelect)
+      {
+        $options = $this->filterIntMaxOptions(array(0 => 'Geen voorkeur', 50 => '50+ m&sup2;', 75 => '75+ m&sup2;', 100 => '100+ m&sup2;', 150 => '150+ m&sup2;', 250 => '250+ m&sup2;'), $maxOption);
+        if (count($options) > 1)
+          echo $this->renderElement('huis_Oppervlakte', $this->renderSelect('Oppervlakte_min', $options));
+      }
+      else
+      {
+        echo $this->renderElement('huis_Oppervlakte', $this->renderSlider('Oppervlakte', $searchManager->retrieveMinMetaValue('huis_Oppervlakte', $params), $maxOption));
+      }
     }
 
     // Inhoud
     if ($showVolume === true)
     {
-      echo $this->renderElement('huis_Inhoud', $this->renderSlider('Inhoud', $searchManager->retrieveMinMetaValue('huis_Inhoud', $params), $searchManager->retrieveMaxMetaValue('huis_Inhoud', $params)));
+      $maxOption  = $searchManager->retrieveMaxMetaValue('huis_Inhoud', $params);
+      
+      if ($useSelect)
+      {
+        $options = $this->filterIntMaxOptions(array(0 => 'Geen voorkeur', 150 => '150+ m&sup3;', 200 => '200+ m&sup3;', 300 => '300+ m&sup3;', 400 => '400+ m&sup3;', 500 => '500+ m&sup3;', 750 => '750+ m&sup3;', 1000 => '1000+ m&sup3;'), $maxOption);
+        if (count($options) > 1)
+          echo $this->renderElement('huis_Inhoud', $this->renderSelect('Inhoud_min', $options));
+      }
+      else
+      {
+        echo $this->renderElement('huis_Inhoud', $this->renderSlider('Inhoud', $searchManager->retrieveMinMetaValue('huis_Inhoud', $params), $maxOption));
+      }
     }
 
     echo '<p class="' . self::CLASSNAME . '-result">Er zijn <span class="object-search-result-num"></span> objecten die voldoen aan deze criteria</p>';
@@ -172,12 +287,15 @@ class YogSearchFormWonenWidget extends YogSearchFormWidgetAbstract
     $instance['title']              = empty($new_instance['title']) ? '' : $new_instance['title'];
     $instance['use_cur_cat']        = empty($new_instance['use_cur_cat']) ? 0 : 1;
     $instance['show_price']         = empty($new_instance['show_price']) ? 0 : 1;
+    $instance['show_koop_price']    = empty($new_instance['show_koop_price']) ? 0 : 1;
+    $instance['show_rental_price']  = empty($new_instance['show_rental_price']) ? 0 : 1;
     $instance['show_city']          = empty($new_instance['show_city']) ? 0 : 1;
     $instance['show_object_kind']   = empty($new_instance['show_object_kind']) ? 0 : 1;
     $instance['show_object_type']   = empty($new_instance['show_object_type']) ? 0 : 1;
     $instance['show_rooms']         = empty($new_instance['show_rooms']) ? 0 : 1;
     $instance['show_living_space']  = empty($new_instance['show_living_space']) ? 0 : 1;
     $instance['show_volume']        = empty($new_instance['show_volume']) ? 0 : 1;
+    $instance['use_select']         = empty($new_instance['use_select']) ? 0 : 1;
 
     return $instance;
   }
@@ -193,12 +311,15 @@ class YogSearchFormWonenWidget extends YogSearchFormWidgetAbstract
     $title            = empty($instance['title']) ? '' : esc_attr($instance['title']);
     $useCurrentCat    = empty($instance['use_cur_cat']) ? false : true;
     $showPrice        = empty($instance['show_price']) ? false : true;
+    $showKoopPrice    = empty($instance['show_koop_price']) ? false : true;
+    $showRentalPrice  = empty($instance['show_rental_price']) ? false : true;
     $showCity         = empty($instance['show_city']) ? false : true;
     $showObjectKind   = empty($instance['show_object_kind']) ? false : true;
     $showObjectType   = empty($instance['show_object_type']) ? false : true;
     $showRooms        = empty($instance['show_rooms']) ? false : true;
     $showLivingSpace  = empty($instance['show_living_space']) ? false : true;
     $showVolume       = empty($instance['show_volume']) ? false : true;
+    $useSelect        = empty($instance['use_select']) ? false : true;
 
     // Title
     echo '<p>';
@@ -211,12 +332,30 @@ class YogSearchFormWonenWidget extends YogSearchFormWidgetAbstract
       echo '<td><label for="' . $this->get_field_id('use_cur_cat') . '">' . __('Alleen objecten uit huidige category gebruiken') . '</label>: </td>';
       echo '<td><input id="' . $this->get_field_id('use_cur_cat') . '" name="' . $this->get_field_name('use_cur_cat') . '" type="checkbox" value="1" ' . ($useCurrentCat === true ? 'checked="checked" ' : '') . '/></td>';
     echo '</tr>';
+    
+    // Use select instead of range?
+    echo '<tr>';
+      echo '<td><label for="' . $this->get_field_id('use_select') . '">' . __('Gebruik dropdown i.p.v. range selectie') . ': </label></td>';
+      echo '<td><input id="' . $this->get_field_id('use_select') . '" name="' . $this->get_field_name('use_select') . '" type="checkbox" value="1" ' . ($useSelect === true ? 'checked="checked" ' : '') . '/></td>';
+    echo '</tr>';
+    
     // Seperator
     echo '<tr><td colspan="2">&nbsp;</td></tr>';
+    
     // Show price
 		echo '<tr>';
       echo '<td><label for="' . $this->get_field_id('show_price') . '">' . __('Prijs tonen') . '</label>: </td>';
       echo '<td><input id="' . $this->get_field_id('show_price') . '" name="' . $this->get_field_name('show_price') . '" type="checkbox" value="1" ' . ($showPrice === true ? 'checked="checked" ' : '') . '/></td>';
+    echo '</tr>';
+    // Show koop price
+		echo '<tr>';
+      echo '<td><label for="' . $this->get_field_id('show_koop_price') . '">' . __('Koopprijs tonen') . '</label>: </td>';
+      echo '<td><input id="' . $this->get_field_id('show_koop_price') . '" name="' . $this->get_field_name('show_koop_price') . '" type="checkbox" value="1" ' . ($showKoopPrice === true ? 'checked="checked" ' : '') . '/></td>';
+    echo '</tr>';
+    // Show rental price
+		echo '<tr>';
+      echo '<td><label for="' . $this->get_field_id('show_rental_price') . '">' . __('Huurprijs tonen') . '</label>: </td>';
+      echo '<td><input id="' . $this->get_field_id('show_rental_price') . '" name="' . $this->get_field_name('show_rental_price') . '" type="checkbox" value="1" ' . ($showRentalPrice === true ? 'checked="checked" ' : '') . '/></td>';
     echo '</tr>';
     // Show city
 		echo '<tr>';

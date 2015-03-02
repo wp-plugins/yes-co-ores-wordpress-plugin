@@ -100,7 +100,7 @@ abstract class YogSearchFormWidgetAbstract extends WP_Widget
   * @param string $content
   * @return string
   */
-  protected function renderElement($metaKey, $content)
+  protected function renderElement($metaKey, $content, $extraClass = '')
   {
     $html = '';
 
@@ -110,7 +110,7 @@ abstract class YogSearchFormWidgetAbstract extends WP_Widget
       $options        = $fieldsSettings->getField($metaKey);
       $title          = empty($options['title']) ? str_replace($this->getPostType() . '_', '', $metaKey) : $options['title'];
 
-      $html = '<div class="' . $this->getClassName() . '-element">';
+      $html = '<div class="' . $this->getClassName() . '-element' . (empty($extraClass) ? '' : ' ' . $extraClass) . '">';
         $html .= '<h5>' . $title . '</h5>';
         $html .= '<div class="' . $this->getClassName() . '-content">';
         $html .= $content;
@@ -226,6 +226,61 @@ abstract class YogSearchFormWidgetAbstract extends WP_Widget
     }
 
     return $html;
+  }
+  
+  /**
+  * @desc Render a select for search form
+  *
+  * @param string $fieldName
+  * @param array $values
+  * @return string
+  */
+  protected function renderSelect($fieldName, $values, $defaultValue = null, $extraClass = '')
+  {
+    $html = '';
+    if (count($values) > 0)
+    {
+      $selected = '';
+      if (!empty($_REQUEST[$fieldName]))
+        $selected = $_REQUEST[$fieldName];
+      else
+        $selected = $defaultValue;
+      
+      if (!empty($extraClass))
+        $extraClass = ' ' . $extraClass;
+
+      $html = '<div class="' . $this->getClassName() . '-row">';
+        $html .= '<select name="' . $fieldName . '" id="' . $fieldName . '" class="yog-object-form-elem ' . $this->getClassName() . '-select' . $extraClass . '">';
+
+        foreach ($values as $key => $value)
+        {
+          $html .= '<option value="' . $key. '"' . (($key == $selected) ? ' selected="selected"' : '') . '>' . $value . '</option>';
+        }
+
+        $html .= '</select>';
+      $html .= '</div>';
+    }
+
+    return $html;
+  }
+  
+  /**
+   * Filter integer options with the max existing value
+   * 
+   * @param array $possibleOptions
+   * @param int $maxValue
+   * @return array
+   */
+  protected function filterIntMaxOptions($possibleOptions, $maxValue)
+  {
+    $options = array();
+    foreach ($possibleOptions as $option => $label)
+    {
+      if ($option <= $maxValue)
+        $options[$option] = $label;
+    }
+    
+    return $options;
   }
 
   /**

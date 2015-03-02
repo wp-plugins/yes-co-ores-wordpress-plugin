@@ -5,6 +5,56 @@ jQuery(document).ready(function()
   for (var i=0; i < searchFormWidgets.length; i++)
   {
     yogSearchFormUpdateNum(searchFormWidgets[i].id);
+    
+    jQuery('.price-holder', searchFormWidgets).each(function()
+    {
+      var minElem = jQuery('.price-min', this);
+      var maxElem = jQuery('.price-max', this);
+      
+      if (minElem.length === 1 && maxElem.length === 1)
+      {
+        minElem.change(function()
+        {
+          var minElemValue  = parseInt(this.value, 10);
+          var maxElemValue  = parseInt(maxElem.val(), 10);
+          var numOptions    = jQuery('option', maxElem).length;
+          
+          if (maxElemValue > 0 && maxElemValue <= minElemValue)
+          {
+            var index = maxElem[0].selectedIndex;
+            if ((index + 1) < numOptions)
+            {
+              while (maxElemValue > 0 && maxElemValue <= minElemValue)
+              {
+                jQuery('option:nth-child(' + index + ')', maxElem).prop('selected', true);
+
+                maxElemValue = parseInt(maxElem.val(), 10);
+                index++;
+              }
+            }
+          }
+        });
+        
+        maxElem.change(function()
+        {
+          var minElemValue  = parseInt(minElem.val(), 10);
+          var maxElemValue  = parseInt(this.value, 10);
+          
+          if (minElemValue > 0 && minElemValue >= maxElemValue)
+          {
+            var index = minElem[0].selectedIndex;
+            
+            while (minElemValue > 0 && minElemValue >= maxElemValue)
+            {
+              jQuery('option:nth-child(' + index + ')', minElem).prop('selected', true);
+              
+              minElemValue  = parseInt(minElem.val(), 10);
+              index--;
+            }
+          }
+        });
+      }
+    });
   }
   
   jQuery('.yog-search-form-widget .yog-object-form-elem').change(function(event)
