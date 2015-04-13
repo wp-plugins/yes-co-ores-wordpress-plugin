@@ -121,13 +121,9 @@ class YogContactFormWidget extends WP_Widget
 
         if (is_single() && yog_isObject())
         {
-          //the_post();
-
           $projectApiKey = yog_retrieveSpec('ApiKey');
           if (!empty($projectApiKey))
             echo '<input type="hidden" name="project_id"  value="' . $projectApiKey. '" />';
-
-          rewind_posts();
         }
 
         // First name
