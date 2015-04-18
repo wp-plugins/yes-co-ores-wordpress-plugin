@@ -428,7 +428,11 @@
 
       add_filter('pre_get_posts',           array($this, 'extendPostQuery'));
       add_filter('the_content',             array($this, 'extendTheContent'));
-      add_action('init',                    array($this, 'enqueueFiles'));
+
+      if (get_option('yog_javascript_dojo_dont_enqueue'))
+        add_filter( 'wp_enqueue_scripts', array($this, 'enqueueFiles') , 0 );
+      else
+        add_action('init',                    array($this, 'enqueueFiles'));
 
       $searchManager = YogObjectSearchManager::getInstance();
      	$searchManager->extendSearch();
