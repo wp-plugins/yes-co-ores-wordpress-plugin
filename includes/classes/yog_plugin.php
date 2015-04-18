@@ -154,8 +154,14 @@
             // ]]>
             </script>';
 
+      $dojoUrl = 'http://ajax.googleapis.com/ajax/libs/dojo/1.9.3/dojo/dojo.js';
+
       // Fix for jquery being loaded crashing whole interface
-      wp_enqueue_script('dojo', 'http://ajax.googleapis.com/ajax/libs/dojo/1.9.3/dojo/dojo.js', false, '1.9.3');
+      if (get_option('yog_javascript_dojo_dont_enqueue'))
+        echo '<script defer type="text/javascript" src="' . $dojoUrl . '"></script>';
+      else
+        wp_enqueue_script('dojo', $dojoUrl, false, '1.9.3');
+
     }
 
     /**
@@ -616,6 +622,9 @@
 
       add_action('admin_menu',              array($this, 'createAdminMenu'));
       add_action('wp_ajax_togglehome',      array($this, 'ajaxToggleHome'));
+      add_action('wp_ajax_togglejavascriptdojo',      array($this, 'ajaxToggleJavascriptDojo'));
+
+
       add_action('wp_ajax_togglearchive',   array($this, 'ajaxToggleArchive'));
       add_action('wp_ajax_addkoppeling',    array($this, 'addSystemLink'));
       add_action('wp_ajax_removekoppeling', array($this, 'ajaxRemoveSystemLink'));
@@ -841,6 +850,13 @@
 	          echo '<label for="yog-toggle-archive">Objecten plaatsen in archief (Objecten zullen tussen \'normale\' blogposts verschijnen)</label><span id="yog-objects-on-archive-msg"></span>';
           echo '</div>';
 
+          echo '<br /><br />';
+
+          echo '<h3>Javascript loading</h3>';
+          echo '<div id="yog-on-javascript-dojo-dont-enqueue">';
+          echo '<input type="checkbox" ' .(get_option('yog_javascript_dojo_dont_enqueue')?'checked':'') .' id="yog-toggle-javascript-dojo-dont-enqueue" />';
+          echo '<label for="yog-toggle-javascript-dojo-dont-enqueue">Echo + defer load de Dojo Javascript library in plaats van gebruik te maken van de wp_enqueue (gebruik in het geval dat de jquery libraries conflicteren met deze plugin)</label><span id="yog-on-javascript-dojo-dont-enqueue-msg"></span>';
+          echo '</div>';
           echo '<br /><br />';
 
 	        echo '<h3>Gekoppelde yes-co open accounts</h3>';
@@ -1095,6 +1111,21 @@
 		  echo '&nbsp; instelling opgeslagen.';
 		  exit();
 	  }
+
+	  /**
+	   * @desc Ajax toggle objects on javascript dojo handler
+	   *
+	   * @param void
+	   * @return void
+	   */
+	  public function ajaxToggleJavascriptDojo()
+	  {
+	    update_option('yog_javascript_dojo_dont_enqueue',!(get_option('yog_javascript_dojo_dont_enqueue')));
+	    echo '&nbsp; instelling opgeslagen.';
+	    exit();
+	  }
+
+
 
     /**
     * @desc Ajax toggle objects in archive handler

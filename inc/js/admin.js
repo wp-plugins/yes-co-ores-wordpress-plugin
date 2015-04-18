@@ -19,6 +19,26 @@ jQuery(document).ready( function($)
         jQuery('#yog-objects-on-home-msg').removeClass('hide');
 		  });
   });
+  
+  /**
+   * Toggle javascript dojo checkbox
+   */
+   $('#yog-toggle-javascript-dojo-dont-enqueue').click(function()
+   {
+     jQuery('#yog-on-javascript-dojo-dont-enqueue').addClass('loading');
+     jQuery('#yog-on-javascript-dojo-dont-enqueue').addClass('loading-padding');
+     jQuery('#yog-on-javascript-dojo-dont-enqueue-msg').addClass('hide');
+
+     jQuery.post(ajaxurl, {'action': 'togglejavascriptdojo', 'cookie': encodeURIComponent(document.cookie)},
+       function(msg)
+       {
+         jQuery('#yog-on-javascript-dojo-dont-enqueue').removeClass('loading');
+         jQuery('#yog-on-javascript-dojo-dont-enqueue').removeClass('loading-padding');
+
+         jQuery('#yog-on-javascript-dojo-dont-enqueue-msg').html(msg);
+         jQuery('#yog-on-javascript-dojo-dont-enqueue-msg').removeClass('hide');
+       });
+   });
 
   /**
   * Toggle archive checkbox
