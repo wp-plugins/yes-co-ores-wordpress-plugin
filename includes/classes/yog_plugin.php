@@ -138,19 +138,31 @@
 	    return $newrules + $rules;
     }
 
-    /**
-     * @desc Method preScript
-     *
-     * @param {Void}
-     * @return {Void}
-     */
-    public function preScript()
+    public static function enqueueDojo()
     {
+      add_action('wp_head', array(YogPlugin, 'loadDojo'));
+      add_action('admin_head', array(YogPlugin, 'loadDojo'));
+    }
+
+    private static $dojoLoaded = false;
+
+    public static function isDojoLoaded()
+    {
+      return self::$dojoLoaded;
+    }
+
+    public static function loadDojo()
+    {
+      self::$dojoLoaded = true;
+
       echo '<script type="text/javascript">
             // <![CDATA[
               var djConfig = {
               cacheBust: "' . YOG_PLUGIN_VERSION . '"
               };
+
+              delete define;
+
             // ]]>
             </script>';
 
@@ -172,9 +184,6 @@
     */
     public function enqueueFiles()
     {
-      add_action('wp_head', array($this, 'preScript'));
-      add_action('admin_head', array($this, 'preScript'));
-
       wp_enqueue_script('jquery', YOG_PLUGIN_URL . '/javascript/' .'jquery-1.4.1' .'.js');
     }
 

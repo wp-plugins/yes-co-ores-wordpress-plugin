@@ -156,6 +156,9 @@ class YogMapWidget extends WP_Widget
    */
   public function generateDetailWindow($postID)
   {
+    //YogPlugin::enqueueDojo();
+    YogPlugin::loadDojo();
+
     $post     = get_post($postID);
 
     // Add post to the globals so it can be used in the template
@@ -306,6 +309,9 @@ class YogMapWidget extends WP_Widget
    */
   public function generate($settings = array(), $extraAfterOnLoad = '', $adminMode = false)
   {
+    //YogPlugin::enqueueDojo();
+    YogPlugin::loadDojo();
+
     $postTypes  = $settings['postTypes'];
     $width      = $settings['width'];
     $widthUnit  = $settings['widthUnit'];

@@ -1052,7 +1052,12 @@
 
       //$html .= $htmlScript;
 
-      wp_enqueue_script('yog-map', YOG_PLUGIN_URL . '/inc/js/yog-map-bootstrap.js', false, '1.0');
+      $url = YOG_PLUGIN_URL . '/inc/js/yog-map-bootstrap.js';
+
+      if (get_option('yog_javascript_dojo_dont_enqueue'))
+        echo '<script defer type="text/javascript" src="' . $url . '"></script>';
+      else
+        wp_enqueue_script('yog-map', $url, false, '1.0');
 
       $html .= '<div id="' . $map->getContainerId() . '" class="map-holder" style="display: none; width: ' . $map->getWidth() . $map->getWidthUnit() . '; height: ' . $map->getHeight() . $map->getHeightUnit() . ';"></div>';
 
@@ -1073,6 +1078,9 @@
    */
   function yog_retrieveDynamicMap($mapType = 'hybrid', $zoomLevel = 18, $width = 486, $height = 400, $extraAfterOnLoad = '', $adminMode = false, $postId = null)
   {
+    if (!YogPlugin::isDojoLoaded())
+      YogPlugin::loadDojo();
+
     $latitude = false;
     $longitude = false;
 

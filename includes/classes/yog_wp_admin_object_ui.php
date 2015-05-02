@@ -269,6 +269,8 @@
 
       echo $html;
 
+      YogPlugin::loadDojo();
+
       $extraOnLoad = '
                       require([ "yog/admin/Object" ], function() {
 
