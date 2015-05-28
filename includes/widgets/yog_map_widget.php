@@ -157,7 +157,7 @@ class YogMapWidget extends WP_Widget
   public function generateDetailWindow($postID)
   {
     //YogPlugin::enqueueDojo();
-    YogPlugin::loadDojo();
+    //YogPlugin::loadDojo();
 
     $post     = get_post($postID);
 
