@@ -195,6 +195,19 @@
     */
     public function registerPostTypes()
     {
+      /*
+      register_taxonomy('object_category',
+                        array(POST_TYPE_WONEN, POST_TYPE_BOG, POST_TYPE_NBPR, POST_TYPE_NBTY,
+                              POST_TYPE_NBBN, POST_TYPE_BBPR, POST_TYPE_BBTY),
+                        array('hierarchical'      => true,
+                              'query_var'         => true,
+                              'show_ui'           => true,
+                              'rewrite'           => array( 'slug' => 'objects'),
+                              'labels'            => array('name' => 'Object categorien'),
+                              'capabilities'      => array('manage_terms')
+                              ));
+       */
+
 	    register_post_type(POST_TYPE_WONEN,
 	                  array('labels'    => array('name'               => 'Wonen',
 	                                            'singular_name'       => 'Woon object',
@@ -215,7 +228,7 @@
 	                        'hierarchical'      => false,
 	                        'rewrite'           => array('slug' => POST_TYPE_WONEN), // Permalinks format
 	                        'supports'          => array('title','editor', 'thumbnail'),
-	                        'taxonomies'        => array('category', 'post_tag')
+	                        'taxonomies'        => array('object_category', 'category', 'post_tag')
 	                        )
 	    );
 
@@ -396,17 +409,12 @@
       register_widget('YogSearchFormBogWidget');
       register_widget('YogSearchFormNBprWidget');
       register_widget('YogSearchFormNBtyWidget');
+      register_widget('YogSearchFormBBprWidget');
       register_widget('YogContactFormWidget');
       register_widget('YogMapWidget');
       register_widget('YogObjectAttachmentsWidget');
       register_widget('YogLinkedObjectsWidget');
       register_widget('YogLinkedRelationsWidget');
-
-      $mcp3Version = get_option('yog_3mcp_version');
-      if ($mcp3Version == '1.4')
-      {
-        register_widget('YogSearchFormBBprWidget');
-      }
     }
 
     /**
@@ -442,6 +450,11 @@
         add_filter( 'wp_enqueue_scripts', array($this, 'enqueueFiles') , 0 );
       else
         add_action('init',                    array($this, 'enqueueFiles'));
+
+      // Add shortcodes
+      add_shortcode('yog-widget',         array($this, 'handleWidgetShortcode'));
+      add_shortcode('yog-contact-widget', array($this, 'handleContactWidgetShortcode'));
+      add_shortcode('yog-map',            array($this, 'handleMapShortcode'));
 
       $searchManager = YogObjectSearchManager::getInstance();
      	$searchManager->extendSearch();
@@ -573,7 +586,7 @@
     */
     public function extendPostQuery($query)
     {
-      $extendQuery = true;
+      $extendQuery  = true;
 
       if (!(!isset($query->query_vars['suppress_filters']) || $query->query_vars['suppress_filters'] == false))
         $extendQuery = false;
@@ -583,6 +596,11 @@
         $extendQuery = false;
       else if ($query->is_home && !get_option('yog_huizenophome'))
         $extendQuery = false;
+
+      /*echo '<pre>';
+      print_r($query);
+      echo '</pre>';
+      exit;*/
 
       if ($extendQuery === true)
       {
@@ -611,7 +629,113 @@
           $postTypes[] = POST_TYPE_BBTY;
 
 		    $query->set('post_type', $postTypes);
+
+        // TODO: implement a custom order for objects
+        // Make sure it's only done for object categories!
+        /*
+        if ($query->is_category)
+        {
+          echo '<pre>';
+          print_r($query);
+          echo '</pre>';
+
+          $query->set('orderby', 'title');
+          $query->set('order', 'ASC');
+        }
+        */
       }
+    }
+
+    /**
+     * Handle widget shortcodes like [yog-widget type=".." id=".."]
+     *
+     * @param array $attr
+     * @return string
+     */
+    public function handleWidgetShortcode($attr)
+    {
+      if (!empty($attr['type']) && !empty($attr['id']))
+      {
+        global $wp_registered_widgets;
+
+        // Check type
+        switch ($attr['type'])
+        {
+          case 'contact':
+            $widgetType = $attr['type'] . 'form';
+            break;
+          case 'searchwonen':
+          case 'searchbog':
+          case 'searchnbpr':
+          case 'searchnbty':
+          case 'searchbbpr':
+            $widgetType = str_replace('search', 'searchform', $attr['type']);
+            break;
+          default:
+            return '';
+            break;
+        }
+
+        ///YogSearchFormNBtyWidget
+
+        $widgetNr     = $attr['id'];
+        $widgetClass  = 'widget_yog' . $widgetType . 'widget';
+        $widgetId     = 'yog' . $widgetType . 'widget-' .  $widgetNr;
+
+        // Widget not found, so return empty string
+        if (empty($wp_registered_widgets[$widgetId]))
+          return '';
+
+        // Widget object not found
+        if (empty($wp_registered_widgets[$widgetId]['callback']) || empty($wp_registered_widgets[$widgetId]['callback'][0]))
+          return '';
+
+        // Get widget object
+        $widgetObject = $wp_registered_widgets[$widgetId]['callback'][0];
+
+        // Determine args / settings
+        $args         = array(
+                          'before_widget' => '<div class="widget ' . $widgetClass . '" id="' . $widgetId . 'shortcode">',
+                          'before_title'  => '<h2 class="widgettitle">',
+                          'after_title'   => '</h2>',
+                          'after_widget'  => '</div>'
+                        );
+        $settings     = $widgetObject->get_settings();
+
+        // Catch widget output through output buffering
+        ob_start();
+        $widgetObject->widget($args, $settings[$widgetNr]);
+        $html = ob_get_contents();
+        ob_end_clean();
+
+        // Return widget html
+        return $html;
+      }
+    }
+
+    /**
+     * Handle depricated contact widget shortcode like [yog-contact-widget id=".."]
+     *
+     * @param array $attr
+     * @return string
+     */
+    public function handleContactWidgetShortcode($attr)
+    {
+      $attr['type'] = 'contact';
+      return $this->handleWidgetShortcode($attr);
+    }
+
+    /**
+     * Handle map shortcode like [yog-map center_latitude=".." center_longitude=".." zoomlevel="9" map_type="terrain" width="100" width_unit="%" height="100" height_unit="%" control_map_type_position=".." control_pan_position=".." control_zoom_position=".."]
+     * @param type $attr
+     * @return type
+     */
+    public function handleMapShortcode($attr)
+    {
+      $mapWidget = new YogMapWidget();
+      $settings  = $mapWidget->shortcodeAttributesToSettings($attr);
+
+      return $mapWidget->generate($settings);
     }
   }
 
@@ -900,7 +1024,7 @@
 	        }
 	        echo '</div>';
 
-          // BEGIN YOG MAP SHORTCODE GENERATOR
+          // BEGIN YOG MAP MARKER SETTINGS
 
           echo '<br /><br />';
 
@@ -932,7 +1056,7 @@
           echo '</form>';
 
 
-          // END YOG MAP SHORTCODE GENERATOR
+          // END YOG MAP MARKER SETTINGS
 
           $shortcode = (!empty($_GET['shortcode']) ? $_GET['shortcode'] : '');
 
@@ -1029,6 +1153,11 @@
 
         }
 	    echo '</div>';
+    }
+
+    public function renderMapsShortcodesPage()
+    {
+      echo 'TEST';
     }
 
     /**

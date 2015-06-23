@@ -427,8 +427,7 @@ class YogContactFormWidget extends WP_Widget
       echo '<input class="widefat" id="' . $this->get_field_id('js_send') . '" name="' . $this->get_field_name('js_send') . '" type="text" value="' . $jsSend . '" />';
     echo '</p>';
 
-    $widgetId = $this->number;
-
-    echo 'Shortcode: [yog-contact-widget id="' . $widgetId . '"]<br /><br />';
+    if (!empty($this->number) && is_numeric($this->number))
+      echo '<p>Shortcode: [yog-widget type="contact" id="' . $this->number . '"]</p>';
   }
 }

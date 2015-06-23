@@ -87,6 +87,7 @@ class YogSearchFormNBtyWidget extends YogSearchFormWidgetAbstract
     // Retrieve settings
     $title            = empty($instance['title']) ? '' : esc_attr($instance['title']);
     $useCurrentCat    = empty($instance['use_cur_cat']) ? false : true;
+    $showPriceType    = empty($instance['show_price_type']) ? false : true;
     $showPrice        = empty($instance['show_price']) ? false : true;
     $showCity         = empty($instance['show_city']) ? false : true;
     $showObjectKind   = empty($instance['show_object_kind']) ? false : true;
@@ -119,26 +120,30 @@ class YogSearchFormNBtyWidget extends YogSearchFormWidgetAbstract
 
     echo '</div>';
 
+    // Prijs type
+    if ($showPriceType === true)
+      echo $this->renderElement('yog-nbty_PrijsType', $this->renderCheckBoxes('PrijsType', array('Koop', 'Huur')), 'price-type-holder');
+
     // Prijs
     if ($showPrice === true)
     {
       $maxOption  = $searchManager->retrieveMaxMetaValue(array('yog-nbty_KoopPrijsMax', 'yog-nbty_HuurPrijsMax'), $params);
-      
+
       if ($useSelect)
       {
         $availableOptions = array(0 => '&euro; 0', 100 => '&euro; 100', 200 => '&euro; 200', 300 => '&euro; 300', 400 => '&euro; 400', 500 => '&euro; 500', 600 => '&euro; 600', 700 => '&euro; 700', 800 => '&euro; 800', 900 => '&euro; 900', 1000 => '&euro; 1.000', 1250 => '&euro; 1.250', 1500 => '&euro; 1.500', 1750 => '&euro; 1.750', 2000 => '&euro; 2.000', 2500 => '&euro; 2.500', 3000 => '&euro; 3.000', 4000 => '&euro; 4.000', 5000 => '&euro; 5.000', 6000 => '&euro; 6.000',
-                                  50000 => '&euro; 50.000', 75000 => '&euro; 75.000', 100000 => '&euro; 100.000', 125000 => '&euro; 125.000', 150000 => '&euro; 150.000', 175000 => '&euro; 175.000', 200000 => '&euro; 200.000', 225000 => '&euro; 225.000', 250000 => '&euro; 250.000', 275000 => '&euro; 275.000', 300000 => '&euro; 300.000', 325000 => '&euro; 325.000', 350000 => '&euro; 350.000', 375000 => '&euro; 375.000', 400000 => '&euro; 400.000', 450000 => '&euro; 450.000', 
+                                  50000 => '&euro; 50.000', 75000 => '&euro; 75.000', 100000 => '&euro; 100.000', 125000 => '&euro; 125.000', 150000 => '&euro; 150.000', 175000 => '&euro; 175.000', 200000 => '&euro; 200.000', 225000 => '&euro; 225.000', 250000 => '&euro; 250.000', 275000 => '&euro; 275.000', 300000 => '&euro; 300.000', 325000 => '&euro; 325.000', 350000 => '&euro; 350.000', 375000 => '&euro; 375.000', 400000 => '&euro; 400.000', 450000 => '&euro; 450.000',
                                   500000 => '&euro; 500.000', 550000 => '&euro; 550.000', 600000 => '&euro; 600.000', 650000 => '&euro; 650.000', 700000 => '&euro; 700.000', 750000 => '&euro; 750.000', 800000 => '&euro; 800.000', 900000 => '&euro; 900.000', 1000000 => '&euro; 1.000.000', 1250000 => '&euro; 1.250.000', 1500000 => '&euro; 1.500.000', 20000000 => '&euro; 2.000.000');
         $minOptions       = $this->filterIntMaxOptions($availableOptions, $maxOption);
-        
+
         if (count($minOptions) > 1)
         {
           $maxOptions       = $minOptions;
           unset($maxOptions[0]);
           $maxOptions[$maxOption]    = 'Geen maximum';
-        
-          echo $this->renderElement('Prijs', $this->renderSelect('Prijs_min', $minOptions, 0, 'price-min') . 
-                                            '<span class="' . $this->getClassName() . '-sep"> t/m </span>' . 
+
+          echo $this->renderElement('Prijs', $this->renderSelect('Prijs_min', $minOptions, 0, 'price-min') .
+                                            '<span class="' . $this->getClassName() . '-sep"> t/m </span>' .
                                             $this->renderSelect('Prijs_max', $maxOptions, $maxOption, 'price-max'), 'price-holder');
         }
       }
@@ -164,7 +169,7 @@ class YogSearchFormNBtyWidget extends YogSearchFormWidgetAbstract
     if ($showLivingSpace === true)
     {
       $maxOption  = $searchManager->retrieveMaxMetaValue('yog-nbty_WoonOppervlakteMax', $params);
-      
+
       if ($useSelect)
       {
         $options = $this->filterIntMaxOptions(array(0 => 'Geen voorkeur', 50 => '50+ m&sup2;', 75 => '75+ m&sup2;', 100 => '100+ m&sup2;', 150 => '150+ m&sup2;', 250 => '250+ m&sup2;'), $maxOption);
@@ -184,7 +189,7 @@ class YogSearchFormNBtyWidget extends YogSearchFormWidgetAbstract
     if ($showVolume === true)
     {
       $maxOption  = $searchManager->retrieveMaxMetaValue('yog-nbty_InhoudMax', $params);
-      
+
       if ($useSelect)
       {
         $options = $this->filterIntMaxOptions(array(0 => 'Geen voorkeur', 150 => '150+ m&sup3;', 200 => '200+ m&sup3;', 300 => '300+ m&sup3;', 400 => '400+ m&sup3;', 500 => '500+ m&sup3;', 750 => '750+ m&sup3;', 1000 => '1000+ m&sup3;'), $maxOption);
@@ -218,6 +223,7 @@ class YogSearchFormNBtyWidget extends YogSearchFormWidgetAbstract
     $instance                       = $old_instance;
     $instance['title']              = empty($new_instance['title']) ? '' : $new_instance['title'];
     $instance['use_cur_cat']        = empty($new_instance['use_cur_cat']) ? 0 : 1;
+    $instance['show_price_type']    = empty($new_instance['show_price_type']) ? 0 : 1;
     $instance['show_price']         = empty($new_instance['show_price']) ? 0 : 1;
     $instance['show_city']          = empty($new_instance['show_city']) ? 0 : 1;
     $instance['show_object_kind']   = empty($new_instance['show_object_kind']) ? 0 : 1;
@@ -239,6 +245,7 @@ class YogSearchFormNBtyWidget extends YogSearchFormWidgetAbstract
   {
     $title            = empty($instance['title']) ? '' : esc_attr($instance['title']);
     $useCurrentCat    = empty($instance['use_cur_cat']) ? false : true;
+    $showPriceType    = empty($instance['show_price_type']) ? false : true;
     $showPrice        = empty($instance['show_price']) ? false : true;
     $showCity         = empty($instance['show_city']) ? false : true;
     $showObjectKind   = empty($instance['show_object_kind']) ? false : true;
@@ -263,10 +270,15 @@ class YogSearchFormNBtyWidget extends YogSearchFormWidgetAbstract
       echo '<td><label for="' . $this->get_field_id('use_select') . '">' . __('Gebruik dropdown i.p.v. range selectie') . ': </label></td>';
       echo '<td><input id="' . $this->get_field_id('use_select') . '" name="' . $this->get_field_name('use_select') . '" type="checkbox" value="1" ' . ($useSelect === true ? 'checked="checked" ' : '') . '/></td>';
     echo '</tr>';
-    
+
     // Seperator
     echo '<tr><td colspan="2">&nbsp;</td></tr>';
-    
+
+    // Show price type
+		echo '<tr>';
+      echo '<td><label for="' . $this->get_field_id('show_price_type') . '">' . __('Prijs soort tonen') . '</label>: </td>';
+      echo '<td><input id="' . $this->get_field_id('show_price_type') . '" name="' . $this->get_field_name('show_price_type') . '" type="checkbox" value="1" ' . ($showPriceType === true ? 'checked="checked" ' : '') . '/></td>';
+    echo '</tr>';
     // Show price
 		echo '<tr>';
       echo '<td><label for="' . $this->get_field_id('show_price') . '">' . __('Prijs tonen') . '</label>: </td>';
@@ -294,9 +306,12 @@ class YogSearchFormNBtyWidget extends YogSearchFormWidgetAbstract
     echo '</tr>';
     // Show Volume
 		echo '<tr>';
-      echo '<td><label for="' . $this->get_field_id('show_volume') . '">' . __('Inhoud tonen') . '</label>: </td>';
+      echo '<td>B<label for="' . $this->get_field_id('show_volume') . '">' . __('Inhoud tonen') . '</label>: </td>';
       echo '<td><input id="' . $this->get_field_id('show_volume') . '" name="' . $this->get_field_name('show_volume') . '" type="checkbox" value="1" ' . ($showVolume === true ? 'checked="checked" ' : '') . '/></td>';
     echo '</tr>';
     echo '</table>';
+
+    if (!empty($this->number) && is_numeric($this->number))
+      echo '<p>Shortcode: [yog-widget type="searchnbty" id="' . $this->number . '"]</p>';
   }
 }

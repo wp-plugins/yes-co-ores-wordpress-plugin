@@ -109,8 +109,9 @@ abstract class YogSearchFormWidgetAbstract extends WP_Widget
       $fieldsSettings = $this->retrieveFieldsSettings();
       $options        = $fieldsSettings->getField($metaKey);
       $title          = empty($options['title']) ? str_replace($this->getPostType() . '_', '', $metaKey) : $options['title'];
+      $id             = str_replace($this->getPostType() . '_', '', $metaKey) . '-holder';
 
-      $html = '<div class="' . $this->getClassName() . '-element' . (empty($extraClass) ? '' : ' ' . $extraClass) . '">';
+      $html = '<div class="' . $this->getClassName() . '-element' . (empty($extraClass) ? '' : ' ' . $extraClass) . '" id="' . $id . '">';
         $html .= '<h5>' . $title . '</h5>';
         $html .= '<div class="' . $this->getClassName() . '-content">';
         $html .= $content;
@@ -166,7 +167,7 @@ abstract class YogSearchFormWidgetAbstract extends WP_Widget
   * @param array $values
   * @return string
   */
-  protected function renderCheckBoxes($fieldName, $values)
+  protected function renderCheckBoxes($fieldName, $values, $defaultChecked = array())
   {
     $html = '';
 
@@ -179,6 +180,10 @@ abstract class YogSearchFormWidgetAbstract extends WP_Widget
           $checked = $_REQUEST[$fieldName];
         else
           $checked = array($_REQUEST[$fieldName]);
+      }
+      else
+      {
+        $checked = $defaultChecked;
       }
 
       foreach ($values as $key => $value)
@@ -227,7 +232,7 @@ abstract class YogSearchFormWidgetAbstract extends WP_Widget
 
     return $html;
   }
-  
+
   /**
   * @desc Render a select for search form
   *
@@ -245,7 +250,7 @@ abstract class YogSearchFormWidgetAbstract extends WP_Widget
         $selected = $_REQUEST[$fieldName];
       else
         $selected = $defaultValue;
-      
+
       if (!empty($extraClass))
         $extraClass = ' ' . $extraClass;
 
@@ -263,10 +268,10 @@ abstract class YogSearchFormWidgetAbstract extends WP_Widget
 
     return $html;
   }
-  
+
   /**
    * Filter integer options with the max existing value
-   * 
+   *
    * @param array $possibleOptions
    * @param int $maxValue
    * @return array
@@ -279,7 +284,7 @@ abstract class YogSearchFormWidgetAbstract extends WP_Widget
       if ($option <= $maxValue)
         $options[$option] = $label;
     }
-    
+
     return $options;
   }
 

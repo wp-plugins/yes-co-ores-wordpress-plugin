@@ -1163,21 +1163,8 @@
     return $html;
   }
 
-  // [yog-map ]
-  function yog_map_shortcode($atts)
-  {
-    // Yog Map Widget
-    $mapWidget = new YogMapWidget();
-    $settings  = $mapWidget->shortcodeAttributesToSettings($atts);
-
-    $html = $mapWidget->generate($settings);
-
-    return $html;
-  }
-
-  add_shortcode( 'yog-map', 'yog_map_shortcode' );
-
   // [yog-contact-widget ]
+  // TODO: remove, no longer used!
   function yog_contact_widget_shortcode($atts)
   {
     if (empty($atts['id']))
@@ -1247,6 +1234,7 @@
 
   /**
    * Returns an array of all widgets as the key, their position as the value
+   * TODO: remove, no longer used
    *
    * @since 0.2.2
    * @return array
@@ -1263,7 +1251,7 @@
           return $widgets_map;
   }
 
-  add_shortcode( 'yog-contact-widget', 'yog_contact_widget_shortcode' );
+  //add_shortcode( 'yog-contact-widget', 'yog_contact_widget_shortcode' );
 
 
   /**
