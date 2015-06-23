@@ -183,6 +183,7 @@ class YogObjectSearchManager
               $query[] = "((" . $selectSql . ") >= " . $min . ")";
             else if ($min == 0 && $max > 0)
               $query[] = "((" . $selectSql . ") <= " . $max . " OR (" . $selectSql . ") IS NULL)";
+
             break;
           // Range search on Min / Max fields
           case 'minmax-range':
@@ -205,6 +206,47 @@ class YogObjectSearchManager
         }
       }
     }
+    
+    // Handle price type search
+    if (!empty($_REQUEST['PrijsType']) && is_array($_REQUEST['PrijsType']))
+    {
+      $metaKeys = array();
+      
+      if (in_array($objectType, array(POST_TYPE_NBPR, POST_TYPE_NBTY, POST_TYPE_BBPR)))
+      {
+        if (in_array('Koop', $_REQUEST['PrijsType']))
+        {
+          $metaKeys[] = $objectType . '_' . ($objectType == POST_TYPE_NBPR ? 'KoopAanneemSomMin' : 'KoopPrijsMin');
+          $metaKeys[] = $objectType . '_' . ($objectType == POST_TYPE_NBPR ? 'KoopAanneemSomMax' : 'KoopPrijsMax');
+        }
+        
+        if (in_array('Huur', $_REQUEST['PrijsType']))
+        {
+          $metaKeys[] = $objectType . '_HuurPrijsMin';
+          $metaKeys[] = $objectType . '_HuurPrijsMax';
+        }
+      }
+      else
+      {
+        if (in_array('Koop', $_REQUEST['PrijsType']))
+         $metaKeys[] = $objectType . '_KoopPrijs';
+        
+        if (in_array('Huur', $_REQUEST['PrijsType']))
+         $metaKeys[] = $objectType . '_HuurPrijs';
+      }
+      
+      if (count($metaKeys) > 0)
+      {
+        $queryParts = array();
+
+        foreach ($metaKeys as $metaKey)
+        {
+          $queryParts[] = 'EXISTS (SELECT true FROM ' . $tbl . ' WHERE ' . $tbl . '.meta_key = \'' . $metaKey . '\' AND ' . $tbl . '.meta_value IS NOT NULL AND ' . $tbl . '.meta_value != \'\' AND ' . $tbl . '.post_id = ' . $this->db->posts . '.ID)';
+        }
+        
+        $query[] = '(' . implode(' OR ', $queryParts) . ')';
+      }
+    }
 
     // Handle price search (koop + huur)
     if (!empty($_REQUEST['Prijs_min']) || !empty($_REQUEST['Prijs_max']))
@@ -212,10 +254,10 @@ class YogObjectSearchManager
       $min      = empty($_REQUEST['Prijs_min']) ? 0 : (int) $_REQUEST['Prijs_min'];
       $max      = empty($_REQUEST['Prijs_max']) ? 0 : (int) $_REQUEST['Prijs_max'];
 
-      if (in_array($objectType, array(POST_TYPE_NBPR, POST_TYPE_NBTY)))
+      if (in_array($objectType, array(POST_TYPE_NBPR, POST_TYPE_NBTY, POST_TYPE_BBPR)))
       {
-        $koopMinField = ($objectType == POST_TYPE_NBTY) ? 'KoopPrijsMin' : 'KoopAanneemSomMin';
-        $koopMaxField = ($objectType == POST_TYPE_NBTY) ? 'KoopPrijsMax' : 'KoopAanneemSomMax';
+        $koopMinField = ($objectType == POST_TYPE_NBPR) ? 'KoopAanneemSomMin' : 'KoopPrijsMin';
+        $koopMaxField = ($objectType == POST_TYPE_NBPR) ? 'KoopAanneemSomMax' : 'KoopPrijsMax';
         $huurMinField = 'HuurPrijsMin';
         $huurMaxField = 'HuurPrijsMax';
 
@@ -224,32 +266,17 @@ class YogObjectSearchManager
         $huurSqlMin   = "SELECT " . $tbl . ".meta_value FROM " . $tbl . " WHERE " . $tbl . ".meta_key = '" . $objectType . "_" . $huurMinField . "' AND " . $tbl . ".post_id = " . $this->db->posts . ".ID";
         $huurSqlMax   = "SELECT " . $tbl . ".meta_value FROM " . $tbl . " WHERE " . $tbl . ".meta_key = '" . $objectType . "_" . $huurMaxField . "' AND " . $tbl . ".post_id = " . $this->db->posts . ".ID";
 
-        if ($min > 0 && $max > 0)
-        {
-          $sql  = '(';
-            $sql .= '((' . $koopSqlMin . ') BETWEEN ' . $min . ' AND ' . $max . ')';
-              $sql .= ' OR ';
-            $sql .= '((' . $koopSqlMax . ') BETWEEN ' . $min . ' AND ' . $max . ')';
-          $sql .= ')';
-          $sql .= ' OR ';
-          $sql .= '(';
-            $sql .= '((' . $huurSqlMin . ') BETWEEN ' . $min . ' AND ' . $max . ')';
-              $sql .= ' OR ';
-            $sql .= '((' . $huurSqlMax . ') BETWEEN ' . $min . ' AND ' . $max . ')';
-          $sql .= ')';
-        }
-        else if ($min > 0)
-        {
-          $sql  = '(' . $min . ' BETWEEN (' . $koopSqlMin . ') AND (' . $koopSqlMax . '))';
-          $sql .= ' OR ';
-          $sql .= '(' . $min . ' BETWEEN (' . $huurSqlMin . ') AND (' . $huurSqlMax . '))';
-        }
-        else if ($max > 0)
-        {
-          $sql  = '(' . $max . ' BETWEEN (' . $koopSqlMin . ') AND (' . $koopSqlMax . '))';
-          $sql .= ' OR ';
-          $sql .= '(' . $max . ' BETWEEN (' . $huurSqlMin . ') AND (' . $huurSqlMax . '))';
-        }
+        $sql  = '(';
+          $sql .= '((' . $koopSqlMin . ') BETWEEN ' . $min . ' AND ' . $max . ')';
+            $sql .= ' OR ';
+          $sql .= '((' . $koopSqlMax . ') BETWEEN ' . $min . ' AND ' . $max . ')';
+        $sql .= ')';
+        $sql .= ' OR ';
+        $sql .= '(';
+          $sql .= '((' . $huurSqlMin . ') BETWEEN ' . $min . ' AND ' . $max . ')';
+            $sql .= ' OR ';
+          $sql .= '((' . $huurSqlMax . ') BETWEEN ' . $min . ' AND ' . $max . ')';
+        $sql .= ')';
 
         if (!empty($sql))
           $query[] = '(' . $sql . ')';
@@ -267,10 +294,6 @@ class YogObjectSearchManager
           $query[] = "((" . $koopSql . ") <= " . $max . " OR (" . $huurSql . ") <= " . $max . " OR ((" . $koopSql . ") IS NULL AND (" . $huurSql . ") IS NULL))";
       }
     }
-    
-    //echo '<pre>';
-    //print_r($query);
-    //echo '</pre>';
 
     // Update where query
     if (!empty($query))
