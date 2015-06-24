@@ -100,6 +100,17 @@
 
       return $data;
     }
+    
+    /**
+     * Determine price to sort project by
+     * 
+     * @param void
+     * @return mixed
+     */
+    public function determineSortPrice()
+    {
+      return 0;
+    }
 
     /**
     * @desc Get the categories to link project to

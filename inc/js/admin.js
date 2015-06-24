@@ -1,69 +1,59 @@
 jQuery(document).ready( function($)
 {
   /**
-  * Toggle home checkbox
+  * Toggle settings
   */
-  $('#yog-toggle-home').click(function()
+  jQuery('.yog-toggle-setting').click(function()
   {
-    jQuery('#yog-objects-on-home').addClass('loading');
-    jQuery('#yog-objects-on-home').addClass('loading-padding');
-    jQuery('#yog-objects-on-home-msg').addClass('hide');
+    var msgHolder = jQuery('.msg', jQuery(this).parent());
+    msgHolder.addClass('hide');
 
-	  jQuery.post(ajaxurl, {'action': 'togglehome', 'cookie': encodeURIComponent(document.cookie)},
+	  jQuery.post(ajaxurl, {'action': 'setsetting', 'cookie': encodeURIComponent(document.cookie), 'name' : this.name},
 		  function(msg)
 		  {
-        jQuery('#yog-objects-on-home').removeClass('loading');
-        jQuery('#yog-objects-on-home').removeClass('loading-padding');
-
-        jQuery('#yog-objects-on-home-msg').html(msg);
-        jQuery('#yog-objects-on-home-msg').removeClass('hide');
+        msgHolder.html(msg);
+        msgHolder.removeClass('hide');
+        setTimeout(function(){ msgHolder.addClass('hide') }, 5000);
 		  });
   });
   
   /**
-   * Toggle javascript dojo checkbox
-   */
-   $('#yog-toggle-javascript-dojo-dont-enqueue').click(function()
-   {
-     jQuery('#yog-on-javascript-dojo-dont-enqueue').addClass('loading');
-     jQuery('#yog-on-javascript-dojo-dont-enqueue').addClass('loading-padding');
-     jQuery('#yog-on-javascript-dojo-dont-enqueue-msg').addClass('hide');
-
-     jQuery.post(ajaxurl, {'action': 'togglejavascriptdojo', 'cookie': encodeURIComponent(document.cookie)},
-       function(msg)
-       {
-         jQuery('#yog-on-javascript-dojo-dont-enqueue').removeClass('loading');
-         jQuery('#yog-on-javascript-dojo-dont-enqueue').removeClass('loading-padding');
-
-         jQuery('#yog-on-javascript-dojo-dont-enqueue-msg').html(msg);
-         jQuery('#yog-on-javascript-dojo-dont-enqueue-msg').removeClass('hide');
-       });
-   });
-
-  /**
-  * Toggle archive checkbox
+  * Set settings
   */
-  $('#yog-toggle-archive').click(function()
+  jQuery('.yog-set-setting').change(function()
   {
-    jQuery('#yog-objects-on-archive').addClass('loading');
-    jQuery('#yog-objects-on-archive').addClass('loading-padding');
-    jQuery('#yog-objects-on-archive-msg').addClass('hide');
+    var msgHolder = jQuery('.msg', jQuery(this).parent());
+    msgHolder.addClass('hide');
 
-	  jQuery.post(ajaxurl, {'action': 'togglearchive', 'cookie': encodeURIComponent(document.cookie)},
+	  jQuery.post(ajaxurl, {'action': 'setsetting', 'cookie': encodeURIComponent(document.cookie), 'name' : this.name, 'value': this.value},
 		  function(msg)
 		  {
-        jQuery('#yog-objects-on-archive').removeClass('loading');
-        jQuery('#yog-objects-on-archive').removeClass('loading-padding');
-
-        jQuery('#yog-objects-on-archive-msg').html(msg);
-        jQuery('#yog-objects-on-archive-msg').removeClass('hide');
+        msgHolder.html(msg);
+        msgHolder.removeClass('hide');
+        setTimeout(function(){ msgHolder.addClass('hide') }, 5000);
 		  });
+  });
+  
+  /**
+   * Show / hide order when yog-toggle-cat-custom not checked
+   */
+  jQuery('#yog-toggle-cat-custom').change(function()
+  {
+    if (this.checked)
+    {
+      jQuery('#yog-sortoptions').show();
+    }
+    else
+    {
+      jQuery('#yog-sortoptions').hide();
+      jQuery('#yog_order').val('');
+    }
   });
 
   /**
   * Add system link
   */
-  $('#yog-add-system-link').click(function()
+  jQuery('#yog-add-system-link').click(function()
   {
 	  jQuery('#yog-add-system-link').hide();
 	  jQuery('#yog-add-system-link-holder').addClass('loading');
@@ -81,17 +71,6 @@ jQuery(document).ready( function($)
 			  jQuery('#yog-add-system-link').show();
 		  });
   });
-
-  /**
-  * Make sure NBty / NBbn links are hidden for older browsers
-  */
-  var mainMenuItem  = jQuery('#toplevel_page_yog_posts_menu');
-  if (mainMenuItem.length > 0)
-  {
-    jQuery('li a[href="edit.php?post_type=yog-nbty"]', mainMenuItem).parent().hide();
-    jQuery('li a[href="edit.php?post_type=yog-nbbn"]', mainMenuItem).parent().hide();
-    jQuery('li a[href="edit.php?post_type=yog-bbty"]', mainMenuItem).parent().hide();
-  }
 });
 
 /**

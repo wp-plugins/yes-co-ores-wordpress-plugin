@@ -33,8 +33,8 @@ class YogChecks
 
 		// Wordpress version
 		global $wp_version;
-		if ((float) $wp_version < 3.0)
-			$errors[] = 'Wordpress versie ' . $wp_version . ' is gedetecteerd, voor deze plugin is Wordpress versie 3.0 of hoger vereist. Upgrade wordpress naar een nieuwere versie';
+		if ((float) $wp_version < 3.1)
+			$errors[] = 'Wordpress versie ' . $wp_version . ' is gedetecteerd, voor deze plugin is Wordpress versie 3.1 of hoger vereist. Upgrade wordpress naar een nieuwere versie';
 
 		return $errors;
 	}
@@ -65,22 +65,13 @@ class YogChecks
 		if (!is_file(get_template_directory() .'/single-yog-nbty.php'))
 			$warnings[] = 'Het ingestelde thema heeft op dit moment geen \'single-yog-nbty.php\' template. Er zal een alternatieve methode gebruikt worden voor het tonen van de Nieuwbouw type details.';
 
-    $mcp3Version = get_option('yog_3mcp_version');
-    if (!empty($mcp3Version) && $mcp3Version != '1.3')
-    {
-      // Single BBpr template check
-      if (!is_file(get_template_directory() .'/single-yog-bbpr.php'))
-        $warnings[] = 'Het ingestelde thema heeft op dit moment geen \'single-yog-bbpr.php\' template. Er zal een alternatieve methode gebruikt worden voor het tonen van de Bestaande bouw complexen.';
+    // Single BBpr template check
+    if (!is_file(get_template_directory() .'/single-yog-bbpr.php'))
+      $warnings[] = 'Het ingestelde thema heeft op dit moment geen \'single-yog-bbpr.php\' template. Er zal een alternatieve methode gebruikt worden voor het tonen van de Bestaande bouw complexen.';
 
-      // Single BBpr template check
-      if (!is_file(get_template_directory() .'/single-yog-bbty.php'))
-        $warnings[] = 'Het ingestelde thema heeft op dit moment geen \'single-yog-bbty.php\' template. Er zal een alternatieve methode gebruikt worden voor het tonen van de Bestaande bouw complex types.';
-    }
-
-		// Wordpress version
-		global $wp_version;
-		if ((float) $wp_version >= 3.0 && (float) $wp_version < 3.1)
-			$warnings[] = 'Wordpress versie ' . $wp_version . ' is gedetecteerd, voor deze plugin raden we minimaal Wordpress versie 3.1 aan.';
+    // Single BBpr template check
+    if (!is_file(get_template_directory() .'/single-yog-bbty.php'))
+      $warnings[] = 'Het ingestelde thema heeft op dit moment geen \'single-yog-bbty.php\' template. Er zal een alternatieve methode gebruikt worden voor het tonen van de Bestaande bouw complex types.';
 
 		return $warnings;
 	}
@@ -112,11 +103,19 @@ class YogChecks
 		// allow_url_fopen
 		$settings['allow_url_fopen'] = (ini_get('allow_url_fopen')) ? 'enabled' : 'disabled';
     
+    // Server date/time
+    $settings['current date/time']  = date('c');
+    
     if (function_exists('mysql_get_client_info'))
       $settings['mysql_version'] = mysql_get_client_info();
 
 		// CURL
 		$settings['CURL'] = function_exists('curl_init') ? 'enabled' : 'disabled';
+    
+    // Wordpress settings
+    $settings['Custom categories enabled']  = (get_option('yog_cat_custom') ? 'true' : 'false');
+    $settings['3mcp version']               = get_option('yog_3mcp_version');
+    $settings['Skip extra texts']           = (get_option('yog_noextratexts') ? 'true' : 'false');
 
 		return $settings;
 	}

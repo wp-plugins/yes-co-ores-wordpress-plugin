@@ -46,12 +46,16 @@
         require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_system_link_manager.php');
         require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_http_manager.php');
         require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_synchronization_manager.php');
+        require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_plugin.php');
         require_once(YOG_PLUGIN_DIR . '/includes/yog_cron.php');
 
         set_time_limit(300);
 
         $yogSystemLinkManager       = new YogSystemLinkManager();
         $yogSystemLink              = $yogSystemLinkManager->retrieveByRequest($_REQUEST);
+        
+        $yogPlugin = YogPlugin::getInstance();
+        $yogPlugin->registerPostTypes();
 
         $yogSynchronizationManager  = new YogSynchronizationManager($yogSystemLink);
         $yogSynchronizationManager->init();

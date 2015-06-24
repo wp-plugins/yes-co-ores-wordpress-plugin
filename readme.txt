@@ -1,7 +1,7 @@
 === Yes-co ORES ===
 Contributors: yesco
 Tags: yes-co, yesco, projecten, project, projects, huizen, huis, house, onroerend goed, real estate, makelaar, realtor, broker
-Requires at least: 3.0
+Requires at least: 3.1
 Tested up to: 4.1.1
 Stable tag: 1.3.9
 

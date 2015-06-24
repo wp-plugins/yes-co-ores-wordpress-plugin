@@ -195,18 +195,26 @@
     */
     public function registerPostTypes()
     {
-      /*
-      register_taxonomy('object_category',
-                        array(POST_TYPE_WONEN, POST_TYPE_BOG, POST_TYPE_NBPR, POST_TYPE_NBTY,
-                              POST_TYPE_NBBN, POST_TYPE_BBPR, POST_TYPE_BBTY),
-                        array('hierarchical'      => true,
-                              'query_var'         => true,
-                              'show_ui'           => true,
-                              'rewrite'           => array( 'slug' => 'objects'),
-                              'labels'            => array('name' => 'Object categorien'),
-                              'capabilities'      => array('manage_terms')
-                              ));
-       */
+      if (get_option('yog_cat_custom'))
+      {
+        register_taxonomy('yog_category',
+                          array(POST_TYPE_WONEN, POST_TYPE_BOG, POST_TYPE_NBPR, POST_TYPE_NBTY,
+                                POST_TYPE_NBBN, POST_TYPE_BBPR, POST_TYPE_BBTY),
+                          array('hierarchical'      => true,
+                                'show_ui'           => true,
+                                'rewrite'           => array('slug' => 'objecten'),
+                                'labels'            => array('name' => 'Object categori&euml;n'),
+                                'capabilities'      => array('manage_terms', 'edit_terms', 'delete_terms', 'assign_terms'),
+                                'show_in_menu'      => 'yog_posts_menu',
+                                'query_var'         => 'objecten'
+                                ));
+        
+        $taxonomies = array('yog_category', 'post_tag');
+      }
+      else
+      {
+        $taxonomies = array('category', 'post_tag');
+      }
 
 	    register_post_type(POST_TYPE_WONEN,
 	                  array('labels'    => array('name'               => 'Wonen',
@@ -228,7 +236,7 @@
 	                        'hierarchical'      => false,
 	                        'rewrite'           => array('slug' => POST_TYPE_WONEN), // Permalinks format
 	                        'supports'          => array('title','editor', 'thumbnail'),
-	                        'taxonomies'        => array('object_category', 'category', 'post_tag')
+	                        'taxonomies'        => $taxonomies
 	                        )
 	    );
 
@@ -252,7 +260,7 @@
 	                        'hierarchical'      => false,
 	                        'rewrite'           => array('slug' => POST_TYPE_BOG), // Permalinks format
 	                        'supports'          => array('title','editor', 'thumbnail'),
-	                        'taxonomies'        => array('category', 'post_tag')
+	                        'taxonomies'        => $taxonomies
 	                        )
 	    );
 
@@ -276,7 +284,7 @@
 	                        'hierarchical'      => false,
 	                        'rewrite'           => array('slug' => 'nieuwbouw'), // Permalinks format
 	                        'supports'          => array('title','editor', 'thumbnail'),
-	                        'taxonomies'        => array('category', 'post_tag')
+	                        'taxonomies'        => $taxonomies
 	                        )
 	    );
 
@@ -300,7 +308,7 @@
 	                        'hierarchical'      => false,
 	                        'rewrite'           => array('slug' => 'nieuwbouw-type', 'with_front' => false), // Permalinks format
 	                        'supports'          => array('title','editor', 'thumbnail'),
-	                        'taxonomies'        => array('category', 'post_tag')
+	                        'taxonomies'        => $taxonomies
 	                        )
 	    );
 
@@ -346,7 +354,7 @@
 	                        'hierarchical'      => false,
 	                        'rewrite'           => array('slug' => 'complex'), // Permalinks format
 	                        'supports'          => array('title','editor', 'thumbnail'),
-	                        'taxonomies'        => array('category', 'post_tag')
+	                        'taxonomies'        => $taxonomies
 	                        )
 	    );
 
@@ -370,7 +378,7 @@
 	                        'hierarchical'      => false,
 	                        //'rewrite'           => array('slug' => 'complex-type', 'with_front' => false), // Permalinks format
 	                        'supports'          => array('title','editor', 'thumbnail'),
-	                        'taxonomies'        => array('category', 'post_tag')
+	                        'taxonomies'        => $taxonomies
 	                        )
 	    );
 
@@ -394,6 +402,7 @@
 	                        'supports'          => array('title')
 	                        )
 	    );
+      
     }
 
     /**
@@ -586,63 +595,88 @@
     */
     public function extendPostQuery($query)
     {
-      $extendQuery  = true;
-
-      if (!(!isset($query->query_vars['suppress_filters']) || $query->query_vars['suppress_filters'] == false))
-        $extendQuery = false;
-      else if (!($query->is_archive || $query->is_category || $query->is_feed || $query->is_home))
-        $extendQuery = false;
-      else if ($query->is_archive && !$query->is_category && !$query->is_tag && !get_option('yog_objectsinarchief'))
-        $extendQuery = false;
-      else if ($query->is_home && !get_option('yog_huizenophome'))
-        $extendQuery = false;
-
-      /*echo '<pre>';
-      print_r($query);
-      echo '</pre>';
-      exit;*/
-
-      if ($extendQuery === true)
+      if ($query->is_main_query())
       {
-        $postTypes  = $query->get('post_type');
-        if (empty($postTypes))
-          $postTypes = array('post');
-        else if (!is_array($postTypes))
-          $postTypes = array($postTypes);
+        $extendQuery    = true;
+        $isYogCategory  = is_tax('yog_category');
 
-        if (!in_array(POST_TYPE_WONEN, $postTypes))
-          $postTypes[] = POST_TYPE_WONEN;
+        if ($isYogCategory)
+          $extendQuery = false;
+        else if (!(!isset($query->query_vars['suppress_filters']) || $query->query_vars['suppress_filters'] == false))
+          $extendQuery = false;
+        else if (!($query->is_archive || $query->is_category || $query->is_feed || $query->is_home))
+          $extendQuery = false;
+        else if ($query->is_archive && !$query->is_category && !$query->is_tag && !get_option('yog_objectsinarchief'))
+          $extendQuery = false;
+        else if ($query->is_home && !get_option('yog_huizenophome'))
+          $extendQuery = false;
 
-        if (!in_array(POST_TYPE_BOG, $postTypes))
-          $postTypes[] = POST_TYPE_BOG;
-
-        if (!in_array(POST_TYPE_NBPR, $postTypes))
-          $postTypes[] = POST_TYPE_NBPR;
-
-        if (!in_array(POST_TYPE_NBTY, $postTypes))
-          $postTypes[] = POST_TYPE_NBTY;
-
-        if (!in_array(POST_TYPE_BBPR, $postTypes))
-          $postTypes[] = POST_TYPE_BBPR;
-
-        if (!in_array(POST_TYPE_BBTY, $postTypes))
-          $postTypes[] = POST_TYPE_BBTY;
-
-		    $query->set('post_type', $postTypes);
-
-        // TODO: implement a custom order for objects
-        // Make sure it's only done for object categories!
-        /*
-        if ($query->is_category)
+        // Make post types available
+        if ($extendQuery === true)
         {
-          echo '<pre>';
-          print_r($query);
-          echo '</pre>';
+          $postTypes  = $query->get('post_type');
+          if (empty($postTypes))
+            $postTypes = array('post');
+          else if (!is_array($postTypes))
+            $postTypes = array($postTypes);
 
-          $query->set('orderby', 'title');
-          $query->set('order', 'ASC');
+          if (!in_array(POST_TYPE_WONEN, $postTypes))
+            $postTypes[] = POST_TYPE_WONEN;
+
+          if (!in_array(POST_TYPE_BOG, $postTypes))
+            $postTypes[] = POST_TYPE_BOG;
+
+          if (!in_array(POST_TYPE_NBPR, $postTypes))
+            $postTypes[] = POST_TYPE_NBPR;
+
+          if (!in_array(POST_TYPE_NBTY, $postTypes))
+            $postTypes[] = POST_TYPE_NBTY;
+
+          if (!in_array(POST_TYPE_BBPR, $postTypes))
+            $postTypes[] = POST_TYPE_BBPR;
+
+          if (!in_array(POST_TYPE_BBTY, $postTypes))
+            $postTypes[] = POST_TYPE_BBTY;
+
+          $query->set('post_type', $postTypes);
         }
-        */
+      
+        // Set custom order
+        if ($isYogCategory)
+        {
+          $defaultOrder = get_option('yog_order');
+          if (!empty($defaultOrder))
+          {
+            switch ($defaultOrder)
+            {
+              case 'date_asc':
+              case 'title_asc':
+              case 'price_asc':
+                $query->set('order', 'ASC');
+                break;
+              case 'title_desc':
+              case 'price_desc';
+                $query->set('order', 'DESC');
+                break;
+            }
+            
+            switch ($defaultOrder)
+            {
+              case 'date_asc':
+                $query->set('orderby', 'date');
+                break;
+              case 'title_asc':
+              case 'title_desc':
+                $query->set('orderby', 'title');
+                break;
+              case 'price_asc':
+              case 'price_desc';
+                $query->set('orderby',  'meta_value_num');
+                $query->set('meta_key', 'yog_price_order');
+                break;
+            }
+          }
+        }
       }
     }
 
@@ -758,17 +792,16 @@
       parent::init();
 
       add_action('admin_menu',              array($this, 'createAdminMenu'));
-      add_action('wp_ajax_togglehome',      array($this, 'ajaxToggleHome'));
-      add_action('wp_ajax_togglejavascriptdojo',      array($this, 'ajaxToggleJavascriptDojo'));
-
-
-      add_action('wp_ajax_togglearchive',   array($this, 'ajaxToggleArchive'));
-      add_action('wp_ajax_addkoppeling',    array($this, 'addSystemLink'));
-      add_action('wp_ajax_removekoppeling', array($this, 'ajaxRemoveSystemLink'));
       add_action('init',                    array($this, 'enqueueFiles'));
       add_action('init',                    array($this, 'checkPluginVersion'));
       add_filter('editable_slug',           array($this, 'fixEditableparmalinkSlug'));
       add_action('wp_dashboard_setup',      array($this, 'initDashboardWidgets'));
+      
+      // Ajax callbacks
+      add_action('wp_ajax_setsetting',      array($this, 'ajaxSetSetting'));
+      add_action('wp_ajax_addkoppeling',    array($this, 'addSystemLink'));
+      add_action('wp_ajax_removekoppeling', array($this, 'ajaxRemoveSystemLink'));
+      //
 
       // Init custom post type admin pages
       if (!empty($_REQUEST['post_type']) || !empty($_REQUEST['post']))
@@ -811,6 +844,10 @@
           if (!wp_next_scheduled('yog_cron_open_houses'))
             wp_schedule_event(time(), 'hourly', 'yog_cron_open_houses');
         }
+        
+        // Update projects order price when updated from version 1.3.9 or smaller
+        //if (version_compare($currentVersion, '1.3.9', '<='))
+        //  $this->updateProjectsWithPriceOrder();
 
         // Update plugin version
         update_option('yog_plugin_version', YOG_PLUGIN_VERSION);
@@ -918,11 +955,6 @@
 
       wp_enqueue_script('yog-admin-js',   YOG_PLUGIN_URL .'/inc/js/admin.js', array('jquery'), YOG_PLUGIN_VERSION);
       wp_enqueue_style('yog-admin-css',   YOG_PLUGIN_URL . '/inc/css/admin.css', array(), YOG_PLUGIN_VERSION);
-
-      $mcp3Version = get_option('yog_3mcp_version');
-
-      if (empty($mcp3Version) || $mcp3Version == '1.3')
-        wp_enqueue_script('yog-admin-hide-bbpr',     YOG_PLUGIN_URL .'/inc/js/admin_hide_bbpr.js', array('jquery'));
     }
 
     /**
@@ -933,8 +965,13 @@
     */
     public function createAdminMenu()
     {
-      if ($this->wpVersion >= 3.1)
-        add_object_page('Yes-co ORES', 'Yes-co ORES', 'edit_posts', 'yog_posts_menu', '', YOG_PLUGIN_URL . '/img/icon_yes-co.gif');
+      add_object_page('Yes-co ORES', 'Yes-co ORES', 'edit_posts', 'yog_posts_menu', '', YOG_PLUGIN_URL . '/img/icon_yes-co.gif');
+      remove_submenu_page('yog_posts_menu', 'edit.php?post_type=' . POST_TYPE_NBTY);
+      remove_submenu_page('yog_posts_menu', 'edit.php?post_type=' . POST_TYPE_NBBN);
+      remove_submenu_page('yog_posts_menu', 'edit.php?post_type=' . POST_TYPE_BBTY);
+
+      if (get_option('yog_cat_custom'))
+        add_submenu_page('yog_posts_menu', __('Categories'), __('Categories'), 'manage_options', 'edit-tags.php?taxonomy=yog_category');
 
       add_options_page('Yes-co ORES opties', 'Yes-co ORES', 'edit_plugins', 'yesco_OG', array($this, 'renderSettingsPage'));
     }
@@ -977,22 +1014,49 @@
 
         if (empty($errors))
         {
-          echo '<h3>Objecten plaatsen</h3>';
-          echo '<div id="yog-objects-on-home">';
-            echo '<input type="checkbox" ' .(get_option('yog_huizenophome')?'checked':'') .' id="yog-toggle-home" />';
-	          echo '<label for="yog-toggle-home">Objecten plaatsen in blog (Objecten zullen tussen \'normale\' blogposts verschijnen)</label><span id="yog-objects-on-home-msg"></span>';
+          // Object options
+          echo '<h3>Objecten</h3>';
+          echo '<div class="yog-setting">';
+            echo '<input type="checkbox" ' .(get_option('yog_huizenophome')?'checked':'') .' name="yog_huizenophome" id="yog-toggle-home" class="yog-toggle-setting" />';
+	          echo '<label for="yog-toggle-home">Objecten plaatsen in blog (Objecten zullen tussen \'normale\' blogposts verschijnen).</label><span class="msg"></span>';
           echo '</div>';
-          echo '<div id="yog-objects-on-archive">';
-            echo '<input type="checkbox" ' .(get_option('yog_objectsinarchief')?'checked':'') .' id="yog-toggle-archive" /><span id="yog-objects-on-home-msg"></span>';
-	          echo '<label for="yog-toggle-archive">Objecten plaatsen in archief (Objecten zullen tussen \'normale\' blogposts verschijnen)</label><span id="yog-objects-on-archive-msg"></span>';
+          echo '<div class="yog-setting">';
+            echo '<input type="checkbox" ' .(get_option('yog_objectsinarchief')?'checked':'') .' name="yog_objectsinarchief" id="yog-toggle-archive" class="yog-toggle-setting" />';
+	          echo '<label for="yog-toggle-archive">Objecten plaatsen in archief (Objecten zullen tussen \'normale\' blogposts verschijnen).</label><span class="msg"></span>';
+          echo '</div>';
+          echo '<div class="yog-setting">';
+            echo '<input type="checkbox" ' .(get_option('yog_noextratexts')?'checked':'') .' name="yog_noextratexts" id="yog-toggle-extratext" class="yog-toggle-setting" />';
+	          echo '<label for="yog-toggle-extratext">Extra teksten van objecten <u>niet</u> meenemen bij synchronisatie.</label><span class="msg"></span>';
+          echo '</div>';
+          echo '<div class="yog-setting">';
+            echo '<input type="checkbox" ' .(get_option('yog_cat_custom') ? 'checked':'') .' name="yog_cat_custom" id="yog-toggle-cat-custom" class="yog-toggle-setting" />';
+	          echo '<label for="yog-toggle-cat-custom">Objecten bij synchronisatie koppelen aan Yes-co ORES categorie&euml;n i.p.v. de standaard wordpress categorie&euml;n (bijv.: ' . site_url() . '/objecten/consument/ i.p.v. ' . site_url() . '/category/consument/).</label><span class="msg"></span>';
+          echo '</div>';
+          
+          // Sort options (hide when yog_cat_custom not checked)
+          $sortOptions  = array('date_asc' => 'datum oplopend', '' => 'datum aflopend',
+                                'title_asc' => 'titel oplopend', 'title_desc' => 'titel aflopend',
+                                'price_asc' => 'prijs oplopend', 'price_desc' => 'prijs aflopend');
+          $sortOption   = get_option('yog_order');
+          
+          echo '<div id="yog-sortoptions" style="display:' . (get_option('yog_cat_custom') ? 'block':'none') . '">';
+            echo '<h3>Sortering</h3>';
+            echo '<div class="yog-setting">';
+              echo 'Objecten in Yes-co ORES categorie&euml;n standaard sorteren op: ';
+              echo '<select name="yog_order" id="yog_order" class="yog-set-setting">';
+              foreach ($sortOptions as $key => $title)
+              {
+                echo '<option value="' . $key . '"' . ($sortOption == $key ? ' selected="selected"' : '') . '>' . $title . '</option>';
+              }
+              echo '</select><span class="msg"></span>';
+            echo '</div>';
           echo '</div>';
 
-          echo '<br /><br />';
-
+          // Javascript options
           echo '<h3>Javascript loading</h3>';
-          echo '<div id="yog-on-javascript-dojo-dont-enqueue">';
-          echo '<input type="checkbox" ' .(get_option('yog_javascript_dojo_dont_enqueue')?'checked':'') .' id="yog-toggle-javascript-dojo-dont-enqueue" />';
-          echo '<label for="yog-toggle-javascript-dojo-dont-enqueue">Echo + defer load de Dojo Javascript library in plaats van gebruik te maken van de wp_enqueue (gebruik in het geval dat de jquery libraries conflicteren met deze plugin)</label><span id="yog-on-javascript-dojo-dont-enqueue-msg"></span>';
+          echo '<div class="yog-setting">';
+          echo '<input type="checkbox" ' .(get_option('yog_javascript_dojo_dont_enqueue')?'checked':'') .' name="yog_javascript_dojo_dont_enqueue" id="yog-toggle-javascript-dojo-dont-enqueue" class="yog-toggle-setting" />';
+          echo '<label for="yog-toggle-javascript-dojo-dont-enqueue">Echo + defer load de Dojo Javascript library in plaats van gebruik te maken van de wp_enqueue (gebruik in het geval dat de jquery libraries conflicteren met deze plugin)</label><span class="msg"></span>';
           echo '</div>';
           echo '<br /><br />';
 
@@ -1155,11 +1219,6 @@
 	    echo '</div>';
     }
 
-    public function renderMapsShortcodesPage()
-    {
-      echo 'TEST';
-    }
-
     /**
      * @desc Method renderRow
      *
@@ -1240,45 +1299,42 @@
 
       echo $html;
     }
-
+    
     /**
-    * @desc Ajax toggle objects on home handler
+    * @desc Ajax toggle disable link objects to normal wordpress categories
     *
     * @param void
     * @return void
     */
-	  public function ajaxToggleHome()
-	  {
-		  update_option('yog_huizenophome',!(get_option('yog_huizenophome')));
-		  echo '&nbsp; instelling opgeslagen.';
-		  exit();
-	  }
-
-	  /**
-	   * @desc Ajax toggle objects on javascript dojo handler
-	   *
-	   * @param void
-	   * @return void
-	   */
-	  public function ajaxToggleJavascriptDojo()
-	  {
-	    update_option('yog_javascript_dojo_dont_enqueue',!(get_option('yog_javascript_dojo_dont_enqueue')));
-	    echo '&nbsp; instelling opgeslagen.';
-	    exit();
-	  }
-
-
-
-    /**
-    * @desc Ajax toggle objects in archive handler
-    *
-    * @param void
-    * @return void
-    */
-    public function ajaxToggleArchive()
+    public function ajaxSetSetting()
     {
-		  update_option('yog_objectsinarchief',!(get_option('yog_objectsinarchief')));
-		  echo '&nbsp; instelling opgeslagen.';
+      if (!empty($_POST['name']) && in_array($_POST['name'], array('yog_cat_custom', 'yog_objectsinarchief', 'yog_huizenophome', 'yog_javascript_dojo_dont_enqueue',
+                                                                    'yog_noextratexts', 'yog_order')))
+      {
+        // If not value provided, toggle settings
+        if (!isset($_POST['value']))
+          $value = !(get_option($_POST['name']));
+        // Otherwise use provided value
+        else
+          $value = $_POST['value'];
+
+        update_option($_POST['name'], $value);
+        
+        // Custom stuff for yog_cat_custom
+        if ($_POST['name'] == 'yog_cat_custom')
+        {
+          // Flush rewrite rules
+          $this->registerPostTypes();
+          flush_rewrite_rules();
+          
+          // Clear yog_order if needed
+          if ($value === false)
+            delete_option('yog_order');
+        }
+        
+        echo '&nbsp; instelling opgeslagen.';
+      }
+
 		  exit();
     }
 
@@ -1385,6 +1441,64 @@
 	  				@rmdir($projectFolder);
 	  			}
 	  		}
+	  	}
+	  }
+    
+	  /**
+	   * Set yog_price_order of projects that doesnt have it yet
+	   *
+	   * @param void
+	   * @return void
+	   */
+	  private function updateProjectsWithPriceOrder()
+	  {
+	  	// Retrieve existing YOG posts
+	  	$posts = get_posts(array(
+	  													'post_type' 			=> array(POST_TYPE_WONEN, POST_TYPE_BOG, POST_TYPE_NBPR, POST_TYPE_NBTY, POST_TYPE_BBPR, POST_TYPE_BBTY),
+	  													'post_status'			=> 'any',
+	  													'posts_per_page'	=> -1
+	  												));
+
+	  	// Loop through posts
+	  	foreach ($posts as $post)
+	  	{
+        $postId         = (int) $post->ID;
+        $priceOrder     = get_post_meta($postId, 'yog_price_order', true);
+        $priceMetaKeys  = null;
+        $postType       = $post->post_type;
+        
+	  		if (empty($priceOrder) && $priceOrder != '0')
+        {
+          switch ($postType)
+          {
+            case POST_TYPE_WONEN:
+            case POST_TYPE_BOG:
+              $priceMetaKeys = array($postType . '_KoopPrijs', $postType . '_HuurPrijs');
+              break;
+            case POST_TYPE_NBPR:
+              $priceMetaKeys = array($postType . '_KoopAanneemSomMin', $postType . '_HuurPrijsMin', $postType . '_KoopAanneemSomMax', $postType . '_HuurPrijsMax');
+              break;
+            case POST_TYPE_NBTY:
+            case POST_TYPE_BBPR:
+            case POST_TYPE_BBTY:
+              $priceMetaKeys = array($postType . '_KoopPrijsMin', $postType . '_HuurPrijsMin', $postType . '_KoopPrijsMax', $postType . '_HuurPrijsMax');
+              break;
+          }
+          
+          if (!empty($priceMetaKeys))
+          {
+            // Determine price based on meta keys
+            foreach ($priceMetaKeys as $priceMetaKey)
+            {
+              $price = get_post_meta($postId, $priceMetaKey, true);
+              if (!empty($price))
+                break;
+            }
+            
+            // Set yog_price_order
+            update_post_meta($postId, 'yog_price_order', empty($price) ? 0 : $price);
+          }
+        }
 	  	}
 	  }
   }

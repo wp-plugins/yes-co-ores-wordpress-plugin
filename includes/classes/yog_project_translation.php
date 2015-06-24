@@ -310,20 +310,23 @@
     */
     protected function getContent()
     {
-      $texts    = $this->mcp3Project->getTexts();
-      $content  = '';
+      $texts          = $this->mcp3Project->getTexts();
+      $extraTextTypes = array('textextra1', 'textextra2', 'textextra3', 'textextra4', 'textextra5');
+      $skipExtraTexts = (get_option('yog_noextratexts') == '1');
+      $content        = '';
+      $intro          = '';
 
       // Start with intro text
       if (array_key_exists('intro', $texts))
-        $content = '<div class="yogcontent intro"><p>' .nl2br($texts['intro']) .'</p></div><!--more-->';
+        $intro = '<div class="yogcontent intro"><p>' .nl2br($texts['intro']) .'</p></div>';
 
       foreach ($texts as $type => $text)
       {
-        if ($type != 'intro')
+        if ($type != 'intro' && (!$skipExtraTexts || !in_array($type, $extraTextTypes)))
           $content .= '<div class="yogcontent ' . $type . '"><p>' .nl2br($text) .'</p></div>';
       }
 
-      return $content;
+      return $intro . ((!empty($intro) && !empty($content)) ? '<!--more-->' : '') . $content;
     }
 
     /**

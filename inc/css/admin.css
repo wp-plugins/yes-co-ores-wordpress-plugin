@@ -14,12 +14,6 @@ background: url('../../img/icon_yes-co_32.png') no-repeat transparent !important
 .yog-NBbn #message.updated a {
 display:none;
 }
-/* Remove NBty / NBbn / NBty links from admin menu */
-#menu-posts-yog-nbty,
-#menu-posts-yog-nbbn,
-#menu-posts-yog-bbty{
-display:none;
-}
 /* Remove add NBty/BBty links */
 .yog-NBty .add-new-h2,
 .yog-BBty .add-new-h2 {
@@ -154,3 +148,8 @@ border:none;
   margin:0px;
   padding:0px;
   }
+/* Settings */
+.yog-setting .msg {
+font-weight:bold;
+color:green;
+}

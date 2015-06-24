@@ -41,7 +41,8 @@
 	      'title'         => 'Object',
 	      'description'   => 'Omschrijving',
 	      'address'       => 'Adres',
-        'dlm'           => 'Laatste wijziging'
+        'dlm'           => 'Laatste wijziging',
+        'date'           => 'Aangemaakt'
 	    );
     }
 

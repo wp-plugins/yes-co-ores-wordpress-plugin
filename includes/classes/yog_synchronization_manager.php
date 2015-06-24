@@ -198,6 +198,9 @@
 
                 // Store meta data
                 $this->handlePostMetaData($postId, $postType, $translationProject->getMetaData());
+                
+                // Store price to order by
+                update_post_meta($postId, 'yog_price_order', $translationProject->determineSortPrice());
 
                 // Handle linked relations
                 $existingLinkedRelations  = array_intersect_key($translationProject->getRelationLinks(), $existingRelationUuids);
@@ -221,7 +224,15 @@
                 $this->handleMediaLink($postId, $postType, 'Links', $translationProject->getLinks());
 
                 // Handle categories
-                wp_set_object_terms($postId, $translationProject->getCategories(), 'category', false);
+                if (get_option('yog_cat_custom'))
+                {
+                  wp_set_object_terms($postId, $translationProject->getCategories(), 'yog_category', false);
+                  wp_set_object_terms($postId, array(), 'category', false);
+                }
+                else
+                {
+                  wp_set_object_terms($postId, $translationProject->getCategories(), 'category', false);
+                }
 
                 // Handle tags
                 wp_set_post_tags($postId, $translationProject->getTags(), false);
@@ -776,11 +787,12 @@
     */
     private function createCategory($name, $slug, $parentTermId = 0)
     {
-	    $term  = get_term_by('slug', $slug, 'category', ARRAY_A);
+      $categoryTaxonomy = (get_option('yog_cat_custom') ? 'yog_category' : 'category');
+	    $term             = get_term_by('slug', $slug, $categoryTaxonomy, ARRAY_A);
 
 	    if (!$term)
-		    $term   = @wp_insert_term($name, 'category', array('description' => $name, 'parent' => $parentTermId, 'slug' => $slug));
-
+		    $term   = wp_insert_term($name, $categoryTaxonomy, array('description' => $name, 'parent' => $parentTermId, 'slug' => $slug));
+      
       if ($term instanceOf WP_Error)
       {
         return (int) $term->error_data['term_exists'];

@@ -88,6 +88,33 @@
 
       return $data;
     }
+    
+    /**
+     * Determine price to sort project by
+     * 
+     * @param void
+     * @return mixed
+     */
+    public function determineSortPrice()
+    {
+      $price = $this->mcp3Project->getIntByPath('//project:Details/project:Koop/project:KoopAanneemSom/project:Min');
+      if (!empty($price))
+        return $price;
+
+      $price = $this->mcp3Project->getIntByPath('//project:Details/project:Huur/project:Prijs/project:Min');
+      if (!empty($price))
+        return $price;
+      
+      $price = $this->mcp3Project->getIntByPath('//project:Details/project:Koop/project:KoopAanneemSom/project:Max');
+      if (!empty($price))
+        return $price;
+
+      $price = $this->mcp3Project->getIntByPath('//project:Details/project:Huur/project:Prijs/project:Max');
+      if (!empty($price))
+        return $price;
+      
+      return 0;
+    }
 
     /**
     * @desc Get the categories to link project to

@@ -112,6 +112,25 @@
 
       return $data;
     }
+    
+    /**
+     * Determine price to sort project by
+     * 
+     * @param void
+     * @return mixed
+     */
+    public function determineSortPrice()
+    {
+      $price = $this->mcp3Project->getStringByPath('//project:Details/project:Koop/project:Prijs');
+      if (!empty($price))
+        return $price;
+
+      $price = $this->mcp3Project->getStringByPath('//project:Details/project:Huur/project:Prijs');
+      if (!empty($price))
+        return $price;
+      
+      return 0;
+    }
 
     /**
     * @desc Get the categories to link project to

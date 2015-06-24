@@ -1,7 +1,7 @@
 <?php
   define('MCP3_USERNAME',           'motivowpplugin');
   define('MCP3_PASSWORD',           'Piwr39qp3@');
-  define('MCP3_VERSIONS',           '1.4;1.3');
+  define('MCP3_VERSIONS',           '1.4');
   define('MCP3_FEED_URL',           'https://webservice.yes-co.com/3mcp/collection/%s/%s/feed/%s.xml');
 
   define('ATOM_NAMESPACE',          'http://www.w3.org/2005/Atom');
@@ -19,5 +19,5 @@
   define('POST_TYPE_RELATION',      'relatie');
   define('POST_TYPE_ATTACHMENT',    'attachment');
 
-  define('YOG_PLUGIN_VERSION',      '1.3');
+  define('YOG_PLUGIN_VERSION',      '1.3.9');
 ?>
