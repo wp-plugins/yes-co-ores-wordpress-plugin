@@ -208,7 +208,7 @@
                                 'show_in_menu'      => 'yog_posts_menu',
                                 'query_var'         => 'objecten'
                                 ));
-        
+
         $taxonomies = array('yog_category', 'post_tag');
       }
       else
@@ -402,7 +402,7 @@
 	                        'supports'          => array('title')
 	                        )
 	    );
-      
+
     }
 
     /**
@@ -640,11 +640,12 @@
 
           $query->set('post_type', $postTypes);
         }
-      
+
         // Set custom order
         if ($isYogCategory)
         {
           $defaultOrder = get_option('yog_order');
+
           if (!empty($defaultOrder))
           {
             switch ($defaultOrder)
@@ -659,7 +660,7 @@
                 $query->set('order', 'DESC');
                 break;
             }
-            
+
             switch ($defaultOrder)
             {
               case 'date_asc':
@@ -796,7 +797,7 @@
       add_action('init',                    array($this, 'checkPluginVersion'));
       add_filter('editable_slug',           array($this, 'fixEditableparmalinkSlug'));
       add_action('wp_dashboard_setup',      array($this, 'initDashboardWidgets'));
-      
+
       // Ajax callbacks
       add_action('wp_ajax_setsetting',      array($this, 'ajaxSetSetting'));
       add_action('wp_ajax_addkoppeling',    array($this, 'addSystemLink'));
@@ -844,7 +845,7 @@
           if (!wp_next_scheduled('yog_cron_open_houses'))
             wp_schedule_event(time(), 'hourly', 'yog_cron_open_houses');
         }
-        
+
         // Update projects order price when updated from version 1.3.9 or smaller
         //if (version_compare($currentVersion, '1.3.9', '<='))
         //  $this->updateProjectsWithPriceOrder();
@@ -1032,13 +1033,13 @@
             echo '<input type="checkbox" ' .(get_option('yog_cat_custom') ? 'checked':'') .' name="yog_cat_custom" id="yog-toggle-cat-custom" class="yog-toggle-setting" />';
 	          echo '<label for="yog-toggle-cat-custom">Objecten bij synchronisatie koppelen aan Yes-co ORES categorie&euml;n i.p.v. de standaard wordpress categorie&euml;n (bijv.: ' . site_url() . '/objecten/consument/ i.p.v. ' . site_url() . '/category/consument/).</label><span class="msg"></span>';
           echo '</div>';
-          
+
           // Sort options (hide when yog_cat_custom not checked)
           $sortOptions  = array('date_asc' => 'datum oplopend', '' => 'datum aflopend',
                                 'title_asc' => 'titel oplopend', 'title_desc' => 'titel aflopend',
                                 'price_asc' => 'prijs oplopend', 'price_desc' => 'prijs aflopend');
           $sortOption   = get_option('yog_order');
-          
+
           echo '<div id="yog-sortoptions" style="display:' . (get_option('yog_cat_custom') ? 'block':'none') . '">';
             echo '<h3>Sortering</h3>';
             echo '<div class="yog-setting">';
@@ -1299,7 +1300,7 @@
 
       echo $html;
     }
-    
+
     /**
     * @desc Ajax toggle disable link objects to normal wordpress categories
     *
@@ -1319,19 +1320,19 @@
           $value = $_POST['value'];
 
         update_option($_POST['name'], $value);
-        
+
         // Custom stuff for yog_cat_custom
         if ($_POST['name'] == 'yog_cat_custom')
         {
           // Flush rewrite rules
           $this->registerPostTypes();
           flush_rewrite_rules();
-          
+
           // Clear yog_order if needed
           if ($value === false)
             delete_option('yog_order');
         }
-        
+
         echo '&nbsp; instelling opgeslagen.';
       }
 
@@ -1443,7 +1444,7 @@
 	  		}
 	  	}
 	  }
-    
+
 	  /**
 	   * Set yog_price_order of projects that doesnt have it yet
 	   *
@@ -1466,7 +1467,7 @@
         $priceOrder     = get_post_meta($postId, 'yog_price_order', true);
         $priceMetaKeys  = null;
         $postType       = $post->post_type;
-        
+
 	  		if (empty($priceOrder) && $priceOrder != '0')
         {
           switch ($postType)
@@ -1484,7 +1485,7 @@
               $priceMetaKeys = array($postType . '_KoopPrijsMin', $postType . '_HuurPrijsMin', $postType . '_KoopPrijsMax', $postType . '_HuurPrijsMax');
               break;
           }
-          
+
           if (!empty($priceMetaKeys))
           {
             // Determine price based on meta keys
@@ -1494,7 +1495,7 @@
               if (!empty($price))
                 break;
             }
-            
+
             // Set yog_price_order
             update_post_meta($postId, 'yog_price_order', empty($price) ? 0 : $price);
           }

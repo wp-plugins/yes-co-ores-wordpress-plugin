@@ -94,6 +94,22 @@ abstract class YogSearchFormWidgetAbstract extends WP_Widget
   }
 
   /**
+   * Render order element
+   *
+   * @param void
+   * @return void
+   */
+  protected function renderOrderElement()
+  {
+    $options  = array('date_asc'  => 'datum oplopend', '' => 'datum aflopend',
+                      'title_asc' => 'titel oplopend', 'title_desc' => 'titel aflopend',
+                      'price_asc' => 'prijs oplopend', 'price_desc' => 'prijs aflopend');
+    $defaultValue = is_tax('yog_category') ? get_option('yog_order') : '';
+
+    echo $this->renderElement('Sorteren op', $this->renderSelect('order', $options, $defaultValue));
+  }
+
+  /**
   * @desc Render element for search form
   *
   * @param string $metaKey

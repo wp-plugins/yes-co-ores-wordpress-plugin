@@ -50,8 +50,45 @@ class YogObjectSearchManager
     if ($this->searchExtended === false)
     {
       add_action('posts_where_request', array($this, 'extendSearchWhere'));
+      add_action('posts_orderby_request', array($this, 'changePostSortOrder'));
       $this->searchExtended = true;
     }
+  }
+
+  /**
+   * Adjust sort order for search widget
+   *
+   * @param string $order
+   * @return string
+   */
+  public function changePostSortOrder($order)
+  {
+    if (is_search() && !empty($_REQUEST['order']))
+    {
+      switch ($_REQUEST['order'])
+      {
+        case 'date_asc':
+          $order = 'post_date ASC';
+          break;
+        case 'date_desc':
+          $order = 'post_date DESC';
+          break;
+        case 'title_asc':
+          $order = 'post_title ASC';
+          break;
+        case 'title_desc':
+          $order = 'post_title DESC';
+          break;
+        case 'price_asc':
+          $order = 'CAST((SELECT meta_value FROM ' . $this->db->postmeta . ' WHERE post_id=' . $this->db->posts . '.ID AND meta_key=\'yog_price_order\') AS SIGNED) ASC';
+          break;
+        case 'price_desc';
+          $order = 'CAST((SELECT meta_value FROM ' . $this->db->postmeta . ' WHERE post_id=' . $this->db->posts . '.ID AND meta_key=\'yog_price_order\') AS SIGNED) DESC';
+          break;
+      }
+    }
+
+    return $order;
   }
 
   /**
@@ -206,12 +243,12 @@ class YogObjectSearchManager
         }
       }
     }
-    
+
     // Handle price type search
     if (!empty($_REQUEST['PrijsType']) && is_array($_REQUEST['PrijsType']))
     {
       $metaKeys = array();
-      
+
       if (in_array($objectType, array(POST_TYPE_NBPR, POST_TYPE_NBTY, POST_TYPE_BBPR)))
       {
         if (in_array('Koop', $_REQUEST['PrijsType']))
@@ -219,7 +256,7 @@ class YogObjectSearchManager
           $metaKeys[] = $objectType . '_' . ($objectType == POST_TYPE_NBPR ? 'KoopAanneemSomMin' : 'KoopPrijsMin');
           $metaKeys[] = $objectType . '_' . ($objectType == POST_TYPE_NBPR ? 'KoopAanneemSomMax' : 'KoopPrijsMax');
         }
-        
+
         if (in_array('Huur', $_REQUEST['PrijsType']))
         {
           $metaKeys[] = $objectType . '_HuurPrijsMin';
@@ -230,11 +267,11 @@ class YogObjectSearchManager
       {
         if (in_array('Koop', $_REQUEST['PrijsType']))
          $metaKeys[] = $objectType . '_KoopPrijs';
-        
+
         if (in_array('Huur', $_REQUEST['PrijsType']))
          $metaKeys[] = $objectType . '_HuurPrijs';
       }
-      
+
       if (count($metaKeys) > 0)
       {
         $queryParts = array();
@@ -243,7 +280,7 @@ class YogObjectSearchManager
         {
           $queryParts[] = 'EXISTS (SELECT true FROM ' . $tbl . ' WHERE ' . $tbl . '.meta_key = \'' . $metaKey . '\' AND ' . $tbl . '.meta_value IS NOT NULL AND ' . $tbl . '.meta_value != \'\' AND ' . $tbl . '.post_id = ' . $this->db->posts . '.ID)';
         }
-        
+
         $query[] = '(' . implode(' OR ', $queryParts) . ')';
       }
     }

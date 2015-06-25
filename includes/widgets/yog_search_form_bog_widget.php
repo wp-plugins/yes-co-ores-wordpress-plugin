@@ -93,6 +93,7 @@ class YogSearchFormBogWidget extends YogSearchFormWidgetAbstract
     $showRentalPrice  = empty($instance['show_rental_price']) ? false : true;
     $showCity         = empty($instance['show_city']) ? false : true;
     $showType         = empty($instance['show_type']) ? false : true;
+    $showOrder        = empty($instance['show_order']) ? false : true;
     $useSelect        = empty($instance['use_select']) ? false : true;
     $params           = array();
 
@@ -213,6 +214,10 @@ class YogSearchFormBogWidget extends YogSearchFormWidgetAbstract
     if ($showType === true)
       echo $this->renderElement('bedrijf_Type', $this->renderCheckBoxes('Type', $searchManager->retrieveMetaList('bedrijf_Type', $params)));
 
+    // Order
+    if ($showOrder === true)
+      $this->renderOrderElement();
+
     echo '<p class="' . self::CLASSNAME . '-result">Er zijn <span class="object-search-result-num"></span> objecten die voldoen aan deze criteria</p>';
     echo '<div><input type="submit" class="' . self::CLASSNAME . '-button" value=" Tonen " /></div>';
     echo '</form>';
@@ -237,6 +242,7 @@ class YogSearchFormBogWidget extends YogSearchFormWidgetAbstract
     $instance['show_rental_price']  = empty($new_instance['show_rental_price']) ? 0 : 1;
     $instance['show_city']          = empty($new_instance['show_city']) ? 0 : 1;
     $instance['show_type']          = empty($new_instance['show_type']) ? 0 : 1;
+    $instance['show_order']         = empty($new_instance['show_order']) ? 0 : 1;
     $instance['use_select']         = empty($new_instance['use_select']) ? 0 : 1;
 
     return $instance;
@@ -258,6 +264,7 @@ class YogSearchFormBogWidget extends YogSearchFormWidgetAbstract
     $showRentalPrice  = empty($instance['show_rental_price']) ? false : true;
     $showCity         = empty($instance['show_city']) ? false : true;
     $showType         = empty($instance['show_type']) ? false : true;
+    $showOrder        = empty($instance['show_order']) ? false : true;
     $useSelect        = empty($instance['use_select']) ? false : true;
 
     // Title
@@ -309,6 +316,11 @@ class YogSearchFormBogWidget extends YogSearchFormWidgetAbstract
 		echo '<tr>';
       echo '<td><label for="' . $this->get_field_id('show_type') . '">' . __('Type tonen') . '</label>: </td>';
       echo '<td><input id="' . $this->get_field_id('show_type') . '" name="' . $this->get_field_name('show_type') . '" type="checkbox" value="1" ' . ($showType === true ? 'checked="checked" ' : '') . '/></td>';
+    echo '</tr>';
+    // Show order
+		echo '<tr>';
+      echo '<td><label for="' . $this->get_field_id('show_order') . '">' . __('Sortering tonen') . '</label>: </td>';
+      echo '<td><input id="' . $this->get_field_id('show_order') . '" name="' . $this->get_field_name('show_order') . '" type="checkbox" value="1" ' . ($showOrder === true ? 'checked="checked" ' : '') . '/></td>';
     echo '</tr>';
     echo '</table>';
 
