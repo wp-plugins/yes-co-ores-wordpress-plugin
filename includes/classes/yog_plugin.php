@@ -464,6 +464,7 @@
       add_shortcode('yog-widget',         array($this, 'handleWidgetShortcode'));
       add_shortcode('yog-contact-widget', array($this, 'handleContactWidgetShortcode'));
       add_shortcode('yog-map',            array($this, 'handleMapShortcode'));
+      add_shortcode('yog-objects',        array($this, 'handleObjectsShortcode'));
 
       $searchManager = YogObjectSearchManager::getInstance();
      	$searchManager->extendSearch();
@@ -771,6 +772,34 @@
       $settings  = $mapWidget->shortcodeAttributesToSettings($attr);
 
       return $mapWidget->generate($settings);
+    }
+
+    /**
+     * Handle objects shortcode like [yob-objects type=".."]
+     * @param type $attr
+     */
+    public function handleObjectsShortcode($attr)
+    {
+      $type = !empty($attr['type']) ? explode(',', $attr['type']) : array(POST_TYPE_WONEN, POST_TYPE_BOG, POST_TYPE_NBPR, POST_TYPE_NBTY, POST_TYPE_BBPR, POST_TYPE_BBTY);
+
+      $posts = new WP_Query(array(
+          'post_type' => $type
+      ));
+
+      $output = '';
+
+      if ($posts->have_posts())
+      {
+        while ($posts->have_posts())
+        {
+          $posts->the_post();
+
+          $id = get_the_id();
+
+          $output .= $id . '<br />';
+        }
+      }
+      print_r($posts);
     }
   }
 
