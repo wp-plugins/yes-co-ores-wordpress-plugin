@@ -775,31 +775,79 @@
     }
 
     /**
-     * Handle objects shortcode like [yob-objects type=".."]
+     * Handle objects shortcode like [yob-objects type=".." num=".." cat=".." order=".."]
      * @param type $attr
      */
     public function handleObjectsShortcode($attr)
     {
-      $type = !empty($attr['type']) ? explode(',', $attr['type']) : array(POST_TYPE_WONEN, POST_TYPE_BOG, POST_TYPE_NBPR, POST_TYPE_NBTY, POST_TYPE_BBPR, POST_TYPE_BBTY);
+      // Determine provided params
+      $type           = !empty($attr['type']) ? explode(',', $attr['type']) : array(POST_TYPE_WONEN, POST_TYPE_BOG, POST_TYPE_NBPR, POST_TYPE_NBTY, POST_TYPE_BBPR, POST_TYPE_BBTY);
+      
+      // Determine query attributes
+      $query = array(
+        'post_type'       => $type,
+        'posts_per_page'  => (!empty($attr['num']) ? $attr['num'] : 5000),
+        'nopaging'        => (!empty($attr['num']) ? true : false)
+      );
+      
+      // Add category to the query?
+      if (!empty($attr['cat']))
+      {
+        $query['tax_query'] = array(
+          array(
+            'taxonomy'  => (get_option('yog_cat_custom') ? 'yog_category' : 'category'),
+            'field'     => 'slug',
+            'terms'     => $attr['cat']
+          )
+        );
+      }
+      
+      // Add order to the query?
+      if (!empty($attr['order']) && in_array($attr['order'], array('date_asc', 'date_desc', 'title_asc', 'title_desc', 'price_asc', 'price_desc')))
+      {
+        list($orderBy, $order) = explode('_', $attr['order']);
+        
+        if ($orderBy == 'price')
+        {
+          $query['orderby']   = 'meta_value_num';
+          $query['meta_key']  = 'yog_price_order';
+        }
+        else
+        {
+          $query['orderby'] = $orderBy;
+        }
+        
+        $query['order'] = strtoupper($order);
+      }
 
-      $posts = new WP_Query(array(
-          'post_type' => $type
-      ));
-
-      $output = '';
-
+      // Retrieve posts
+      $posts  = new WP_Query($query);
+      
       if ($posts->have_posts())
       {
         while ($posts->have_posts())
         {
           $posts->the_post();
+          
+          // Use template to show object
+          if (!empty($attr['template']))
+          {
+            ob_start();
+            get_template_part('object', $attr['template']);
+            $output .= ob_get_contents();
+            ob_end_clean();
+          }
+          // Show default output
+          else
+          {
+            $id = get_the_id();
 
-          $id = get_the_id();
-
-          $output .= $id . '<br />';
+            $output .= $id . '<br />';
+          }
         }
       }
-      print_r($posts);
+      
+      return $output;
     }
   }
 
@@ -1004,6 +1052,11 @@
         add_submenu_page('yog_posts_menu', __('Categories'), __('Categories'), 'manage_options', 'edit-tags.php?taxonomy=yog_category');
 
       add_options_page('Yes-co ORES opties', 'Yes-co ORES', 'edit_plugins', 'yesco_OG', array($this, 'renderSettingsPage'));
+      add_options_page('Map shortcode generator', 'Map shortcode generator', 'edit_plugins', 'yesco_OG_shortcode_map', array($this, 'renderShortcodeMapPage'));
+      add_options_page('Objecten shortcode generator', 'Objecten shortcode generator', 'edit_plugins', 'yesco_OG_shortcode_objects', array($this, 'renderShortcodeObjectsPage'));
+      
+      remove_submenu_page('options-general.php', 'yesco_OG_shortcode_map');
+      remove_submenu_page('options-general.php', 'yesco_OG_shortcode_objects');
     }
 
     /**
@@ -1020,233 +1073,64 @@
       // Checks
       $errors 	= YogChecks::checkForErrors();
       $warnings = YogChecks::checkForWarnings();
+      
+      if (empty($errors))
+      {
+        // Retrieve system links
+        $systemLinkManager  = new YogSystemLinkManager();
+        $systemLinks        = $systemLinkManager->retrieveAll();
+        
+        // Sort options
+        $sortOptions  = array('date_asc' => 'datum oplopend', '' => 'datum aflopend',
+                              'title_asc' => 'titel oplopend', 'title_desc' => 'titel aflopend',
+                              'price_asc' => 'prijs oplopend', 'price_desc' => 'prijs aflopend');
+        $sortOption   = get_option('yog_order');
+      }
 
       // Render html
-	    echo '<div class="wrap">';
-        echo '<div class="icon32 icon32-config-yog"><br /></div>';
-	      echo '<h2>Yes-co Open Real Estate System instellingen</h2>';
-	      wp_nonce_field('update-options');
+      include(YOG_PLUGIN_DIR . '/includes/pages/settings.php');
+    }
+    
+    /**
+     * Render maps shortcode generator
+     */
+    public function renderShortcodeMapPage()
+    {
+      $shortcode = (!empty($_GET['shortcode']) ? $_GET['shortcode'] : '');
 
-        if (!empty($errors))
-        {
-		      echo '<div id="message" class="error below-h2" style=" padding: 5px 10px;">';
-            echo '<b>Er zijn fouten geconstateerd waardoor de Yes-co ORES plugin niet naar behoren kan functioneren</b>:';
-            echo '<ul style="padding-left:15px;list-style-type:circle"><li>' . implode('</li><li>', $errors) . '</li></ul>';
-          echo '</div>';
-        }
-
-        if (!empty($warnings))
-        {
-		      echo '<div id="message" class="error below-h2" style="padding: 5px 10px; background-color:#feffd1;border-color:#d5d738;">';
-            echo '<ul style="padding-left:15px;list-style-type:circle"><li>' . implode('</li><li>', $warnings) . '</li></ul>';
-          echo '</div>';
-        }
-
-        if (empty($errors))
-        {
-          // Object options
-          echo '<h3>Objecten</h3>';
-          echo '<div class="yog-setting">';
-            echo '<input type="checkbox" ' .(get_option('yog_huizenophome')?'checked':'') .' name="yog_huizenophome" id="yog-toggle-home" class="yog-toggle-setting" />';
-	          echo '<label for="yog-toggle-home">Objecten plaatsen in blog (Objecten zullen tussen \'normale\' blogposts verschijnen).</label><span class="msg"></span>';
-          echo '</div>';
-          echo '<div class="yog-setting">';
-            echo '<input type="checkbox" ' .(get_option('yog_objectsinarchief')?'checked':'') .' name="yog_objectsinarchief" id="yog-toggle-archive" class="yog-toggle-setting" />';
-	          echo '<label for="yog-toggle-archive">Objecten plaatsen in archief (Objecten zullen tussen \'normale\' blogposts verschijnen).</label><span class="msg"></span>';
-          echo '</div>';
-          echo '<div class="yog-setting">';
-            echo '<input type="checkbox" ' .(get_option('yog_noextratexts')?'checked':'') .' name="yog_noextratexts" id="yog-toggle-extratext" class="yog-toggle-setting" />';
-	          echo '<label for="yog-toggle-extratext">Extra teksten van objecten <u>niet</u> meenemen bij synchronisatie.</label><span class="msg"></span>';
-          echo '</div>';
-          echo '<div class="yog-setting">';
-            echo '<input type="checkbox" ' .(get_option('yog_cat_custom') ? 'checked':'') .' name="yog_cat_custom" id="yog-toggle-cat-custom" class="yog-toggle-setting" />';
-	          echo '<label for="yog-toggle-cat-custom">Objecten bij synchronisatie koppelen aan Yes-co ORES categorie&euml;n i.p.v. de standaard wordpress categorie&euml;n (bijv.: ' . site_url() . '/objecten/consument/ i.p.v. ' . site_url() . '/category/consument/).</label><span class="msg"></span>';
-          echo '</div>';
-
-          // Sort options (hide when yog_cat_custom not checked)
-          $sortOptions  = array('date_asc' => 'datum oplopend', '' => 'datum aflopend',
-                                'title_asc' => 'titel oplopend', 'title_desc' => 'titel aflopend',
-                                'price_asc' => 'prijs oplopend', 'price_desc' => 'prijs aflopend');
-          $sortOption   = get_option('yog_order');
-
-          echo '<div id="yog-sortoptions" style="display:' . (get_option('yog_cat_custom') ? 'block':'none') . '">';
-            echo '<h3>Sortering</h3>';
-            echo '<div class="yog-setting">';
-              echo 'Objecten in Yes-co ORES categorie&euml;n standaard sorteren op: ';
-              echo '<select name="yog_order" id="yog_order" class="yog-set-setting">';
-              foreach ($sortOptions as $key => $title)
-              {
-                echo '<option value="' . $key . '"' . ($sortOption == $key ? ' selected="selected"' : '') . '>' . $title . '</option>';
-              }
-              echo '</select><span class="msg"></span>';
-            echo '</div>';
-          echo '</div>';
-
-          // Javascript options
-          echo '<h3>Javascript loading</h3>';
-          echo '<div class="yog-setting">';
-          echo '<input type="checkbox" ' .(get_option('yog_javascript_dojo_dont_enqueue')?'checked':'') .' name="yog_javascript_dojo_dont_enqueue" id="yog-toggle-javascript-dojo-dont-enqueue" class="yog-toggle-setting" />';
-          echo '<label for="yog-toggle-javascript-dojo-dont-enqueue">Echo + defer load de Dojo Javascript library in plaats van gebruik te maken van de wp_enqueue (gebruik in het geval dat de jquery libraries conflicteren met deze plugin)</label><span class="msg"></span>';
-          echo '</div>';
-          echo '<br /><br />';
-
-	        echo '<h3>Gekoppelde yes-co open accounts</h3>';
-          echo '<span id="yog-add-system-link-holder">';
-	          echo '<b>Een koppeling toevoegen:</b><br>';
-	          echo 'Activatiecode: <input id="yog-new-secret" name="yog-new-secret" type="text" style="width: 58px" maxlength="6" value="" /> <input type="button" class="button-primary" id="yog-add-system-link" value="Koppeling toevoegen" style="margin-left: 10px;" />';
-          echo '</span>';
-
-          // Retrieve system links
-          $systemLinkManager  = new YogSystemLinkManager();
-          $systemLinks        = $systemLinkManager->retrieveAll();
-
-          echo '<div id="yog-system-links">';
-	        if (!empty($systemLinks))
-          {
-		        foreach ($systemLinks as $systemLink)
-            {
-			        echo '<div class="system-link" id="yog-system-link-' . $systemLink->getActivationCode() . '">';
-			          echo '<div>';
-                  echo '<b>Naam:</b> ' . $systemLink->getName() .'<br />';
-                  echo '<b>Status:</b> ' . $systemLink->getState() .'<br />';
-                  echo '<b>Activatiecode:</b> ' . $systemLink->getActivationCode() .' <br />';
-                  echo '<a onclick="jQuery(this).next().show(); jQuery(this).hide();">Koppeling verwijderen</a>';
-                  echo '<span class="hide" id="yog-system-link-' . $systemLink->getActivationCode() . '-remove">Wilt u deze koppeling verbreken? <span><a onclick="jQuery(this).parent().hide();jQuery(this).parent().prev().show();">annuleren</a> | <a onclick="yogRemoveSystemLink(\'' . $systemLink->getActivationCode() .'\');">doorgaan</a></span></span>';
-                echo '</div>';
-			        echo '</div>';
-		        }
-	        }
-	        echo '</div>';
-
-          // BEGIN YOG MAP MARKER SETTINGS
-
-          echo '<br /><br />';
-
-          echo '<form method="post" action="options-general.php?page=' . $this->optionGroup . '" enctype="multipart/form-data">';
-          register_setting($this->optionGroup, $this->optionGroup);
-          settings_fields($this->optionGroup);
-
-          $settingsSectionId = 'markerSettings';
-          $settingsMarkerPage = 'page-marker-settings';
-
-          add_settings_section($settingsSectionId, 'Marker Settings', array($this, 'section'), $settingsMarkerPage);
-
-          $postTypes    = yog_getAllPostTypes();
-
-          foreach ($postTypes as $postType)
-          {
-            $postTypeObject = get_post_type_object($postType);
-            $optionName     = 'yog-marker-type-' . $postType;
-            $logoOptions    = get_option($optionName);
-
-            add_settings_field('markerSettings_' . $postType, $postTypeObject->labels->singular_name, array($this, 'inputFile'), $settingsMarkerPage, $settingsSectionId, array($logoOptions, $postType, $optionName));
-          }
-
-          // Render the section and fields to the screen of the provided page
-          do_settings_sections($settingsMarkerPage);
-
-          submit_button();
-
-          echo '</form>';
-
-
-          // END YOG MAP MARKER SETTINGS
-
-          $shortcode = (!empty($_GET['shortcode']) ? $_GET['shortcode'] : '');
-
-          $yogMapWidget = new YogMapWidget();
-          $settings     = $yogMapWidget->shortcodeToSettings($shortcode);
-
-          // BEGIN YOG MAP SHORTCODE GENERATOR
-          echo '<br /><br /><h3>Shortcode generator</h3>';
-          echo '<p>Hiermee kun je snel een shortcode genereren die je kan plaatsen in een Page of Post.</p>';
-
-          echo 'Shortcode: <br /><b id="yogShortcode" class="bold">[yog-map]</b><br /><br />';
-
-          $html = '<table class="form-table"><tbody>';
-
-          // Types
-          $checkboxesHtml = '';
-
-          foreach ($postTypes as $postTypeTmp)
-          {
-            $checked        = '';
-
-            if (in_array($postTypeTmp, $settings['postTypes']))
-              $checked = ' checked="checked"';
-
-            $id             = 'shortcode_PostTypes_' . $postTypeTmp;
-            $label          = '';
-
-            $postTypeObject = get_post_type_object($postTypeTmp);
-
-            $label          = $postTypeObject->labels->singular_name;
-
-            $checkboxesHtml .= '<input type="checkbox" id="' . $id . '" name="shortcode_PostTypes[]" value="' . $postTypeTmp . '"' . $checked . ' />&nbsp;<label for="' . $id . '">' . $label . '</label><br />';
-          }
-
-          $checkboxesHtml .= '</select>';
-
-          $html .= $this->renderRow('<label for="shortcode_PostTypes">Post types: </label>', $checkboxesHtml);
-
-          // Latitude
-          $html .= $this->renderRow('<label for="shortcode_Latitude">Latitude: </label>', '<input id="shortcode_Latitude" name="shortcode_Latitude" type="text" value="' . esc_attr($settings['latitude']) . '" />');
-
-          // Longitude
-          $html .= $this->renderRow('<label for="shortcode_Longitude">Longitude: </label>', '<input id="shortcode_Longitude" name="shortcode_Longitude" type="text" value="' . esc_attr($settings['longitude']) . '" />');
-
-          // Width
-          $html .= $this->renderRow('<label for="shortcode_Width">Breedte (Geheel getal): </label>', '<input id="shortcode_Width" name="shortcode_Width" type="text" value="' . esc_attr($settings['width']) . '" />');
-
-          // Width Unit
-          $selectHtml = '';
-          $selectHtml .= '<select id="shortcode_WidthUnit" name="shortcode_WidthUnit">';
-          $selectHtml .= '<option value="px"' . ($settings['widthUnit'] == 'px' ? ' selected="selected"' : '')  . '>px</option>';
-          $selectHtml .= '<option value="%"' . ($settings['widthUnit'] == '%' ? ' selected="selected"' : '')  . '>%</option>';
-          $selectHtml .= '</select>';
-
-          $html .= $this->renderRow('<label for="shortcode_WidthUnit">Breedte in ...: </label>', $selectHtml);
-
-          // Width
-          $html .= $this->renderRow('<label for="shortcode_Width">Hoogte (Geheel getal): </label>', '<input id="shortcode_Height" name="shortcode_Height" type="text" value="' . esc_attr($settings['height']) . '" />');
-
-          // Height Unit
-          $selectHtml = '';
-          $selectHtml .= '<select id="shortcode_HeightUnit" name="shortcode_HeightUnit">';
-          $selectHtml .= '<option value="px"' . ($settings['heightUnit'] == 'px' ? ' selected="selected"' : '')  . '>px</option>';
-          $selectHtml .= '<option value="%"' . ($settings['heightUnit'] == '%' ? ' selected="selected"' : '')  . '>%</option>';
-          $selectHtml .= '</select>';
-
-          $html .= $this->renderRow('<label for="shortcode_HeightUnit">Hoogte in ...: </label>', $selectHtml);
-
-          $html .= '</tbody></table>';
-
-          echo $html;
-
-          echo '<br /><br />';
-
-          $extraOnLoad = '
-                      require([ "yog/admin/Shortcode" ], function() {
-
-                          ready(function() {
-
-                            var yogAdminShortcode = new yog.admin.Shortcode();
-
-                          });
-                      });';
-
-          $settings['width']      = 800;
-          $settings['widthUnit']  = 'px';
-          $settings['height']     = 480;
-          $settings['heightUnit'] = 'px';
-
-          echo $yogMapWidget->generate($settings, $extraOnLoad, true);
-
-
-          // END YOG MAP SHORTCODE GENERATOR
-
-        }
-	    echo '</div>';
+      $yogMapWidget = new YogMapWidget();
+      $settings     = $yogMapWidget->shortcodeToSettings($shortcode);
+      $postTypes    = yog_getAllPostTypes();
+  
+      include(YOG_PLUGIN_DIR . '/includes/pages/shortcode_map.php');
+    }
+    
+    /**
+     * Render objects shortcode generator
+     */
+    public function renderShortcodeObjectsPage()
+    {
+      wp_enqueue_script('yog-admin-objects-shortcode-js',   YOG_PLUGIN_URL .'/inc/js/admin_objects_shortcode.js', array('jquery'), YOG_PLUGIN_VERSION);
+      
+      $postTypes    = array(POST_TYPE_WONEN, POST_TYPE_BOG, POST_TYPE_NBPR, POST_TYPE_NBTY, POST_TYPE_BBPR, POST_TYPE_BBTY);
+      $sortOptions  = array('date_asc' => 'datum oplopend', '' => 'datum aflopend',
+                            'title_asc' => 'titel oplopend', 'title_desc' => 'titel aflopend',
+                            'price_asc' => 'prijs oplopend', 'price_desc' => 'prijs aflopend');
+      $sortOption   = get_option('yog_order');
+      $categories   = get_categories(array('taxonomy' => (get_option('yog_cat_custom') ? 'yog_category' : 'category')));
+      
+      // List theme template files
+      $files                = glob(get_template_directory() . '/*.php');
+      $templateFiles        = array();
+      
+      foreach ($files as $file)
+      {
+        $file = basename($file);
+        if (strpos($file, 'object-') !== false)
+          $templateFiles[] = str_replace(array('object-', '.php'), '', $file);
+      }
+      
+      include(YOG_PLUGIN_DIR . '/includes/pages/shortcode_objects.php');
     }
 
     /**
