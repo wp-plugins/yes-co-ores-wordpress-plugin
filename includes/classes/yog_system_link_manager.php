@@ -33,7 +33,7 @@
       $systemLinks = get_option('yog_koppelingen');
 
       if (!is_array($systemLinks))
-        throw new YogException(__METHOD__ . '; No system links found', YosException::NO_SYSYEM_LINK);
+        throw new YogException(__METHOD__ . '; No system links found', YogException::NO_SYSYEM_LINK);
 
       // Determine requested system link
 		  foreach ($systemLinks as $systemLink)
