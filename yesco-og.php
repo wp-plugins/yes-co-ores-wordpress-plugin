@@ -55,7 +55,7 @@
         $yogSystemLink              = $yogSystemLinkManager->retrieveByRequest($_REQUEST);
         
         $yogPlugin = YogPlugin::getInstance();
-        $yogPlugin->registerPostTypes();
+        $yogPlugin->init();
 
         $yogSynchronizationManager  = new YogSynchronizationManager($yogSystemLink);
         $yogSynchronizationManager->init();
