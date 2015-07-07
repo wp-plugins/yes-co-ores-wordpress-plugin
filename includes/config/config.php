@@ -3,6 +3,9 @@
   define('MCP3_PASSWORD',           'Piwr39qp3@');
   define('MCP3_VERSIONS',           '1.4');
   define('MCP3_FEED_URL',           'https://webservice.yes-co.com/3mcp/collection/%s/%s/feed/%s.xml');
+  //define('MCP3_FEED_URL',           'http://webservice.staging.yes-co.com/3mcp/collection/%s/%s/feed/%s.xml');
+  //define('MCP3_USERNAME',           '');
+  //define('MCP3_PASSWORD',           '');
 
   define('ATOM_NAMESPACE',          'http://www.w3.org/2005/Atom');
   define('MCP_ATOM_NAMESPACE',      'http://webservice.yes-co.nl/3mcp/%s/atom-extension');

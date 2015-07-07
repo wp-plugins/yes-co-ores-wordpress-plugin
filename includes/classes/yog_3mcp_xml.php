@@ -351,6 +351,27 @@
     }
 
     /**
+     * Get documents from dossier
+     *
+     * @param void
+     * @return array
+     */
+    public function getDossierItems()
+    {
+      $scenario   = (string) $this->xml->Scenario;
+      $documents  = array();
+      $nodes      = $this->xml->xpath('//project:' . $scenario . '/project:Document');
+
+      foreach ($nodes as $node)
+      {
+        $node->registerXPathNamespace('project', $this->ns);
+        $documents[] = new Yog3McpXmlDossier($node, $this->ns);
+      }
+
+      return $documents;
+    }
+
+    /**
     * @desc Get project tags
     *
     * @param void
@@ -925,6 +946,24 @@
   class Yog3McpXmlMediaDocument extends Yog3McpXmlMediaAbstract
   {
 
+  }
+
+  /**
+  * @desc Yog3McpXmlDossier
+  * @author Kees Brandenburg - Yes-co Nederland
+  */
+  class Yog3McpXmlDossier extends Yog3McpXmlMediaAbstract
+  {
+    /**
+    * @desc Get the title
+    *
+    * @param void
+    * @return string
+    */
+    public function getTitle()
+    {
+       return (string) $this->xml->Title;
+    }
   }
 
   /**

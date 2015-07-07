@@ -4,6 +4,7 @@
   require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_project_wonen_translation.php');
   require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_relation_translation.php');
   require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_image_translation.php');
+  require_once(YOG_PLUGIN_DIR . '/includes/classes/yog_dossier_translation.php');
 
   /**
   * @desc YogSynchronizationManager
@@ -56,13 +57,21 @@
 
     public function doSync()
     {
-      $this->syncRelations();
-      $this->syncProjects();
+      try
+      {
+        $this->syncRelations();
+        $this->syncProjects();
 
-      $response = array('status'   => 'ok',
-                        'message' => 'Synchronisatie voltooid');
-      if ($this->hasWarnings())
-        $response['warnings'] = $this->getWarnings();
+        $response = array('status'   => 'ok',
+                          'message' => 'Synchronisatie voltooid');
+        if ($this->hasWarnings())
+          $response['warnings'] = $this->getWarnings();
+      }
+      catch (Exception $e)
+      {
+        $response = array('status' => 'error',
+                          'message' => $e->getMessage());
+      }
 
       echo json_encode($response);
 
@@ -198,7 +207,7 @@
 
                 // Store meta data
                 $this->handlePostMetaData($postId, $postType, $translationProject->getMetaData());
-                
+
                 // Store price to order by
                 update_post_meta($postId, 'yog_price_order', $translationProject->determineSortPrice());
 
@@ -213,6 +222,9 @@
 
                 // Handle images
                 $this->handlePostImages($postId, $mcp3Project->getMediaImages());
+
+                // Handle dossier items
+                $this->handlePostDossier($postId, $mcp3Project->getDossierItems());
 
                 // Handle video
                 $this->handleMediaLink($postId, $postType, 'Videos', $translationProject->getVideos());
@@ -257,7 +269,7 @@
       {
         $postId = $existingProjectUuids[$uuid];
 
-        $this->deletePostImages($postId);
+        $this->deletePostFiles($postId);
         wp_delete_post($postId);
       }
 
@@ -332,7 +344,7 @@
     /**
     * @desc Store images for a post
     *
-    * @param int $postId
+    * @param int $parentPostId
     * @param array $mcp3Images
     * @return void
     */
@@ -349,7 +361,7 @@
 		      mkdir($this->uploadDir . 'projecten/' .$parentPostId);
         }
 
-        $results              = $this->db->get_results("SELECT ID, post_content AS uuid FROM " . $this->db->prefix . "posts WHERE post_parent = " . $parentPostId . " AND post_type = '" . POST_TYPE_ATTACHMENT . "' AND post_content != ''");
+        $results              = $this->db->get_results("SELECT ID, post_content AS uuid FROM " . $this->db->prefix . "posts WHERE post_parent = " . $parentPostId . " AND post_type = '" . POST_TYPE_ATTACHMENT . "' AND post_content != '' AND post_mime_type IN ('image/jpeg')");
         $existingMediaMapping = array();
 
         if (is_array($results))
@@ -391,12 +403,12 @@
                 file_put_contents($destination, $imageData);
 
                 // Determine image data
-                $imageData      = $translationImage->getPostData();
+                $imagePostData      = $translationImage->getPostData();
                 if (!is_null($attachmentId))
-                  $imageData['ID'] = $attachmentId;
+                  $imagePostData['ID'] = $attachmentId;
 
                 // Update / insert attachment
-	              $attachmentId   = wp_insert_attachment($imageData, $destination, $parentPostId);
+	              $attachmentId   = wp_insert_attachment($imagePostData, $destination, $parentPostId);
 	              $attachmentMeta = wp_generate_attachment_metadata($attachmentId, $destination);
 	              wp_update_attachment_metadata($attachmentId, $attachmentMeta);
 
@@ -470,20 +482,143 @@
     }
 
     /**
+    * @desc Store dossier items for a post
+    *
+    * @param int $parentPostId
+    * @param array $mcp3DossierItems
+    * @return void
+    */
+    private function handlePostDossier($parentPostId, $mcp3DossierItems)
+    {
+      if (!is_null($this->uploadDir))
+      {
+	      // Create projects directory (if needed)
+	      if (!is_dir($this->uploadDir .'projecten/' .$parentPostId))
+        {
+	        if (!is_dir($this->uploadDir .'projecten'))
+		        mkdir($this->uploadDir . 'projecten');
+
+		      mkdir($this->uploadDir . 'projecten/' .$parentPostId);
+        }
+
+        $results                = $this->db->get_results("SELECT ID, post_content AS uuid FROM " . $this->db->prefix . "posts WHERE post_parent = " . $parentPostId . " AND post_type = '" . POST_TYPE_ATTACHMENT . "' AND post_content != '' AND post_mime_type NOT IN ('image/jpeg')");
+        $existingDossierMapping = array();
+
+        if (is_array($results))
+        {
+          foreach ($results as $result)
+          {
+            $existingDossierMapping[$result->uuid] = $result->ID;
+          }
+        }
+
+        $processedDossierUuids  = array();
+        $possibleMimeTypes      = get_option('yog_dossier_mimetypes');
+
+        // Handle dossier items
+        foreach ($mcp3DossierItems as $mcp3DossierItem)
+        {
+          try
+          {
+            $uuid                     = $mcp3DossierItem->getUuid();
+            $processedDossierUuids[]  = $uuid;
+            $dossierLink              = $this->feedReader->getDossierLinkByUuid($uuid);
+            $publicationDlm           = strtotime(date('c', strtotime($dossierLink->getDlm())));
+            $existingDocument         = array_key_exists($uuid, $existingDossierMapping);
+            $attachmentId             = ($existingDocument === true) ? $existingDossierMapping[$uuid] : null;
+            $attachmenDlm             = $this->retrievePostDlm($attachmentId, POST_TYPE_ATTACHMENT);
+
+            if (!$existingDocument || ($publicationDlm > $attachmenDlm) || (!empty($_GET['force']) && $_GET['force'] == $parentPostId))
+            {
+              $translationDossier = YogDossierTranslation::create($mcp3DossierItem, $dossierLink);
+
+              $dossierData = YogHttpManager::retrieveContent($dossierLink->getUrl());
+
+              if ($dossierData !== false)
+              {
+                // Copy dossier item
+                $extension      = pathinfo($dossierLink->getUrl(), PATHINFO_EXTENSION);
+	              $destination    = $this->uploadDir .'projecten/' . $parentPostId . '/' . $uuid  . (empty($extension) ? '' : '.' . $extension);
+                file_put_contents($destination, $dossierData);
+
+                // Determine image data
+                $dossierPostData  = $translationDossier->getPostData();
+                if (!is_null($attachmentId))
+                  $dossierPostData['ID'] = $attachmentId;
+
+                // Update / insert attachment
+	              $attachmentId   = wp_insert_attachment($dossierPostData, $destination, $parentPostId);
+
+                // Set meta data
+                foreach ($translationDossier->getMetaData() as $key => $value)
+                {
+                  if (!empty($value))
+                    update_post_meta($attachmentId, POST_TYPE_ATTACHMENT . '_' . $key, $value);
+                  else
+                    delete_post_meta($attachmentId, POST_TYPE_ATTACHMENT . '_' . $key);
+                }
+
+                // Add mime type to possible mime types
+                $possibleMimeTypes[] = $dossierLink->getMimeType();
+              }
+              else
+              {
+                $this->warnings[] = 'Failed to retrieve dossier item data';
+              }
+            }
+          }
+          catch (Exception $e)
+          {
+            $this->warnings[] = $e->getMessage();
+          }
+        }
+
+        // Update possible mime types
+        update_option('yog_dossier_mimetypes', array_unique($possibleMimeTypes));
+
+        /* Cleanup old dossier items */
+        $deleteDossierUuids = array_diff(array_flip($existingDossierMapping), $processedDossierUuids);
+
+        foreach ($deleteDossierUuids as $uuid)
+        {
+          $attachmentId = $existingDossierMapping[$uuid];
+          wp_delete_attachment($attachmentId, true);
+
+          // Remove files
+          if (!is_null($this->uploadDir) && is_dir($this->uploadDir .'projecten/' .$parentPostId))
+          {
+            $files = glob($this->uploadDir .'projecten/' .$parentPostId . '/' . $uuid . '*');
+            if (is_array($files))
+            {
+              foreach ($files as $file)
+              {
+                if (is_file($file))
+                {
+                  if (!@unlink($file))
+                    $this->warning[] = 'Unable to unlink ' . $file;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    /**
     * @desc Delete post images
     *
     * @param int $postId
     * @return void
     */
-    private function deletePostImages($postId)
+    private function deletePostFiles($postId)
     {
       $postType = POST_TYPE_ATTACHMENT;
 
-	    // Remove existing images
-	    $mediaPostIds = $this->db->get_col("SELECT ID FROM " . $this->db->prefix . "posts WHERE post_parent = " . $postId . " AND post_type = '" . $postType . "' AND post_content != ''");
-	    foreach ($mediaPostIds as $mediaPostId)
+	    // Remove attachment links
+	    $attachmentPostIds = $this->db->get_col("SELECT ID FROM " . $this->db->prefix . "posts WHERE post_parent = " . $postId . " AND post_type = '" . $postType . "' AND post_content != ''");
+	    foreach ($attachmentPostIds as $attachmentPostId)
       {
-		    wp_delete_attachment($mediaPostId, true);
+		    wp_delete_attachment($attachmentPostId, true);
 	    }
 
 	    if (!is_null($this->uploadDir) && is_dir($this->uploadDir .'projecten/' .$postId))
@@ -792,7 +927,7 @@
 
 	    if (!$term)
 		    $term   = wp_insert_term($name, $categoryTaxonomy, array('description' => $name, 'parent' => $parentTermId, 'slug' => $slug));
-      
+
       if ($term instanceOf WP_Error)
       {
         return (int) $term->error_data['term_exists'];

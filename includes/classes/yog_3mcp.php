@@ -141,7 +141,7 @@
     /**
     * @desc Get media link by uuid
     *
-    * @param void
+    * @param string $uuid
     * @return Yog3McpMediaLink
     */
     public function getMediaLinkByUuid($uuid)
@@ -165,6 +165,35 @@
       $mimeType = (string) $node->link['type'];
 
       return new Yog3McpMediaLink($uuid, $url, $doc, $dlm, $mimeType);
+    }
+
+    /**
+    * @desc Get dossier link by uuid
+    *
+    * @param string $uuid
+    * @return Yog3McpMediaLink
+    */
+    public function getDossierLinkByUuid($uuid)
+    {
+      // Search node
+      $nodes        = $this->xml->xpath("//atom:entry[(atom:category/@term = 'document' or atom:category/@term = 'dossier') and atom:id = 'urn:uuid:" . $uuid . "']");
+
+      if ($nodes === false || count($nodes) == 0)
+        throw new YogException(__METHOD__ . '; Document with uuid (' . $uuid . ') not found', YogException::GLOBAL_ERROR);
+
+      if (count($nodes) > 1)
+        throw new YogException(__METHOD__ . '; Multiple documents with uuid (' . $uuid . ') not found', YogException::GLOBAL_ERROR);
+
+      $node     = array_shift($nodes);
+
+      // Variables
+      $uuid     = $this->translateUuid((string) $node->id);
+      $url      = $this->determine3McpUrl((string) $node->link['href']);
+      $doc      = (string) $node->published;
+      $dlm      = (string) $node->updated;
+      $mimeType = (string) $node->link['type'];
+
+      return new Yog3McpDossierLink($uuid, $url, $doc, $dlm, $mimeType);
     }
 
     /**
@@ -213,13 +242,23 @@
     static protected function determine3McpUrl($url)
     {
       // Add authentication to url
-      if (defined('MCP3_USERNAME') && defined('MCP3_PASSWORD'))
+      if (defined('MCP3_USERNAME') && defined('MCP3_PASSWORD') && MCP3_USERNAME != '' && MCP3_PASSWORD != '')
       {
         $protocol = substr($url, 0, strpos($url, '://')) . '://';
 
 	      $url = str_replace($protocol,'',$url);
 	      $url = $protocol . MCP3_USERNAME .':' . MCP3_PASSWORD .'@' .$url;
       }
+
+      // Rewrite staging url's
+      /*
+      if (strpos($url, 'https://webservice.staging.yes-co.com/3mcp/1.4/') !== false)
+      {
+        $filename = basename($url);
+        $addition = substr($filename, 0, 2) . '/' . substr($filename, 2, 2) . '/' . $filename;
+        $url      = str_replace(array('https://', $filename), array('http://', $addition), $url);
+      }
+      */
 
       return $url;
     }
@@ -402,6 +441,53 @@
   * @author Kees Brandenburg - Yes-co Nederland
   */
   class Yog3McpMediaLink extends Yog3McpEntityLink
+  {
+    private $mimeType;
+
+    /**
+    * @desc Constructor
+    *
+    * @param string $uuid
+    * @param string $url
+    * @param string $doc
+    * @param string $dlm
+    * @param string $mimeType
+    * @return Yog3McpMediaLink
+    */
+    public function __construct($uuid, $url, $doc, $dlm, $mimeType)
+    {
+      parent::__construct($uuid, $url, $doc, $dlm);
+      $this->setMimeType($mimeType);
+    }
+
+    /**
+    * @desc Set MimeType
+    *
+    * @param string $mimeType
+    * @return void
+    */
+    public function setMimeType($mimeType)
+    {
+      $this->mimeType = $mimeType;
+    }
+
+    /**
+    * @desc Get the MimeType
+    *
+    * @param void
+    * @return string
+    */
+    public function getMimeType()
+    {
+      return $this->mimeType;
+    }
+  }
+
+  /**
+  * @desc Yog3McpDossierLink
+  * @author Kees Brandenburg - Yes-co Nederland
+  */
+  class Yog3McpDossierLink extends Yog3McpEntityLink
   {
     private $mimeType;
 

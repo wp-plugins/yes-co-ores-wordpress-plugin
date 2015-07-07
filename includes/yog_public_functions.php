@@ -776,6 +776,45 @@
   }
 
   /**
+  * @desc Retrieve dossier items
+  *
+  * @param int $limit
+  * @param int $postId (optional)
+  * @return array
+  */
+  function yog_retrieveDossierItems($limit = null, $postId = null)
+  {
+    if (is_null($postId))
+      $postId = get_the_ID();
+
+    $items      = array();
+    $mimeTypes  = get_option('yog_dossier_mimetypes');
+
+    if (is_array($mimeTypes) && count($mimeTypes) > 0)
+    {
+      $arguments = array('post_type'        => 'attachment',
+                          'post_parent'     => $postId,
+                          'post_mime_type'  => $mimeTypes,
+                          'numberposts'     => (is_null($limit) ? -1 : $limit),
+                          'orderby'         => 'title',
+                          'order'           => 'ASC');
+
+      $posts  = get_posts($arguments);
+
+      foreach ($posts as $post)
+      {
+        $item = array('url'       => wp_get_attachment_url($post->ID),
+                      'title'     => $post->post_title,
+                      'mime_type' => $post->post_mime_type);
+
+        $items[] = $item;
+      }
+    }
+
+    return $items;
+  }
+
+  /**
   * @desc Check if there are images without type 'Plattegrond'
   *
   * @param int $postId (optional)
