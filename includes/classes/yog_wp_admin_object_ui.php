@@ -376,6 +376,33 @@
     }
 
     /**
+    * @desc Render dossier meta box
+    *
+    * @param object $post
+    * @return void
+    */
+    public function renderDossierMetaBox($post)
+    {
+      $dossierItems = yog_retrieveDossierItems(null, $post->ID);
+
+      if (is_array($dossierItems) && count($dossierItems) > 0)
+      {
+        $html = '<ul>';
+        foreach ($dossierItems as $dossierItem)
+        {
+          $html .= '<li><a href="' . $dossierItem['url'] . '" target="_blank">' . $dossierItem['title'] . '</a></li>';
+        }
+        $html .= '</ul>';
+      }
+      else
+      {
+        $html .= '<p>Geen dossier items aanwezig.</p>';
+      }
+
+      echo $html;
+    }
+
+    /**
     * @desc Render movies meta box
     *
     * @param object $post

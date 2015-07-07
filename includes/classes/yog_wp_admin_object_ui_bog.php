@@ -72,6 +72,7 @@
       add_meta_box('yog-location',            'Locatie',              array($this, 'renderMapsMetaBox'),          POST_TYPE_BOG, 'side', 'low');
       add_meta_box('yog-relations',           'Relaties',             array($this, 'renderRelationsMetaBox'),     POST_TYPE_BOG, 'side', 'low');
       add_meta_box('yog-images',              'Afbeeldingen',         array($this, 'renderImagesMetaBox'),        POST_TYPE_BOG, 'side', 'low');
+      add_meta_box('yog-dossier',             'Dossier items',        array($this, 'renderDossierMetaBox'),       POST_TYPE_BOG, 'side', 'low');
     }
 
     /**
