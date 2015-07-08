@@ -840,9 +840,14 @@
           // Show default output
           else
           {
-            $id = get_the_id();
-
-            $output .= $id . '<br />';
+            $title      = get_the_title();
+            $permalink  = get_permalink();
+            
+            $output .= '<div class="yog-post post-' . get_post_type() . '">';
+              $output .= '<h2><a href="' . $permalink . '" rel="bookmark" title="' . $title . '">' . yog_retrieveSpec('Naam') . '</a></h2>';
+              if (has_post_thumbnail())
+                $output .= '<a href="' . $permalink . '" rel="bookmark" title="' . $title . '">' . get_the_post_thumbnail() . '</a>';
+            $output .= '</div>';
           }
         }
       }

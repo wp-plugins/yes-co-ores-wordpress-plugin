@@ -11,6 +11,8 @@
   define('MCP_ATOM_NAMESPACE',      'http://webservice.yes-co.nl/3mcp/%s/atom-extension');
   define('PROJECT_NAMESPACE',       'http://webservice.yesco.nl/mcp/%s/Project');
   define('RELATION_NAMESPACE',      'http://webservice.yesco.nl/mcp/%s/Relation');
+  
+  define('YOG_PLUGIN_INSTALLED',    true);
 
   define('POST_TYPE_WONEN',         'huis');
   define('POST_TYPE_BOG',           'bedrijf');

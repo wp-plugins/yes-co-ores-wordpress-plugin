@@ -650,21 +650,57 @@
       switch ($movie['videoereference_serviceuri'])
       {
         case 'http://www.youtube.com':
-
-            $code = '<iframe class="youtube-player" type="text/html" width="' . $width . '" height="' . $height . '" src="' . $movie['videostreamurl'] . '" allowfullscreen frameborder="0">
-                </iframe>';
-
+          $code = '<iframe class="youtube-player" type="text/html" width="' . $width . '" height="' . $height . '" src="' . $movie['videostreamurl'] . '" allowfullscreen frameborder="0"></iframe>';
           break;
         case 'http://vimeo.com':
           $code = '<iframe src="' . $movie['videostreamurl'] . '" width="' . $width . '" height="' . $height . '" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>';
           break;
         default:
-          $code = '<pre>' . print_r($movie, true) . '</pre>';
+          $code = '<iframe src="' . $movie['videostreamurl'] . '" width="' . $width . '" height="' . $height . '" frameborder="0"></iframe>';
           break;
       }
     }
 
     return $code;
+  }
+  
+  /**
+  * @desc Retrieve dossier items
+  *
+  * @param int $limit
+  * @param int $postId (optional)
+  * @return array
+  */
+  function yog_retrieveDossierItems($limit = null, $postId = null)
+  {
+    if (is_null($postId))
+      $postId = get_the_ID();
+
+    $items      = array();
+    $mimeTypes  = get_option('yog_dossier_mimetypes');
+
+    if (is_array($mimeTypes) && count($mimeTypes) > 0)
+    {
+      $arguments = array('post_type'        => 'attachment',
+                          'post_parent'     => $postId,
+                          'post_mime_type'  => $mimeTypes,
+                          'numberposts'     => (is_null($limit) ? -1 : $limit),
+                          'orderby'         => 'title',
+                          'order'           => 'ASC');
+
+      $posts  = get_posts($arguments);
+
+      foreach ($posts as $post)
+      {
+        $item = array('url'       => wp_get_attachment_url($post->ID),
+                      'title'     => $post->post_title,
+                      'mime_type' => $post->post_mime_type);
+
+        $items[] = $item;
+      }
+    }
+
+    return $items;
   }
 
   /**
@@ -773,45 +809,6 @@
     }
 
     return $images;
-  }
-
-  /**
-  * @desc Retrieve dossier items
-  *
-  * @param int $limit
-  * @param int $postId (optional)
-  * @return array
-  */
-  function yog_retrieveDossierItems($limit = null, $postId = null)
-  {
-    if (is_null($postId))
-      $postId = get_the_ID();
-
-    $items      = array();
-    $mimeTypes  = get_option('yog_dossier_mimetypes');
-
-    if (is_array($mimeTypes) && count($mimeTypes) > 0)
-    {
-      $arguments = array('post_type'        => 'attachment',
-                          'post_parent'     => $postId,
-                          'post_mime_type'  => $mimeTypes,
-                          'numberposts'     => (is_null($limit) ? -1 : $limit),
-                          'orderby'         => 'title',
-                          'order'           => 'ASC');
-
-      $posts  = get_posts($arguments);
-
-      foreach ($posts as $post)
-      {
-        $item = array('url'       => wp_get_attachment_url($post->ID),
-                      'title'     => $post->post_title,
-                      'mime_type' => $post->post_mime_type);
-
-        $items[] = $item;
-      }
-    }
-
-    return $items;
   }
 
   /**
@@ -1368,6 +1365,27 @@
       POST_TYPE_BBPR,
       POST_TYPE_BBTY,
       POST_TYPE_RELATION
+    );
+
+    return $postTypes;
+  }
+  
+  /**
+   * @desc Retrieve all the custom post types for objects
+   *
+   * @param void
+   * @return array
+   */
+  function yog_getAllObjectPostTypes()
+  {
+    $postTypes  = array(
+      POST_TYPE_WONEN,
+      POST_TYPE_BOG,
+      POST_TYPE_NBPR,
+      POST_TYPE_NBTY,
+      POST_TYPE_NBBN,
+      POST_TYPE_BBPR,
+      POST_TYPE_BBTY
     );
 
     return $postTypes;
