@@ -2,8 +2,8 @@
 Contributors: yesco
 Tags: yes-co, yesco, projecten, project, projects, huizen, huis, house, onroerend goed, real estate, makelaar, realtor, broker
 Requires at least: 3.1
-Tested up to: 4.1.1
-Stable tag: 1.3.9
+Tested up to: 4.2.2
+Stable tag: 1.3.10
 
 Directly post real estate objects from your Yes-co system to your wordpress blog with the Yes-co Open Real Estate System (Yes-co ORES) Plugin.
 
@@ -59,7 +59,7 @@ With Yes-co ORES you only pay for addional, optional, services. [Create your own
 * Ga na of je hosting php5 ondersteund
 * Installeer de Yes-co ORES plugin vanuit je wordpress admin
 * Activeer de Yes-co ORES plugin
-* Installeer het [Yes-co ORES voorbeeld thema](http://www.yes-co.nl/downloads/yesco_ores_theme_1.4.zip "Download het Yes-co ORES voorbeeld thema") of creëer je eigen thema (Zie de [technische documentatie](http://www.yes-co.nl/downloads/wordpress_technical_documentation_1.1.pdf "Yes-co ORES technische documentatie") ).
+* Installeer het [Yes-co ORES voorbeeld thema](http://www.yes-co.nl/downloads/yesco_ores_theme_1.5.zip "Download het Yes-co ORES voorbeeld thema") of creëer je eigen thema (Zie de [technische documentatie](http://www.yes-co.nl/downloads/wordpress_technical_documentation_1.1.2.pdf "Yes-co ORES technische documentatie") ).
 * Activeer het "Wordpress Blog" marketing kanaal in de App Market van je Yes-co Open Real Estate Systeem. Na het activeren wordt je doorgestuurd naar de instellingen, vul hier de url van je wordpress blog in.
 * Kopieër de code in het instellingen scherm en plak deze in het "Activatiecode" veld in de Yes-co ORES instellingen pagina van je Wordpress blog. Klik op de "Koppeling toevoegen" knop om de activerings code toe te voegen.
 * Klik op de "Koppeling controleren" knop in het instellingen scherm van het "Wordpress Blog" marketing kanaal in de App Market van je Yes-co Open Real Estate Systeem.
@@ -70,7 +70,7 @@ Publicaties van je Yes-co Open Real Estate Systeem naar je Wordpress blog zijn n
 * Make sure your hosting supports php5
 * Install the Yes-co ORES plugin from your wordpress admin
 * Activate the Yes-co ORES plugin
-* Install the [Yes-co ORES example theme](http://www.yes-co.nl/downloads/yesco_ores_theme_1.4.zip "Download the Yes-co ORES example theme") or create your own theme (check out the [technical documentation](http://www.yes-co.nl/downloads/wordpress_technical_documentation_1.1.pdf "Yes-co ORES technical documentation") ).
+* Install the [Yes-co ORES example theme](http://www.yes-co.nl/downloads/yesco_ores_theme_1.5.zip "Download the Yes-co ORES example theme") or create your own theme (check out the [technical documentation](http://www.yes-co.nl/downloads/wordpress_technical_documentation_1.1.2.pdf "Yes-co ORES technical documentation") ).
 * Activate the "Wordpress Blog" marketing channel in the App Market of your Yes-co Open Real Estate System. After the activation you will be redirected to the settings. Fill out the URL of your Wordpress blog.
 * Copy the code in the settings screen and paste it to the "Activatiecode" field on the Yes-co ORES settings page of your Wordpress blog. Click on the "Koppeling toevoegen" button to add the activation code.
 * Click on the "Koppeling controleren" button on the settings screen of the "Wordpress Blog" marketing channel in the App Market of your Yes-co Open Real Estate System.
@@ -87,6 +87,11 @@ Publications from your Yes-co Open Real Estate System to your Wordpress blog are
 7. Project details on the Wordpress Admin
 
 == Changelog ==
+= 1.3.10 =
+* Added: option to use custom category taxanomy for objects
+* Added: option to ignore extra texts
+* Added: option to order objects by price, date or title (only within custom category taxanomy, or with search widget)
+* Added: objets shortcode (for example: [yog-objects type="huis" num="5"])
 = 1.3.9 =
 * Fixed: Issue with map loading info window details;
 = 1.3.8 =

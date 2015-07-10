@@ -929,8 +929,8 @@
         }
 
         // Update projects order price when updated from version 1.3.9 or smaller
-        //if (version_compare($currentVersion, '1.3.9', '<='))
-        //  $this->updateProjectsWithPriceOrder();
+        if (version_compare($currentVersion, '1.3.9', '<='))
+          $this->updateProjectsWithPriceOrder();
 
         // Update plugin version
         update_option('yog_plugin_version', YOG_PLUGIN_VERSION);
