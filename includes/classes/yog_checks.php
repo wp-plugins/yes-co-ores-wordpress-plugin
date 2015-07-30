@@ -50,27 +50,27 @@ class YogChecks
 		$warnings = array();
 
 		// Single huis template check
-		if (!is_file(get_template_directory() .'/single-huis.php'))
+    if (locate_template('single-huis.php') == '')
 			$warnings[] = 'Het ingestelde thema heeft op dit moment geen \'single-huis.php\' template. Er zal een alternatieve methode gebruikt worden voor het tonen van de Wonen object details.';
 
 		// Single bedrijf template check
-		if (!is_file(get_template_directory() .'/single-bedrijf.php'))
+    if (locate_template('single-bedrijf.php') == '')
 			$warnings[] = 'Het ingestelde thema heeft op dit moment geen \'single-bedrijf.php\' template. Er zal een alternatieve methode gebruikt worden voor het tonen van de BOG object details.';
 
 		// Single NBpr template check
-		if (!is_file(get_template_directory() .'/single-yog-nbpr.php'))
+    if (locate_template('single-yog-nbpr.php') == '')
 			$warnings[] = 'Het ingestelde thema heeft op dit moment geen \'single-yog-nbpr.php\' template. Er zal een alternatieve methode gebruikt worden voor het tonen van de Nieuwbouw Project details.';
 
 		// Single NBpr template check
-		if (!is_file(get_template_directory() .'/single-yog-nbty.php'))
+    if (locate_template('single-yog-nbty.php') == '')
 			$warnings[] = 'Het ingestelde thema heeft op dit moment geen \'single-yog-nbty.php\' template. Er zal een alternatieve methode gebruikt worden voor het tonen van de Nieuwbouw type details.';
 
     // Single BBpr template check
-    if (!is_file(get_template_directory() .'/single-yog-bbpr.php'))
+    if (locate_template('single-yog-bbpr.php') == '')
       $warnings[] = 'Het ingestelde thema heeft op dit moment geen \'single-yog-bbpr.php\' template. Er zal een alternatieve methode gebruikt worden voor het tonen van de Bestaande bouw complexen.';
 
     // Single BBpr template check
-    if (!is_file(get_template_directory() .'/single-yog-bbty.php'))
+    if (locate_template('single-yog-bbty.php') == '')
       $warnings[] = 'Het ingestelde thema heeft op dit moment geen \'single-yog-bbty.php\' template. Er zal een alternatieve methode gebruikt worden voor het tonen van de Bestaande bouw complex types.';
 
 		return $warnings;
@@ -102,16 +102,16 @@ class YogChecks
 
 		// allow_url_fopen
 		$settings['allow_url_fopen'] = (ini_get('allow_url_fopen')) ? 'enabled' : 'disabled';
-    
+
     // Server date/time
     $settings['current date/time']  = date('c');
-    
+
     if (function_exists('mysql_get_client_info'))
       $settings['mysql_version'] = mysql_get_client_info();
 
 		// CURL
 		$settings['CURL'] = function_exists('curl_init') ? 'enabled' : 'disabled';
-    
+
     // Wordpress settings
     $settings['Custom categories enabled']  = (get_option('yog_cat_custom') ? 'true' : 'false');
     $settings['3mcp version']               = get_option('yog_3mcp_version');

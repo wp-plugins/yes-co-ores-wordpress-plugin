@@ -434,6 +434,31 @@
       if (wp_next_scheduled('yog_cron_open_houses'))
         wp_clear_scheduled_hook('yog_cron_open_houses');
     }
+
+    /**
+     * List all theme php files (parent + child theme files)
+     *
+     * @param void
+     * @return array
+     */
+    protected function listThemeFiles()
+    {
+      $parentFiles  = glob(get_template_directory() . '/*.php');
+      $childFiles   = glob(get_stylesheet_directory() . '/*.php');
+      $files        = array();
+
+      foreach ($parentFiles as $parentFile)
+      {
+        $files[basename($parentFile)] = $parentFile;
+      }
+
+      foreach ($childFiles as $childFile)
+      {
+        $files[basename($childFile)] = $childFile;
+      }
+
+      return $files;
+    }
   }
 
   /**
@@ -499,7 +524,7 @@
       $prefix   = '';
       $suffix   = '';
 
-      if (is_single() && in_array($postType, yog_getAllPostTypes()) && !is_file(get_template_directory() .'/single-' . $postType . '.php'))
+      if (is_single() && in_array($postType, yog_getAllPostTypes()) && locate_template('single-' . $postType . '.php') == '')
       {
         // Add photo slider
         $prefix .= yog_retrievePhotoSlider();
@@ -782,14 +807,14 @@
     {
       // Determine provided params
       $type           = !empty($attr['type']) ? explode(',', $attr['type']) : array(POST_TYPE_WONEN, POST_TYPE_BOG, POST_TYPE_NBPR, POST_TYPE_NBTY, POST_TYPE_BBPR, POST_TYPE_BBTY);
-      
+
       // Determine query attributes
       $query = array(
         'post_type'       => $type,
         'posts_per_page'  => (!empty($attr['num']) ? $attr['num'] : 5000),
         'nopaging'        => (!empty($attr['num']) ? true : false)
       );
-      
+
       // Add category to the query?
       if (!empty($attr['cat']))
       {
@@ -801,12 +826,12 @@
           )
         );
       }
-      
+
       // Add order to the query?
       if (!empty($attr['order']) && in_array($attr['order'], array('date_asc', 'date_desc', 'title_asc', 'title_desc', 'price_asc', 'price_desc')))
       {
         list($orderBy, $order) = explode('_', $attr['order']);
-        
+
         if ($orderBy == 'price')
         {
           $query['orderby']   = 'meta_value_num';
@@ -816,19 +841,19 @@
         {
           $query['orderby'] = $orderBy;
         }
-        
+
         $query['order'] = strtoupper($order);
       }
 
       // Retrieve posts
       $posts  = new WP_Query($query);
-      
+
       if ($posts->have_posts())
       {
         while ($posts->have_posts())
         {
           $posts->the_post();
-          
+
           // Use template to show object
           if (!empty($attr['template']))
           {
@@ -842,7 +867,7 @@
           {
             $title      = get_the_title();
             $permalink  = get_permalink();
-            
+
             $output .= '<div class="yog-post post-' . get_post_type() . '">';
               $output .= '<h2><a href="' . $permalink . '" rel="bookmark" title="' . $title . '">' . yog_retrieveSpec('Naam') . '</a></h2>';
               if (has_post_thumbnail())
@@ -851,7 +876,7 @@
           }
         }
       }
-      
+
       return $output;
     }
   }
@@ -1059,7 +1084,7 @@
       add_options_page('Yes-co ORES opties', 'Yes-co ORES', 'edit_plugins', 'yesco_OG', array($this, 'renderSettingsPage'));
       add_options_page('Map shortcode generator', 'Map shortcode generator', 'edit_plugins', 'yesco_OG_shortcode_map', array($this, 'renderShortcodeMapPage'));
       add_options_page('Objecten shortcode generator', 'Objecten shortcode generator', 'edit_plugins', 'yesco_OG_shortcode_objects', array($this, 'renderShortcodeObjectsPage'));
-      
+
       remove_submenu_page('options-general.php', 'yesco_OG_shortcode_map');
       remove_submenu_page('options-general.php', 'yesco_OG_shortcode_objects');
     }
@@ -1078,13 +1103,13 @@
       // Checks
       $errors 	= YogChecks::checkForErrors();
       $warnings = YogChecks::checkForWarnings();
-      
+
       if (empty($errors))
       {
         // Retrieve system links
         $systemLinkManager  = new YogSystemLinkManager();
         $systemLinks        = $systemLinkManager->retrieveAll();
-        
+
         // Sort options
         $sortOptions  = array('date_asc' => 'datum oplopend', '' => 'datum aflopend',
                               'title_asc' => 'titel oplopend', 'title_desc' => 'titel aflopend',
@@ -1095,7 +1120,7 @@
       // Render html
       include(YOG_PLUGIN_DIR . '/includes/pages/settings.php');
     }
-    
+
     /**
      * Render maps shortcode generator
      */
@@ -1106,35 +1131,34 @@
       $yogMapWidget = new YogMapWidget();
       $settings     = $yogMapWidget->shortcodeToSettings($shortcode);
       $postTypes    = yog_getAllPostTypes();
-  
+
       include(YOG_PLUGIN_DIR . '/includes/pages/shortcode_map.php');
     }
-    
+
     /**
      * Render objects shortcode generator
      */
     public function renderShortcodeObjectsPage()
     {
       wp_enqueue_script('yog-admin-objects-shortcode-js',   YOG_PLUGIN_URL .'/inc/js/admin_objects_shortcode.js', array('jquery'), YOG_PLUGIN_VERSION);
-      
-      $postTypes    = array(POST_TYPE_WONEN, POST_TYPE_BOG, POST_TYPE_NBPR, POST_TYPE_NBTY, POST_TYPE_BBPR, POST_TYPE_BBTY);
-      $sortOptions  = array('date_asc' => 'datum oplopend', '' => 'datum aflopend',
-                            'title_asc' => 'titel oplopend', 'title_desc' => 'titel aflopend',
-                            'price_asc' => 'prijs oplopend', 'price_desc' => 'prijs aflopend');
-      $sortOption   = get_option('yog_order');
-      $categories   = get_categories(array('taxonomy' => (get_option('yog_cat_custom') ? 'yog_category' : 'category')));
-      
-      // List theme template files
-      $files                = glob(get_template_directory() . '/*.php');
-      $templateFiles        = array();
-      
+
+      $postTypes      = array(POST_TYPE_WONEN, POST_TYPE_BOG, POST_TYPE_NBPR, POST_TYPE_NBTY, POST_TYPE_BBPR, POST_TYPE_BBTY);
+      $sortOptions    = array('date_asc' => 'datum oplopend', '' => 'datum aflopend',
+                              'title_asc' => 'titel oplopend', 'title_desc' => 'titel aflopend',
+                              'price_asc' => 'prijs oplopend', 'price_desc' => 'prijs aflopend');
+      $sortOption     = get_option('yog_order');
+      $categories     = get_categories(array('taxonomy' => (get_option('yog_cat_custom') ? 'yog_category' : 'category')));
+
+      $files          = $this->listThemeFiles();
+      $templateFiles  = array();
+
       foreach ($files as $file)
       {
         $file = basename($file);
         if (strpos($file, 'object-') !== false)
           $templateFiles[] = str_replace(array('object-', '.php'), '', $file);
       }
-      
+
       include(YOG_PLUGIN_DIR . '/includes/pages/shortcode_objects.php');
     }
 
