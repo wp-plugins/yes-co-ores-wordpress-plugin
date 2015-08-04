@@ -57,20 +57,33 @@
 
     public function doSync()
     {
-      try
+      $syncRunning = get_option('yog-sync-running', false);
+      if ($syncRunning === false)
       {
-        $this->syncRelations();
-        $this->syncProjects();
+        try
+        {
+          update_option('yog-sync-running', date('U'));
 
-        $response = array('status'   => 'ok',
-                          'message' => 'Synchronisatie voltooid');
-        if ($this->hasWarnings())
-          $response['warnings'] = $this->getWarnings();
+          $this->syncRelations();
+          $this->syncProjects();
+
+          $response = array('status'   => 'ok',
+                            'message' => 'Synchronisatie voltooid');
+          if ($this->hasWarnings())
+            $response['warnings'] = $this->getWarnings();
+        }
+        catch (Exception $e)
+        {
+          $response = array('status' => 'error',
+                            'message' => $e->getMessage());
+        }
+
+        delete_option('yog-sync-running');
       }
-      catch (Exception $e)
+      else
       {
-        $response = array('status' => 'error',
-                          'message' => $e->getMessage());
+        $response = array('status' => 'warning',
+                          'message' => 'synchronization already running');
       }
 
       echo json_encode($response);
@@ -138,6 +151,23 @@
     }
 
     /**
+     * Cleanup meta data for no longer existing
+     */
+    private function cleanupOldStuff($postId)
+    {
+      if (!is_int($postId))
+        throw new Exception(__METHOD__ . '; Invalid post ID');
+
+      $this->deletePostFiles($postId);
+      wp_delete_post($postId);
+
+      $tableName  = $this->db->prefix .'postmeta';
+      $sql        = 'DELETE FROM ' . $tableName . ' WHERE post_id = ' . $postId;
+
+      $this->db->get_results($sql);
+    }
+
+    /**
     * @desc Synchronize projects
     *
     * @param void
@@ -147,6 +177,10 @@
     {
       // Register categories if needed
       $this->registerCategories();
+
+      // Cleanup a specific post is specified
+      if (!empty($_GET['force_cleanup']) && is_numeric($_GET['force_cleanup']))
+        $this->cleanupOldStuff((int) $_GET['force_cleanup']);
 
       $existingProjectUuids       = $this->retrieveProjectUuidsMapping();
       $existingRelationUuids      = $this->retrieveRelationUuidMapping();
@@ -202,7 +236,7 @@
                 {
                   $postId = @wp_insert_post($postData);
                   // Add to extisting projects array
-                  $existingProject[$postId] = $uuid;
+                  $existingProjectUuids[$uuid] = $postId;
                 }
 
                 // Store meta data
@@ -733,11 +767,16 @@
       $metaKeyBBty    = POST_TYPE_BBTY . '_' . $collectionUuid . '_uuid';
 
       $tableName    = $this->db->prefix .'postmeta';
-      $results      = $this->db->get_results("SELECT post_id, meta_value AS uuid FROM " . $tableName . " WHERE meta_key IN ('" . $metaKeyWonen . "', '" . $metaKeyBog . "', '" . $metaKeyNBpr . "', '" . $metaKeyNBty . "', '" . $metaKeyNBbn . "', '" . $metaKeyBBpr . "', '" . $metaKeyBBty . "')");
+      $results      = $this->db->get_results("SELECT post_id, meta_value AS uuid FROM " . $tableName . " WHERE meta_key IN ('" . $metaKeyWonen . "', '" . $metaKeyBog . "', '" . $metaKeyNBpr . "', '" . $metaKeyNBty . "', '" . $metaKeyNBbn . "', '" . $metaKeyBBpr . "', '" . $metaKeyBBty . "') ORDER BY post_id DESC");
       $uuids        = array();
 
       foreach ($results as $result)
       {
+        if (array_key_exists($result->uuid, $uuids))
+        {
+          $this->warnings[] = 'Duplicate UUID: ' . $result->uuid . '(Post ID: ' . $result->post_id . ', org post ID: ' . $uuids[$result->uuid] . ')';
+        }
+
         $uuids[$result->uuid] = (int) $result->post_id;
       }
 
